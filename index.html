@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Adnan Baysal – Projects</title>
+</head>
+<body>
+
+  <h1>Projects</h1>
+    This web page contains "things" I want to share, that are mostly math or programming related. 
+    To make thse pages more managable for me, I'll occasionally (if not always) use AI tools such as Gemini,
+    ChatGPT, Deepseek, etc. 
+
+  <ul id="pages"></ul>
+
+  <script>
+    fetch("pages.json")
+      .then(r => r.json())
+      .then(pages => {
+        const ul = document.getElementById("pages");
+        pages.forEach(p => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = p.path;
+          a.textContent = p.title;
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+      });
+  </script>
+
+</body>
+</html>

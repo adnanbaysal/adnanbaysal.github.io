@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Star Fractal - Created with Gemini</title>
+    <style>
+        :root { --accent: #00d4ff; --bg: #050505; --panel: #111; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            display: flex; flex-direction: column; 
+            background: var(--bg); color: #fff; 
+            margin: 0; height: 100vh; overflow: hidden; 
+        }
+        
+        /* Taller, labeled header */
+        header { 
+            background: var(--panel); padding: 12px; 
+            border-bottom: 1px solid #333; 
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 12px; z-index: 10;
+        }
+        
+        .control-group { 
+            background: #1a1a1a; padding: 8px 12px; border-radius: 8px; 
+            display: flex; flex-direction: column; gap: 4px; border: 1px solid #222;
+            min-width: 120px;
+        }
+
+        .label-row { 
+            display: flex; justify-content: space-between;
+            color: #888; text-transform: uppercase; font-weight: bold; font-size: 10px; 
+        }
+
+        .input-row { display: flex; align-items: center; gap: 10px; }
+        .anim-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .anim-unit label { font-size: 8px; color: var(--accent); font-weight: bold; }
+
+        /* Dynamic Canvas Area */
+        main { 
+            flex-grow: 1; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+            position: relative; padding: 10px; min-height: 300px;
+        }
+        
+        #canvas-container { position: relative; height: 100%; display: flex; align-items: center; }
+        canvas { 
+            background: #000; border-radius: 4px; cursor: pointer;
+            box-shadow: 0 0 40px rgba(0,0,0,1);
+            max-height: 100%; max-width: 100%; object-fit: contain;
+        }
+
+        /* Overlays */
+        #pause-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7); color: var(--accent); padding: 15px 30px;
+            border-radius: 8px; font-weight: bold; pointer-events: none;
+            display: none; border: 1px solid var(--accent); text-transform: uppercase;
+        }
+
+        #rec-indicator {
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 6px;
+            display: none; align-items: center; gap: 10px; color: #fff;
+            font-family: monospace; font-size: 14px; border: 1px solid #eb4d4b;
+        }
+        .dot { width: 10px; height: 10px; background: #eb4d4b; border-radius: 50%; animation: blink 1s infinite; }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        button { 
+            border: none; padding: 0 12px; border-radius: 4px; 
+            font-weight: bold; cursor: pointer; transition: 0.2s; 
+            text-transform: uppercase; font-size: 10px; height: 34px; align-self: center;
+        }
+        .btn-cache { background: var(--accent); color: #000; }
+        .btn-rand { background: #a55eea; color: #fff; }
+        .btn-rec { background: #eb4d4b; color: #fff; }
+        .btn-util { background: #444; color: #fff; }
+
+        span.value { color: #fff; font-size: 12px; }
+        input[type="range"] { width: 100px; accent-color: var(--accent); cursor: pointer; }
+        select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; padding: 4px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <header id="ui-panel">
+        <div class="control-group">
+            <div class="label-row"><span>Branches (n)</span> <span id="n-val" class="value">6</span></div>
+            <div class="input-row">
+                <input type="range" id="n-input" min="3" max="14" value="6">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="n-anim"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Ratio (p)</span> <span id="p-val" class="value">0.50</span></div>
+            <div class="input-row">
+                <input type="range" id="p-input" min="0.1" max="0.75" step="0.01" value="0.5">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="p-anim"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Depth</span> <span id="depth-val" class="value">6</span></div>
+            <div class="input-row">
+                <input type="range" id="depth-input" min="1" max="10" value="6">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="depth-anim"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Speed</span> <span id="spd-val" class="value">5</span></div>
+            <div class="input-row"><input type="range" id="speed-input" min="1" max="10" value="5"></div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Style</span></div>
+            <select id="style-select">
+                <option value="neon">Neon</option>
+                <option value="sketch">Ink Sketch</option>
+                <option value="rainbow">Psychedelic</option>
+            </select>
+        </div>
+
+        <button id="random-btn" class="btn-rand">🎲 Random</button>
+        <button id="cache-btn" class="btn-cache">⚡ Cache</button>
+        <button id="save-btn" class="btn-util">📸 Save</button>
+        <button id="rec-btn" class="btn-rec">⏺ Record</button>
+        <button id="fs-btn" class="btn-util">⛶ Full</button>
+    </header>
+
+    <main>
+        <div id="canvas-container">
+            <canvas id="mainCanvas" width="850" height="850"></canvas>
+            <div id="pause-overlay">Paused</div>
+            <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
+        </div>
+        <div id="status" style="font-size: 10px; color: #555; margin-top: 5px; font-family: monospace;">LIVE MODE | CLICK CANVAS TO PAUSE</div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        const ui = {
+            n: document.getElementById('n-input'), p: document.getElementById('p-input'), d: document.getElementById('depth-input'),
+            nAnim: document.getElementById('n-anim'), pAnim: document.getElementById('p-anim'), dAnim: document.getElementById('depth-anim'),
+            speed: document.getElementById('speed-input'), 
+            nLabel: document.getElementById('n-val'), pLabel: document.getElementById('p-val'), dLabel: document.getElementById('depth-val'),
+            spdLabel: document.getElementById('spd-val'),
+            style: document.getElementById('style-select'),
+            status: document.getElementById('status'),
+            pauseOverlay: document.getElementById('pause-overlay'),
+            recBtn: document.getElementById('rec-btn'),
+            recInd: document.getElementById('rec-indicator'),
+            recTimer: document.getElementById('rec-timer')
+        };
+
+        let mode = "LIVE", isPaused = false, cachedCanvases = [], cacheIdx = 0;
+        let animationFrameId, userBase = { n: 6, p: 0.5, d: 6 };
+        let virtualTime = 0, lastRealTime = performance.now(), lastDrawTime = 0;
+
+        // Recording Logic
+        let mediaRecorder, recordedChunks = [], recStartTime;
+
+        function recursiveDraw(targetCtx, x, y, length, n, p, d, curD, pathArr, inAng = null) {
+            if (curD > d || length < 0.5) return;
+            const step = (Math.PI * 2) / n;
+            const base = (inAng === null) ? 0 : (inAng + Math.PI);
+            for (let i = 0; i < n; i++) {
+                if (inAng !== null && i === 0) continue;
+                const a = base + (i * step);
+                const nx = x + length * Math.cos(a), ny = y + length * Math.sin(a);
+                pathArr[curD].moveTo(x, y); pathArr[curD].lineTo(nx, ny);
+                recursiveDraw(targetCtx, nx, ny, length * p, n, p, d, curD + 1, pathArr, a);
+            }
+        }
+
+        function performRender(tCtx, n, p, d, t) {
+            const style = ui.style.value;
+            tCtx.fillStyle = style === 'sketch' ? '#fff' : '#000';
+            tCtx.fillRect(0, 0, 850, 850);
+            const paths = Array.from({ length: d + 1 }, () => new Path2D());
+            recursiveDraw(tCtx, 425, 425, 210 * (1 - p * 0.4), n, p, d, 1, paths);
+            for (let i = 1; i <= d; i++) {
+                tCtx.strokeStyle = style === 'sketch' ? `rgba(0,0,0,${1 - (i/d) * 0.8})` : 
+                                   style === 'rainbow' ? `hsla(${(t * 60 + i * 15) % 360}, 80%, 60%, 1)` :
+                                   `hsla(${200 + (i * 15)}, 90%, 60%, ${1 - (i * 0.05)})`;
+                tCtx.lineWidth = Math.max(0.6, 4.5 - i * 0.5); tCtx.stroke(paths[i]);
+            }
+        }
+
+        function liveLoop() {
+            if (mode !== "LIVE") return;
+            const now = performance.now();
+            const delta = (now - lastRealTime) / 1000;
+            lastRealTime = now;
+
+            if (!isPaused) {
+                virtualTime += delta * (parseInt(ui.speed.value) / 5);
+                const cycle = (virtualTime % 4) / 4;
+                const pingPong = 1 - Math.abs(2 * cycle - 1);
+
+                let aN = parseInt(ui.n.value), aP = userBase.p, aD = parseInt(ui.d.value);
+                if (ui.nAnim.checked) aN = Math.round(3 + (14 - 3) * pingPong);
+                if (ui.pAnim.checked) aP = userBase.p + 0.15 * Math.sin(virtualTime * 1.5);
+                if (ui.dAnim.checked) aD = Math.round(1 + (10 - 1) * pingPong);
+
+                ui.nLabel.textContent = aN; ui.pLabel.textContent = aP.toFixed(2); ui.dLabel.textContent = aD;
+                performRender(ctx, aN, aP, aD, virtualTime);
+            }
+            updateRecTimer();
+            animationFrameId = requestAnimationFrame(liveLoop);
+        }
+
+        async function createCache() {
+            mode = "CACHING"; isPaused = false; ui.pauseOverlay.style.display = 'none';
+            cancelAnimationFrame(animationFrameId);
+            cachedCanvases = [];
+            for (let f = 0; f < 160; f++) {
+                const prog = f / 160;
+                const pp = 1 - Math.abs(2 * prog - 1);
+                let cN = parseInt(ui.n.value), cP = userBase.p, cD = parseInt(ui.d.value);
+                if (ui.pAnim.checked) cP = userBase.p + 0.15 * Math.sin(prog * Math.PI * 2);
+                if (ui.nAnim.checked) cN = Math.round(3 + (14 - 3) * pp);
+                if (ui.dAnim.checked) cD = Math.round(1 + (10 - 1) * pp);
+                const c = document.createElement('canvas'); c.width = c.height = 850;
+                performRender(c.getContext('2d'), cN, cP, cD, f/20);
+                cachedCanvases.push(c);
+                ui.status.textContent = `⚡ CACHING: ${Math.round((f/160)*100)}%`;
+                if (f % 20 === 0) await new Promise(r => setTimeout(r, 1));
+            }
+            mode = "PLAYBACK"; cacheIdx = 0; ui.status.textContent = "⚡ CACHE ACTIVE";
+            playCache();
+        }
+
+        function playCache() {
+            if (mode !== "PLAYBACK") return;
+            if (!isPaused) {
+                const now = performance.now();
+                if (now - lastDrawTime > (11 - parseInt(ui.speed.value)) * 8) {
+                    ctx.drawImage(cachedCanvases[cacheIdx], 0, 0);
+                    cacheIdx = (cacheIdx + 1) % cachedCanvases.length;
+                    lastDrawTime = now;
+                }
+            }
+            updateRecTimer();
+            animationFrameId = requestAnimationFrame(playCache);
+        }
+
+        function updateRecTimer() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                const elapsed = Math.floor((performance.now() - recStartTime) / 1000);
+                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const s = (elapsed % 60).toString().padStart(2, '0');
+                ui.recTimer.textContent = `${m}:${s}`;
+            }
+        }
+
+        const saveImg = () => { if(!isPaused) canvas.click(); const a = document.createElement('a'); a.download = 'fractal.png'; a.href = canvas.toDataURL(); a.click(); };
+
+        const toggleRec = () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                ui.recBtn.textContent = "⏺ Record"; ui.recInd.style.display = 'none';
+            } else {
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(canvas.captureStream(60), { mimeType: 'video/webm' });
+                mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const b = new Blob(recordedChunks, { type: 'video/webm' });
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'fractal.webm'; a.click();
+                };
+                recStartTime = performance.now();
+                mediaRecorder.start();
+                ui.recBtn.textContent = "⏹ Stop"; ui.recInd.style.display = 'flex';
+            }
+        };
+
+        canvas.onclick = () => { isPaused = !isPaused; ui.pauseOverlay.style.display = isPaused ? 'block' : 'none'; };
+        document.getElementById('fs-btn').onclick = () => canvas.requestFullscreen();
+        document.getElementById('save-btn').onclick = saveImg;
+        document.getElementById('rec-btn').onclick = toggleRec;
+        document.getElementById('cache-btn').onclick = createCache;
+        document.getElementById('random-btn').onclick = () => {
+            ui.n.value = 3 + Math.floor(Math.random()*8); ui.p.value = 0.4 + Math.random()*0.15;
+            userBase.p = parseFloat(ui.p.value);
+            if (mode !== "LIVE") { mode = "LIVE"; lastRealTime = performance.now(); liveLoop(); }
+        };
+
+        [ui.n, ui.p, ui.d].forEach(el => el.oninput = () => {
+            ui.nLabel.textContent = ui.n.value; userBase.p = parseFloat(ui.p.value);
+            ui.pLabel.textContent = userBase.p.toFixed(2); ui.dLabel.textContent = ui.d.value;
+            isPaused = false; ui.pauseOverlay.style.display = 'none';
+            if(mode !== "LIVE") { mode = "LIVE"; lastRealTime = performance.now(); liveLoop(); }
+        });
+        ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
+
+        liveLoop();
+    </script>
+</body>
+</html>
