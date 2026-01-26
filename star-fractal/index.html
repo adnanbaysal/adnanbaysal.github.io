@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Star Fractal - Created with Gemini</title>
+    <title>Fractal Studio Pro</title>
     <style>
         :root { --accent: #00d4ff; --bg: #050505; --panel: #111; }
         body { 
@@ -52,6 +52,7 @@
             background: rgba(0,0,0,0.7); color: var(--accent); padding: 15px 30px;
             border-radius: 8px; font-weight: bold; pointer-events: none;
             display: none; border: 1px solid var(--accent); text-transform: uppercase;
+            z-index: 5;
         }
 
         #rec-indicator {
@@ -63,20 +64,20 @@
         .dot { width: 10px; height: 10px; background: #eb4d4b; border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* --- Info Modal (Collapsible) --- */
+        /* --- Info Modal (Restored Description) --- */
         #info-modal {
             position: absolute; top: 10px; left: 10px; z-index: 20;
-            background: rgba(17, 17, 17, 0.95); backdrop-filter: blur(10px);
+            background: rgba(17, 17, 17, 0.96); backdrop-filter: blur(12px);
             border: 1px solid #333; border-radius: 8px;
-            width: 300px; max-height: 80vh; overflow-y: auto;
-            display: none; padding: 20px; font-size: 13px; line-height: 1.5;
+            width: 320px; max-height: 85vh; overflow-y: auto;
+            display: none; padding: 20px; font-size: 13px; line-height: 1.6;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
-        #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; }
-        #info-modal h3 { margin: 15px 0 5px 0; color: #fff; font-size: 14px; }
-        #info-modal p { color: #aaa; margin: 0 0 10px 0; }
-        #info-modal code { background: #333; padding: 2px 4px; border-radius: 3px; color: #eee; }
-        .warning { color: #eb4d4b !important; border-left: 3px solid #eb4d4b; padding-left: 10px; }
+        #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; text-transform: uppercase; }
+        #info-modal h3 { margin: 18px 0 6px 0; color: #fff; font-size: 14px; border-bottom: 1px solid #222; padding-bottom: 4px; }
+        #info-modal p { color: #bbb; margin: 0 0 12px 0; }
+        #info-modal code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); }
+        .warning { color: #ff4757 !important; border-left: 3px solid #ff4757; padding-left: 10px; font-weight: 500; }
         .close-info { position: absolute; top: 10px; right: 10px; cursor: pointer; color: #666; font-size: 20px; }
         .close-info:hover { color: #fff; }
 
@@ -93,7 +94,7 @@
         .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
         .btn-info:hover { color: #fff; border-color: #fff; }
 
-        span.value { color: #fff; font-size: 12px; }
+        span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { width: 80px; accent-color: var(--accent); cursor: pointer; }
         select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; padding: 4px; border-radius: 4px; }
     </style>
@@ -101,7 +102,7 @@
 <body>
 
     <header id="ui-panel">
-        <button id="info-btn" class="btn-info" title="How it works">?</button>
+        <button id="info-btn" class="btn-info" title="Information">?</button>
 
         <div class="control-group">
             <div class="label-row"><span>Branches (n)</span> <span id="n-val" class="value">6</span></div>
@@ -153,22 +154,22 @@
         <div id="info-modal">
             <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
             <h2>How it Works</h2>
-            <p>This is a recursive fractal generator running purely on the client side using the HTML5 Canvas API.</p>
+            <p>This generator uses the HTML5 Canvas API to render recursive geometric shapes in real-time.</p>
             
             <h3>The Algorithm</h3>
-            <p>For every line segment, the code draws <code>n</code> new branches at the end point. Each new branch is shorter than the parent by ratio <code>p</code>. This repeats for <code>depth</code> iterations.</p>
+            <p>For every line segment, the code calculates <code>n</code> new branches originating from the end point separated with <code>360/n</code> degrees each. Each new branch is scaled by ratio <code>p</code>. This process repeats until the <code>depth</code> limit is reached or the segment becomes too small to be visible.</p>
             
-            <h3>Controls</h3>
-            <p><strong>ANIM Checkboxes:</strong> Enable "Ping-Pong" automation for that parameter.</p>
-            <p><strong>Cache Loop:</strong> Pre-renders 160 frames into memory for ultra-smooth playback, ignoring CPU limits.</p>
+            <h3>Usage Guide</h3>
+            <p><strong>ANIM:</strong> Enables "Ping-Pong" automation. The value will oscillate between the min and current max for that parameter.</p>
+            <p><strong>⚡ Cache Loop:</strong> Pre-calculates 160 frames and stores them in memory. This allows for silky smooth 60FPS playback even at settings that would normally lag your CPU.</p>
             
-            <h3>⚠️ Performance Warning</h3>
+            <h3>⚠️ Performance & Safety</h3>
             <p class="warning">
                 Calculation complexity grows exponentially ($N^{Depth}$). 
-                Setting N=14 and Depth=10 will attempt to draw billions of lines and may crash your browser tab.
+                At high <code>p</code> ratios, branches don't shrink fast enough to be "pruned," forcing the CPU to process millions of vectors.
             </p>
             <p class="warning">
-                Since this runs on your device, high settings may cause lag or high battery usage.
+                To prevent browser crashes, this UI dynamically lowers the maximum allowed <code>Depth</code> or <code>N</code> when the <code>p</code> ratio is increased.
             </p>
         </div>
 
@@ -184,21 +185,15 @@
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         
-        // --- UI References ---
         const ui = {
             n: document.getElementById('n-input'), p: document.getElementById('p-input'), d: document.getElementById('depth-input'),
             nAnim: document.getElementById('n-anim'), pAnim: document.getElementById('p-anim'), dAnim: document.getElementById('depth-anim'),
-            speed: document.getElementById('speed-input'), 
+            speed: document.getElementById('speed-input'), style: document.getElementById('style-select'),
             nLabel: document.getElementById('n-val'), pLabel: document.getElementById('p-val'), dLabel: document.getElementById('depth-val'),
-            spdLabel: document.getElementById('spd-val'),
-            style: document.getElementById('style-select'),
-            status: document.getElementById('status'),
-            pauseOverlay: document.getElementById('pause-overlay'),
-            recBtn: document.getElementById('rec-btn'),
-            recInd: document.getElementById('rec-indicator'),
-            recTimer: document.getElementById('rec-timer'),
-            infoBtn: document.getElementById('info-btn'),
-            infoModal: document.getElementById('info-modal')
+            spdLabel: document.getElementById('spd-val'), status: document.getElementById('status'),
+            pauseOverlay: document.getElementById('pause-overlay'), recBtn: document.getElementById('rec-btn'),
+            recInd: document.getElementById('rec-indicator'), recTimer: document.getElementById('rec-timer'),
+            infoBtn: document.getElementById('info-btn'), infoModal: document.getElementById('info-modal')
         };
 
         let mode = "LIVE", isPaused = false, cachedCanvases = [], cacheIdx = 0;
@@ -206,7 +201,37 @@
         let virtualTime = 0, lastRealTime = performance.now(), lastDrawTime = 0;
         let mediaRecorder, recordedChunks = [], recStartTime;
 
-        // --- Core Drawing Logic ---
+        // --- Crash Prevention (Includes P-Ratio Awareness) ---
+        function enforceLimits() {
+            const n = parseInt(ui.n.value);
+            const d = parseInt(ui.d.value);
+            const p = parseFloat(ui.p.value);
+            
+            // High P means more lines survive the length-pruning.
+            // We scale the allowed complexity based on P.
+            const pFactor = p > 0.6 ? 1.5 : (p > 0.5 ? 1.2 : 1.0);
+
+            // Dynamic Depth limit
+            if (n >= 12 || (n >= 9 && p > 0.6)) ui.d.max = 7;
+            else if (n >= 7 && p > 0.65) ui.d.max = 8;
+            else if (n >= 9 || (n >= 6 && p > 0.6)) ui.d.max = 8;
+            else ui.d.max = 10;
+
+            // Dynamic N limit
+            if (d >= 9 || (d >= 8 && p > 0.6)) ui.n.max = 7;
+            else if (d >= 8 || (d >= 7 && p > 0.65)) ui.n.max = 10;
+            else ui.n.max = 14;
+
+            // Clamp current values to new dynamic maxes
+            if (parseInt(ui.d.value) > ui.d.max) { 
+                ui.d.value = ui.d.max; userBase.d = ui.d.max; ui.dLabel.textContent = ui.d.max; 
+            }
+            if (parseInt(ui.n.value) > ui.n.max) { 
+                ui.n.value = ui.n.max; userBase.n = ui.n.max; ui.nLabel.textContent = ui.n.max; 
+            }
+        }
+
+        // --- Core Drawing ---
         function recursiveDraw(targetCtx, x, y, length, n, p, d, curD, pathArr, inAng = null) {
             if (curD > d || length < 0.5) return;
             const step = (Math.PI * 2) / n;
@@ -225,7 +250,8 @@
             tCtx.fillStyle = style === 'sketch' ? '#fff' : '#000';
             tCtx.fillRect(0, 0, 850, 850);
             const paths = Array.from({ length: d + 1 }, () => new Path2D());
-            recursiveDraw(tCtx, 425, 425, 210 * (1 - p * 0.4), n, p, d, 1, paths);
+            // Large scale (280) to fill canvas
+            recursiveDraw(tCtx, 425, 425, 280 * (1 - p * 0.4), n, p, d, 1, paths);
             for (let i = 1; i <= d; i++) {
                 tCtx.strokeStyle = style === 'sketch' ? `rgba(0,0,0,${1 - (i/d) * 0.8})` : 
                                    style === 'rainbow' ? `hsla(${(t * 60 + i * 15) % 360}, 80%, 60%, 1)` :
@@ -234,7 +260,6 @@
             }
         }
 
-        // --- Animation Loop ---
         function liveLoop() {
             if (mode !== "LIVE") return;
             const now = performance.now();
@@ -247,9 +272,10 @@
                 const pingPong = 1 - Math.abs(2 * cycle - 1);
 
                 let aN = parseInt(ui.n.value), aP = userBase.p, aD = parseInt(ui.d.value);
-                if (ui.nAnim.checked) aN = Math.round(3 + (14 - 3) * pingPong);
-                if (ui.pAnim.checked) aP = userBase.p + 0.15 * Math.sin(virtualTime * 1.5);
-                if (ui.dAnim.checked) aD = Math.round(1 + (10 - 1) * pingPong);
+                
+                if (ui.nAnim.checked) aN = Math.round(3 + (parseInt(ui.n.max) - 3) * pingPong);
+                if (ui.pAnim.checked) aP = Math.max(0.1, userBase.p + 0.15 * Math.sin(virtualTime * 1.5));
+                if (ui.dAnim.checked) aD = Math.round(1 + (parseInt(ui.d.max) - 1) * pingPong);
 
                 ui.nLabel.textContent = aN; ui.pLabel.textContent = aP.toFixed(2); ui.dLabel.textContent = aD;
                 performRender(ctx, aN, aP, aD, virtualTime);
@@ -258,7 +284,6 @@
             animationFrameId = requestAnimationFrame(liveLoop);
         }
 
-        // --- Caching Logic ---
         async function createCache() {
             mode = "CACHING"; isPaused = false; ui.pauseOverlay.style.display = 'none';
             cancelAnimationFrame(animationFrameId);
@@ -268,14 +293,14 @@
                 const prog = f / total;
                 const pp = 1 - Math.abs(2 * prog - 1);
                 let cN = parseInt(ui.n.value), cP = userBase.p, cD = parseInt(ui.d.value);
-                if (ui.pAnim.checked) cP = userBase.p + 0.15 * Math.sin(prog * Math.PI * 2);
-                if (ui.nAnim.checked) cN = Math.round(3 + (14 - 3) * pp);
-                if (ui.dAnim.checked) cD = Math.round(1 + (10 - 1) * pp);
+                
+                if (ui.pAnim.checked) cP = Math.max(0.1, userBase.p + 0.15 * Math.sin(prog * Math.PI * 2));
+                if (ui.nAnim.checked) cN = Math.round(3 + (parseInt(ui.n.max) - 3) * pp);
+                if (ui.dAnim.checked) cD = Math.round(1 + (parseInt(ui.d.max) - 1) * pp);
                 
                 const c = document.createElement('canvas'); c.width = c.height = 850;
                 performRender(c.getContext('2d', {alpha:false}), cN, cP, cD, f/20);
                 cachedCanvases.push(c);
-                
                 ui.status.textContent = `⚡ CACHING: ${Math.round((f/total)*100)}%`;
                 if (f % 20 === 0) await new Promise(r => setTimeout(r, 1));
             }
@@ -297,14 +322,13 @@
             animationFrameId = requestAnimationFrame(playCache);
         }
 
-        // --- Utilities ---
         function updateRecTimer() {
             if (mediaRecorder && mediaRecorder.state === "recording") {
                 const elapsed = Math.floor((performance.now() - recStartTime) / 1000);
                 ui.recTimer.textContent = `${Math.floor(elapsed/60).toString().padStart(2,'0')}:${(elapsed%60).toString().padStart(2,'0')}`;
             }
         }
-
+        
         const toggleRec = () => {
             if (mediaRecorder && mediaRecorder.state === "recording") {
                 mediaRecorder.stop();
@@ -323,18 +347,89 @@
             }
         };
 
-        // --- Event Listeners ---
-        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
-        canvas.onclick = () => { isPaused = !isPaused; ui.pauseOverlay.style.display = isPaused ? 'block' : 'none'; };
-        document.getElementById('fs-btn').onclick = () => canvas.requestFullscreen();
-        document.getElementById('save-btn').onclick = () => { if(!isPaused) canvas.click(); const a = document.createElement('a'); a.download = 'fractal.png'; a.href = canvas.toDataURL(); a.click(); };
-        document.getElementById('rec-btn').onclick = toggleRec;
-        document.getElementById('cache-btn').onclick = createCache;
-        document.getElementById('random-btn').onclick = () => {
-            ui.n.value = 3 + Math.floor(Math.random()*8); ui.p.value = 0.4 + Math.random()*0.15; userBase.p = parseFloat(ui.p.value);
+        const saveImage = async () => {
+            const wasPlaying = !isPaused;
+            if (wasPlaying) {
+                isPaused = true; 
+                ui.pauseOverlay.style.display = 'block'; 
+                ui.pauseOverlay.textContent = "SAVING...";
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            }
+
+            const resume = () => {
+                if (wasPlaying) {
+                    isPaused = false;
+                    ui.pauseOverlay.style.display = 'none';
+                    ui.pauseOverlay.textContent = "PAUSED"; 
+                    lastRealTime = performance.now(); 
+                    liveLoop();
+                }
+            };
+
+            try {
+                if (window.showSaveFilePicker) {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: `fractal-${Date.now()}.png`,
+                        types: [{ description: 'PNG Image', accept: { 'image/png': ['.png'] } }]
+                    });
+                    const writable = await handle.createWritable();
+                    const blob = await new Promise(r => canvas.toBlob(r));
+                    await writable.write(blob);
+                    await writable.close();
+                } else {
+                    const link = document.createElement('a');
+                    link.download = `fractal-${Date.now()}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+                    await new Promise(r => setTimeout(r, 1000)); 
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') console.error(err);
+            } finally {
+                resume();
+            }
+        };
+
+        const generateRandom = () => {
+            let n, d, p;
+            do {
+                n = 3 + Math.floor(Math.random() * 9);
+                d = 2 + Math.floor(Math.random() * 8);
+                p = 0.35 + Math.random() * 0.35;
+                // Heuristic complexity check for random generation
+                var complexity = Math.pow(n, d) * (p > 0.6 ? 2 : 1);
+            } while (complexity > 100000000); 
+
+            ui.n.value = userBase.n = n;
+            ui.d.value = userBase.d = d;
+            ui.p.value = userBase.p = p; 
+
+            [ui.nAnim, ui.pAnim, ui.dAnim].forEach(cb => cb.checked = false);
+            const anims = [ui.nAnim, ui.pAnim, ui.dAnim];
+            anims[Math.floor(Math.random() * 3)].checked = true;
+
+            const styles = ['neon', 'sketch', 'rainbow'];
+            ui.style.value = styles[Math.floor(Math.random() * 3)];
+
+            enforceLimits();
             if (mode !== "LIVE") { mode = "LIVE"; lastRealTime = performance.now(); liveLoop(); }
         };
+
+        // --- Event Listeners ---
+        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
+        canvas.onclick = () => { 
+            isPaused = !isPaused; 
+            ui.pauseOverlay.textContent = "PAUSED"; 
+            ui.pauseOverlay.style.display = isPaused ? 'block' : 'none'; 
+        };
+        document.getElementById('fs-btn').onclick = () => canvas.requestFullscreen();
+        document.getElementById('save-btn').onclick = saveImage;
+        document.getElementById('rec-btn').onclick = toggleRec;
+        document.getElementById('cache-btn').onclick = createCache;
+        document.getElementById('random-btn').onclick = generateRandom;
+
         [ui.n, ui.p, ui.d].forEach(el => el.oninput = () => {
+            enforceLimits();
             ui.nLabel.textContent = ui.n.value; userBase.p = parseFloat(ui.p.value);
             ui.pLabel.textContent = userBase.p.toFixed(2); ui.dLabel.textContent = ui.d.value;
             isPaused = false; ui.pauseOverlay.style.display = 'none';
@@ -342,6 +437,7 @@
         });
         ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
 
+        enforceLimits(); 
         liveLoop();
     </script>
 </body>
