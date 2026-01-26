@@ -1,7 +1,14 @@
 [
     {
+        "id": "fractal-studio",
         "title": "Star Fractal",
-        "path": "star-fractal/",
+        "description": "A recursive tree like fractal generator with animation.",
+        "url": "star-fractal/index.html",
+        "tags": [
+            "Canvas API",
+            "Recursion",
+            "Fractal"
+        ],
         "date": "2026-01-25"
     }
 ]
