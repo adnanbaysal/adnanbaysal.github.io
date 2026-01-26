@@ -13,10 +13,20 @@
         }
 
         header {
-            padding: 40px 20px; text-align: center; border-bottom: 1px solid #222;
+            padding: 40px 20px 20px 20px; text-align: center; border-bottom: 1px solid #222;
         }
         h1 { margin: 0; font-weight: 300; letter-spacing: 2px; }
         p.subtitle { color: #888; font-size: 0.9rem; margin-top: 10px; }
+
+        nav { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
+        nav a { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        nav a:hover { text-decoration: underline; }
+
+        /* Added container for the intro text */
+        .intro-text {
+            max-width: 800px; margin: 30px auto 0; padding: 0 20px;
+            color: #aaa; line-height: 1.6; text-align: center; font-size: 1rem;
+        }
 
         main {
             max-width: 1000px; margin: 40px auto; width: 100%; padding: 0 20px;
@@ -30,15 +40,11 @@
             text-decoration: none; color: inherit; display: flex; flex-direction: column;
         }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); }
-        
         .card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--accent); }
         .card p { font-size: 0.9rem; color: #aaa; line-height: 1.5; flex-grow: 1; }
         
         .tags { margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
-        .tag { 
-            font-size: 0.75rem; background: #222; padding: 4px 8px; 
-            border-radius: 4px; color: #888; 
-        }
+        .tag { font-size: 0.75rem; background: #222; padding: 4px 8px; border-radius: 4px; color: #888; }
 
         footer { 
             margin-top: auto; padding: 20px; text-align: center; 
@@ -53,7 +59,17 @@
     <header>
         <h1>MY PORTFOLIO</h1>
         <p class="subtitle">Experiments in Math, Code & Art</p>
+        <nav>
+            <a href="index.html">Portfolio</a>
+            <a href="about-me.html">About Me</a>
+        </nav>
     </header>
+
+    <div class="intro-text">
+        This web page contains "things" I want to share, mostly related to math and programming. 
+        With the help of LLM tools like Gemini, ChatGPT, and Deepseek, bringing these long-held ideas to the public has finally become possible.
+        For most of these ideas, I'm not the first person to find them, but for most of them, at least I found them independently.  
+    </div>
 
     <main id="project-grid">
         <div id="loading">Loading Projects...</div>
@@ -70,28 +86,19 @@
                 const response = await fetch('manifest.json');
                 if (!response.ok) throw new Error("Manifest not found");
                 const projects = await response.json();
-                
-                grid.innerHTML = ''; // Clear loading message
-
+                grid.innerHTML = '';
                 projects.forEach(proj => {
                     const card = document.createElement('a');
                     card.className = 'card';
                     card.href = proj.url;
-                    
                     let tagsHtml = proj.tags.map(t => `<span class="tag">${t}</span>`).join('');
-
-                    card.innerHTML = `
-                        <h2>${proj.title}</h2>
-                        <p>${proj.description}</p>
-                        <div class="tags">${tagsHtml}</div>
-                    `;
+                    card.innerHTML = `<h2>${proj.title}</h2><p>${proj.description}</p><div class="tags">${tagsHtml}</div>`;
                     grid.appendChild(card);
                 });
             } catch (e) {
                 grid.innerHTML = `<div style="color:red">Error loading portfolio: ${e.message}</div>`;
             }
         }
-        
         loadProjects();
     </script>
 </body>
