@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optics Lab - Precision Capture</title>
+    <title>Closed mirror reflections</title>
     <style>
         :root { --accent: #00d2ff; --bg: #050505; --panel: #111; }
         body { 
@@ -49,7 +49,6 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
         #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; text-transform: uppercase; }
-        #info-modal h3 { margin: 18px 0 6px 0; color: #fff; font-size: 14px; border-bottom: 1px solid #222; padding-bottom: 4px; }
         .close-info { position: absolute; top: 10px; right: 10px; cursor: pointer; color: #666; font-size: 20px; }
 
         #rec-indicator {
@@ -69,6 +68,7 @@
         .btn-fire { background: #005f73; color: #fff; }
         .btn-rec { background: #eb4d4b; color: #fff; }
         .btn-util { background: #444; color: #fff; }
+        .btn-rand { background: #6c5ce7; color: #fff; }
         .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
 
         span.value { color: var(--accent); font-size: 11px; font-family: monospace; }
@@ -112,6 +112,7 @@
 
         <div class="stats-badge">REFL/S<br><span id="disp-cps">0</span></div>
 
+        <button id="rand-btn" class="btn-rand">🎲 Random</button>
         <button id="heatmap-btn" class="btn-util">Heatmap: ON</button>
         <button id="pause-btn" class="btn-util">Pause</button>
         <button id="fire-btn" class="btn-fire">Reset</button>
@@ -123,18 +124,10 @@
     <main>
         <div id="info-modal">
             <span class="close-info" id="close-info">&times;</span>
-            <h2>Optics Lab v2.5</h2>
-            <p>A precision simulator for billiard dynamics and reflective geometry.</p>
-            
-            <h3>Core Physics</h3>
-            <p>Particles follow vector reflection laws. In the <strong>Ellipse</strong>, rays emitted from one focal point ($c = \sqrt{a^2 - b^2}$) will perfectly converge at the other. Use the <strong>Precision</strong> slider at high speeds to ensure particles don't tunnel through boundaries.</p>
-            
-            <h3>Interaction</h3>
-            <p><strong>Movement:</strong> Click anywhere on the canvas to move the light source. The cursor will automatically <strong>snap</strong> to the center, principal axes, and elliptical focal points for exact alignment.</p>
-            
-            <h3>Tools & Export</h3>
-            <p><strong>📸 Save:</strong> Captures a clean PNG. The sim auto-pauses during capture to prevent motion blur.</p>
-            <p><strong>⏺ Record:</strong> Records a WebM video with a real-time timestamped filename for easy sorting.</p>
+            <h2>Optics Laboratory</h2>
+            <p><strong>Billiard Dynamics:</strong> Observe how ray paths evolve within closed geometries.</p>
+            <p><strong>Speed & Precision:</strong> At high speeds ($2^{14}$), increase precision to ensure particles don't "tunnel" through boundaries.</p>
+            <p><strong>Tools:</strong> Use the 📸 Save button for high-res screenshots and ⏺ Record to capture video with automatic timestamps.</p>
         </div>
 
         <div id="canvas-container">
@@ -312,8 +305,81 @@
 
     const getTimestamp = () => new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16);
 
+    function randomize() {
+        // 1. Randomize Shape
+        currentShape = Math.random() > 0.5 ? 'ellipse' : 'rectangle';
+        ui.shape.value = currentShape;
+
+        // 2. Param Randomization (Speed <= 2^5, Part/Prec top 50%)
+        const randLogSpeed = Math.floor(Math.random() * 6); 
+        const randParticles = 5250 + Math.floor(Math.random() * 4751); 
+        const randPrecision = 51 + Math.floor(Math.random() * 50); 
+        const randA = 0.5 + Math.random() * 2.0;
+
+        ui.spd.value = randLogSpeed;
+        ui.part.value = randParticles;
+        ui.prec.value = randPrecision;
+        ui.a.value = randA;
+
+        speed = Math.pow(2, randLogSpeed); ui.spdVal.textContent = speed;
+        numParticles = randParticles; ui.partVal.textContent = numParticles;
+        precision = randPrecision; ui.precVal.textContent = precision;
+        paramA = randA; ui.aVal.textContent = paramA.toFixed(2);
+        
+        resize();
+
+        // 3. Position Randomization (Biased Regions)
+        const region = Math.floor(Math.random() * 6);
+        let rx = 0, ry = 0;
+
+        switch(region) {
+            case 0: // Focal Point (or focal-analogue for Rect)
+                if (currentShape === 'ellipse' && paramA > 1) {
+                    const c = Math.sqrt(paramA*paramA - 1);
+                    rx = Math.random() > 0.5 ? c : -c; ry = 0;
+                } else { rx = (Math.random() > 0.5 ? 0.4 : -0.4) * paramA; ry = 0; }
+                break;
+            case 1: // Center
+                rx = 0; ry = 0;
+                break;
+            case 2: // On one of the axes
+                if (Math.random() > 0.5) { rx = (Math.random()*2-1)*paramA; ry = 0; }
+                else { rx = 0; ry = Math.random()*2-1; }
+                break;
+            case 3: // Edge where axes meet (Vertices)
+                const coin = Math.random();
+                if (coin < 0.25) { rx = paramA; ry = 0; }
+                else if (coin < 0.5) { rx = -paramA; ry = 0; }
+                else if (coin < 0.75) { rx = 0; ry = 1; }
+                else { rx = 0; ry = -1; }
+                break;
+            case 4: // Any point on the edge
+                const angle = Math.random() * Math.PI * 2;
+                if (currentShape === 'ellipse') { rx = paramA * Math.cos(angle); ry = Math.sin(angle); }
+                else {
+                    const side = Math.floor(Math.random() * 4);
+                    const t = Math.random() * 2 - 1;
+                    if (side === 0) { rx = paramA; ry = t; }
+                    else if (side === 1) { rx = -paramA; ry = t; }
+                    else if (side === 2) { rx = t * paramA; ry = 1; }
+                    else { rx = t * paramA; ry = -1; }
+                }
+                break;
+            case 5: // Any internal point
+                do {
+                    rx = (Math.random() * 2 - 1) * paramA;
+                    ry = Math.random() * 2 - 1;
+                } while (!checkBounds(rx, ry));
+                break;
+        }
+
+        source.x = rx; source.y = ry;
+        firePulse();
+    }
+
     ui.infoBtn.onclick = () => { ui.info.style.display = (ui.info.style.display === 'block') ? 'none' : 'block'; };
     document.getElementById('close-info').onclick = () => ui.info.style.display = 'none';
+    document.getElementById('rand-btn').onclick = randomize;
     
     document.getElementById('save-btn').onclick = () => {
         const preSavePaused = isPaused;
