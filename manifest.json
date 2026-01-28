@@ -13,8 +13,8 @@
     },
     {
         "id": "mirror-sim",
-        "title": "Reflections inside a closed mirror shape",
-        "description": "A reflection simulation inside an closed shaped mirror. AVOID IF YOU HAVE EPILEPSI!",
+        "title": "Reflections inside a closed shaped mirror",
+        "description": "A reflection simulation inside an closed shaped mirror. AVOID IF YOU HAVE EPILEPSY OR SIMILAR DISEASE!",
         "url": "./mirror-sim.html",
         "tags": [
             "Canvas API",
