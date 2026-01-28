@@ -10,5 +10,17 @@
             "Fractal"
         ],
         "date": "2026-01-25"
+    },
+    {
+        "id": "elliptical-mirror",
+        "title": "Light waves in elliptical mirror",
+        "description": "A reflection simulation inside an elliptical mirror.",
+        "url": "./mirror-sim.html",
+        "tags": [
+            "Canvas API",
+            "Phsical Simulation",
+            "Mirror"
+        ],
+        "date": "2026-01-28"
     }
 ]
