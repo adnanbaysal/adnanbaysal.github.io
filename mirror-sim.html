@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elliptical Mirror - Geometric Snap</title>
+    <title>Elliptical Mirror - Visual Snap Guides</title>
     <style>
         :root {
             --bg-color: #050505;
@@ -30,13 +30,13 @@
             z-index: 10; gap: 15px;
         }
 
-        .control-group { display: flex; flex-direction: column; gap: 4px; min-width: 90px; }
+        .control-group { display: flex; flex-direction: column; gap: 4px; min-width: 85px; }
         label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
         input[type="range"] { accent-color: var(--accent-color); cursor: pointer; }
         .value-display { font-family: monospace; color: var(--accent-color); font-size: 0.8rem; }
 
         .stats-badge {
-            background: #222; padding: 6px 12px; border-radius: 4px; border: 1px solid #333; min-width: 110px;
+            background: #222; padding: 6px 12px; border-radius: 4px; border: 1px solid #333; min-width: 100px;
         }
         .stats-label { font-size: 0.55rem; color: #666; display: block; }
         .stats-value { font-family: monospace; color: #00ffaa; font-weight: bold; font-size: 0.85rem; }
@@ -47,14 +47,29 @@
             font-size: 0.8rem; transition: all 0.2s; white-space: nowrap;
         }
         button:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        button.round-btn { border-radius: 50%; width: 30px; height: 30px; padding: 0; font-weight: bold; }
+        button.active { background-color: var(--accent-color); color: #000; }
 
         #canvas-container { flex-grow: 1; position: relative; background: #000; }
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+        #info-overlay {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(20, 20, 20, 0.95); padding: 20px;
+            border-radius: 8px; border-left: 4px solid var(--accent-color);
+            max-width: 320px; font-size: 0.85rem; line-height: 1.6;
+            z-index: 20; display: none; backdrop-filter: blur(8px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+        }
+        #info-overlay.visible { display: block; }
+        #info-overlay h3 { margin-top: 0; color: var(--accent-color); font-size: 1rem; }
     </style>
 </head>
 <body>
 
     <header>
+        <button id="btn-info" class="round-btn">?</button>
+
         <div class="control-group">
             <label>Width (a) <span class="value-display" id="disp-a">1.50</span></label>
             <input type="range" id="param-a" min="0.5" max="2.5" step="0.01" value="1.5">
@@ -80,6 +95,8 @@
             <span class="stats-value" id="disp-cps">0</span>
         </div>
 
+        <div style="flex-grow: 1;"></div>
+
         <button id="btn-heatmap">Heatmap: ON</button>
         <button id="btn-pause">Pause</button>
         <button id="btn-fire" style="background:#005f73">Reset Pulse</button>
@@ -87,6 +104,12 @@
 
     <div id="canvas-container">
         <canvas id="canvas"></canvas>
+        <div id="info-overlay">
+            <h3>Visual Snap Guides</h3>
+            <p><strong>Snap Proximity:</strong> Hover near the center or focal points. A target ring will appear when you are within snapping range.</p>
+            <p><strong>Axis Alignment:</strong> Hover near the midline to see a preview dot on the axis. Clicking will lock the light source exactly to that line.</p>
+            <p><strong>Focal Properties:</strong> Try placing the source exactly on a focal point. You'll see the light converge perfectly at the other focus!</p>
+        </div>
     </div>
 
 <script>
@@ -98,6 +121,7 @@
     let numParticles = 3000;
     
     let source = { x: -1.0, y: 0 };
+    let mouse = { x: 0, y: 0, rawX: 0, rawY: 0 };
     let particles = [];
     let collisionCount = 0, lastMetricTime = performance.now();
     const heatmapBins = new Float32Array(360);
@@ -107,6 +131,11 @@
     const uiPrec = document.getElementById('param-precision'), dispPrec = document.getElementById('disp-precision');
     const uiSpeed = document.getElementById('param-speed'), dispSpeed = document.getElementById('disp-speed');
     const dispCPS = document.getElementById('disp-cps');
+    const infoBtn = document.getElementById('btn-info');
+    const infoOverlay = document.getElementById('info-overlay');
+
+    const SNAP_DIST = 0.12; 
+    const AXIS_SNAP = 0.06;
 
     function toScreen(x, y) { return { x: centerX + x * scale, y: centerY - y * scale }; }
     function fromScreen(sx, sy) { return { x: (sx - centerX) / scale, y: -(sy - centerY) / scale }; }
@@ -124,6 +153,27 @@
             const angle = (Math.PI * 2 * i) / numParticles;
             particles.push({ x: source.x, y: source.y, vx: Math.cos(angle), vy: Math.sin(angle) });
         }
+    }
+
+    function getSnap(px, py) {
+        let fx = px, fy = py;
+        let type = 'none';
+
+        // Center
+        if (Math.hypot(px, py) < SNAP_DIST) {
+            fx = 0; fy = 0; type = 'point';
+        } else if (paramA > 1) {
+            const c = Math.sqrt(paramA*paramA - 1);
+            if (Math.hypot(px - c, py) < SNAP_DIST) { fx = c; fy = 0; type = 'point'; }
+            else if (Math.hypot(px + c, py) < SNAP_DIST) { fx = -c; fy = 0; type = 'point'; }
+        }
+
+        if (type === 'none') {
+            if (Math.abs(py) < AXIS_SNAP) { fy = 0; type = 'axis'; }
+            if (Math.abs(px) < AXIS_SNAP) { fx = 0; type = 'axis'; }
+        }
+
+        return { x: fx, y: fy, type: type };
     }
 
     function updatePhysics() {
@@ -180,6 +230,21 @@
             }
         }
 
+        // Snap Guides (Hover state)
+        const snapped = getSnap(mouse.x, mouse.y);
+        if (snapped.type !== 'none' && (snapped.x / paramA)**2 + snapped.y**2 <= 1) {
+            const gui = toScreen(snapped.x, snapped.y);
+            ctx.strokeStyle = 'rgba(0, 210, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(gui.x, gui.y, (snapped.type === 'point' ? 12 : 6), 0, Math.PI * 2);
+            ctx.stroke();
+            if(snapped.type === 'point') {
+                ctx.fillStyle = 'rgba(0, 210, 255, 0.1)';
+                ctx.fill();
+            }
+        }
+
         ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
         ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(width, centerY); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, height); ctx.stroke();
@@ -199,7 +264,8 @@
             const c = Math.sqrt(paramA*paramA - 1);
             [-c, c].forEach(fx => {
                 const f = toScreen(fx, 0);
-                ctx.fillStyle = (Math.hypot(source.x - fx, source.y) < 0.01) ? '#00d2ff' : '#444';
+                const active = Math.hypot(source.x - fx, source.y) < 0.01;
+                ctx.fillStyle = active ? '#00d2ff' : '#444';
                 ctx.beginPath(); ctx.arc(f.x, f.y, 4, 0, Math.PI*2); ctx.fill();
             });
         }
@@ -221,35 +287,28 @@
     uiParticles.addEventListener('input', (e) => { numParticles = parseInt(e.target.value); dispParticles.textContent = numParticles; firePulse(); });
     uiPrec.addEventListener('input', (e) => { precision = parseInt(e.target.value); dispPrec.textContent = precision; });
     uiSpeed.addEventListener('input', (e) => { speed = parseInt(e.target.value); dispSpeed.textContent = speed; });
-    document.getElementById('btn-heatmap').addEventListener('click', (e) => { showHeatmap = !showHeatmap; e.target.textContent = `Heatmap: ${showHeatmap ? 'ON' : 'OFF'}`; });
-    document.getElementById('btn-pause').addEventListener('click', (e) => { isPaused = !isPaused; e.target.textContent = isPaused ? "Resume" : "Pause"; });
+    
+    document.getElementById('btn-heatmap').addEventListener('click', (e) => { 
+        showHeatmap = !showHeatmap; e.target.textContent = `Heatmap: ${showHeatmap ? 'ON' : 'OFF'}`; 
+    });
+    document.getElementById('btn-pause').addEventListener('click', (e) => { 
+        isPaused = !isPaused; e.target.textContent = isPaused ? "Resume" : "Pause"; 
+    });
+    infoBtn.addEventListener('click', () => infoOverlay.classList.toggle('visible'));
     document.getElementById('btn-fire').addEventListener('click', firePulse);
 
-    canvas.addEventListener('mousedown', (e) => {
+    canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
-        const pos = fromScreen(e.clientX - rect.left, e.clientY - rect.top);
-        
-        const SNAP_DIST = 0.12; 
-        const AXIS_SNAP = 0.06; 
-        let finalX = pos.x, finalY = pos.y;
+        mouse.rawX = e.clientX - rect.left;
+        mouse.rawY = e.clientY - rect.top;
+        const sim = fromScreen(mouse.rawX, mouse.rawY);
+        mouse.x = sim.x; mouse.y = sim.y;
+    });
 
-        // Point Snaps
-        if (Math.hypot(pos.x, pos.y) < SNAP_DIST) {
-            finalX = 0; finalY = 0;
-        } else if (paramA > 1) {
-            const c = Math.sqrt(paramA*paramA - 1);
-            if (Math.hypot(pos.x - c, pos.y) < SNAP_DIST) { finalX = c; finalY = 0; }
-            else if (Math.hypot(pos.x + c, pos.y) < SNAP_DIST) { finalX = -c; finalY = 0; }
-        }
-
-        // Axis Snaps
-        if (finalX === pos.x && finalY === pos.y) {
-            if (Math.abs(pos.y) < AXIS_SNAP) finalY = 0;
-            if (Math.abs(pos.x) < AXIS_SNAP) finalX = 0;
-        }
-
-        if ((finalX / paramA) ** 2 + finalY ** 2 <= 1) {
-            source.x = finalX; source.y = finalY; firePulse();
+    canvas.addEventListener('mousedown', (e) => {
+        const snapped = getSnap(mouse.x, mouse.y);
+        if ((snapped.x / paramA) ** 2 + snapped.y ** 2 <= 1) {
+            source.x = snapped.x; source.y = snapped.y; firePulse();
         }
     });
 
