@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elliptical Mirror Simulation</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-color: #1a1a1a;
+            --accent-color: #00d2ff;
+            --text-color: #e0e0e0;
+            --header-height: 60px;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex; flex-direction: column; height: 100vh;
+        }
+
+        header {
+            height: var(--header-height);
+            background-color: var(--panel-color);
+            display: flex; align-items: center;
+            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10; gap: 15px;
+        }
+
+        h1 { font-size: 1.1rem; margin: 0; color: var(--accent-color); white-space: nowrap; }
+
+        .control-group { display: flex; align-items: center; gap: 10px; }
+        label { font-size: 0.8rem; color: #aaa; white-space: nowrap; }
+        input[type="range"] { width: 100px; accent-color: var(--accent-color); cursor: pointer; }
+        .value-display { font-family: monospace; color: var(--accent-color); width: 35px; font-size: 0.9rem; }
+
+        button {
+            background-color: #333; color: white; border: 1px solid #555;
+            padding: 6px 14px; border-radius: 4px; cursor: pointer;
+            font-size: 0.85rem; transition: all 0.2s; white-space: nowrap;
+        }
+        button:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        button.round-btn { border-radius: 50%; width: 32px; height: 32px; padding: 0; font-weight: bold; font-size: 1.1rem; }
+        button.primary { background-color: #005f73; border-color: var(--accent-color); }
+        button.active { background-color: var(--accent-color); color: #000; }
+
+        #canvas-container { flex-grow: 1; position: relative; background: #000; }
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+        #info-overlay {
+            position: absolute; top: 10px; left: 20px;
+            background: rgba(20, 20, 20, 0.9); padding: 15px;
+            border-radius: 6px; border-left: 3px solid var(--accent-color);
+            max-width: 300px; font-size: 0.85rem; line-height: 1.5;
+            z-index: 20; display: none; backdrop-filter: blur(4px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #info-overlay.visible { display: block; }
+        .legend { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .dot-source { background: #ffaa00; border: 1px solid white; }
+        .dot-focus { background: #666; border: 1px solid #999; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <button id="btn-info-toggle" class="round-btn">?</button>
+        <h1>Elliptical Mirror</h1>
+        
+        <div class="control-group">
+            <label>a:</label>
+            <input type="range" id="param-a" min="0.5" max="2.5" step="0.01" value="1.5">
+            <span class="value-display" id="disp-a">1.50</span>
+        </div>
+
+        <div class="control-group">
+            <label>Speed:</label>
+            <input type="range" id="param-speed" min="1" max="10" step="1" value="5">
+        </div>
+
+        <div style="flex-grow: 1;"></div> 
+        
+        <button id="btn-pause">Pause</button>
+        <button id="btn-fire" class="primary">Reset & Fire</button>
+        <button id="btn-clear">Clear Trails</button>
+    </header>
+
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+        <div id="info-overlay">
+            <h3>Simulation Info</h3>
+            <p><strong>Hotspots:</strong> Click near a focal point to snap the light source exactly to it.</p>
+            <p>Observe how light from one focus reflects perfectly to the other!</p>
+            <div class="legend">
+                <span class="dot dot-source"></span> Light Source
+                <span class="dot dot-focus"></span> Focal Points
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
+
+    let width, height, centerX, centerY, scale = 100;
+    let paramA = 1.5, speed = 5, isPaused = false;
+    let source = { x: -1.0, y: 0 };
+    const NUM_PARTICLES = 2500;
+    let particles = [];
+
+    const uiA = document.getElementById('param-a');
+    const dispA = document.getElementById('disp-a');
+    const uiSpeed = document.getElementById('param-speed');
+    const btnFire = document.getElementById('btn-fire');
+    const btnClear = document.getElementById('btn-clear');
+    const btnPause = document.getElementById('btn-pause');
+    const btnInfo = document.getElementById('btn-info-toggle');
+    const infoOverlay = document.getElementById('info-overlay');
+
+    function toScreen(x, y) { return { x: centerX + x * scale, y: centerY - y * scale }; }
+    function fromScreen(sx, sy) { return { x: (sx - centerX) / scale, y: -(sy - centerY) / scale }; }
+
+    function updateScale() {
+        const padding = 0.85;
+        const simW = paramA * 2;
+        const simH = 2;
+        scale = Math.min((width * padding) / simW, (height * padding) / simH);
+    }
+
+    function clampSource() {
+        const val = (source.x / paramA) ** 2 + source.y ** 2;
+        if (val > 1) {
+            const angle = Math.atan2(source.y, source.x / paramA);
+            source.x = paramA * Math.cos(angle) * 0.98;
+            source.y = Math.sin(angle) * 0.98;
+        }
+    }
+
+    function firePulse() {
+        particles = [];
+        for (let i = 0; i < NUM_PARTICLES; i++) {
+            const angle = (Math.PI * 2 * i) / NUM_PARTICLES;
+            particles.push({
+                x: source.x, y: source.y,
+                vx: Math.cos(angle), vy: Math.sin(angle),
+                active: true, bounces: 0
+            });
+        }
+    }
+
+    function updatePhysics() {
+        if (isPaused) return;
+        const dt = speed * 0.005; 
+        for (let p of particles) {
+            if (!p.active) continue;
+            let nextX = p.x + p.vx * dt;
+            let nextY = p.y + p.vy * dt;
+            const val = (nextX / paramA) ** 2 + nextY ** 2;
+            if (val >= 1) {
+                let nx = (2 * p.x) / (paramA * paramA);
+                let ny = 2 * p.y;
+                const len = Math.sqrt(nx*nx + ny*ny);
+                if (len !== 0) {
+                    nx /= len; ny /= len;
+                    const dot = p.vx * nx + p.vy * ny;
+                    p.vx = p.vx - 2 * dot * nx;
+                    p.vy = p.vy - 2 * dot * ny;
+                    nextX = p.x + p.vx * dt;
+                    nextY = p.y + p.vy * dt;
+                }
+                if ((nextX / paramA) ** 2 + nextY ** 2 >= 1) { nextX = p.x; nextY = p.y; }
+                p.bounces++;
+            }
+            p.x = nextX; p.y = nextY;
+        }
+    }
+
+    function draw() {
+        ctx.fillStyle = 'rgba(5, 5, 5, 0.15)'; 
+        ctx.fillRect(0, 0, width, height);
+
+        // Axis
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(width, centerY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, height); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#333';
+        ctx.beginPath(); ctx.arc(centerX, centerY, 3, 0, Math.PI * 2); ctx.fill();
+
+        // Ellipse
+        ctx.strokeStyle = '#444'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(centerX, centerY, paramA * scale, 1 * scale, 0, 0, Math.PI * 2); ctx.stroke();
+
+        // Focal Points
+        let c = 0;
+        if (paramA > 1) {
+            c = Math.sqrt(paramA*paramA - 1);
+            [-c, c].forEach(fx => {
+                const f = toScreen(fx, 0);
+                const isNearSource = Math.hypot(source.x - fx, source.y - 0) < 0.05;
+                ctx.fillStyle = isNearSource ? varColor('--accent-color') : '#666';
+                ctx.beginPath(); ctx.arc(f.x, f.y, 5, 0, Math.PI*2); ctx.fill();
+            });
+        }
+
+        // Particles
+        ctx.fillStyle = '#00d2ff'; ctx.globalCompositeOperation = 'lighter'; 
+        for (let p of particles) {
+            if (!p.active) continue;
+            const screen = toScreen(p.x, p.y);
+            ctx.fillRect(screen.x, screen.y, 1.5, 1.5);
+        }
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Light Source
+        const s = toScreen(source.x, source.y);
+        ctx.beginPath(); ctx.arc(s.x, s.y, 6, 0, Math.PI*2); ctx.fillStyle = '#ffaa00'; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+
+    function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
+    function loop() { updatePhysics(); draw(); requestAnimationFrame(loop); }
+
+    function resize() {
+        const container = document.getElementById('canvas-container');
+        width = canvas.width = container.clientWidth;
+        height = canvas.height = container.clientHeight;
+        centerX = width / 2; centerY = height / 2;
+        updateScale();
+        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, width, height);
+    }
+
+    uiA.addEventListener('input', (e) => {
+        paramA = parseFloat(e.target.value);
+        dispA.textContent = paramA.toFixed(2);
+        updateScale();
+        clampSource();
+        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, width, height);
+        firePulse(); 
+    });
+
+    uiSpeed.addEventListener('input', (e) => { speed = parseInt(e.target.value); });
+    btnFire.addEventListener('click', firePulse);
+    btnClear.addEventListener('click', () => { ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, width, height); });
+    btnPause.addEventListener('click', () => {
+        isPaused = !isPaused;
+        btnPause.textContent = isPaused ? "Resume" : "Pause";
+        btnPause.classList.toggle('active', isPaused);
+    });
+    btnInfo.addEventListener('click', () => {
+        infoOverlay.classList.toggle('visible');
+        btnInfo.classList.toggle('active');
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const pos = fromScreen(e.clientX - rect.left, e.clientY - rect.top);
+        
+        // Check for focal point snap (within 0.1 sim units)
+        let snapped = false;
+        if (paramA > 1) {
+            const c = Math.sqrt(paramA*paramA - 1);
+            [-c, c].forEach(fx => {
+                if (Math.hypot(pos.x - fx, pos.y - 0) < 0.15) {
+                    source.x = fx; source.y = 0;
+                    snapped = true;
+                }
+            });
+        }
+
+        if (!snapped && (pos.x / paramA) ** 2 + pos.y ** 2 <= 1) {
+            source.x = pos.x; source.y = pos.y;
+        }
+        
+        if (snapped || (pos.x / paramA) ** 2 + pos.y ** 2 <= 1) firePulse();
+    });
+
+    window.addEventListener('resize', resize);
+    resize(); firePulse(); loop();
+</script>
+</body>
+</html>
