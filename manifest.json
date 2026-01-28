@@ -12,9 +12,9 @@
         "date": "2026-01-25"
     },
     {
-        "id": "elliptical-mirror",
-        "title": "Light waves in elliptical mirror",
-        "description": "A reflection simulation inside an elliptical mirror.",
+        "id": "mirror-sim",
+        "title": "Reflections inside a closed mirror shape",
+        "description": "A reflection simulation inside an closed shaped mirror. AVOID IF YOU HAVE EPILEPSI!",
         "url": "./mirror-sim.html",
         "tags": [
             "Canvas API",

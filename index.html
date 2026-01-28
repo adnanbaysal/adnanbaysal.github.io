@@ -93,7 +93,7 @@
                     card.className = 'card';
                     card.href = proj.url;
                     let tagsHtml = proj.tags.map(t => `<span class="tag">${t}</span>`).join('');
-                    card.innerHTML = `<h2>${proj.title}</h2><p>${proj.description}</p><div class="tags">${tagsHtml}</div>`;
+                    card.innerHTML = `<h2>${proj.title}</h2><small>${proj.date}</small><p>${proj.description}</p><div class="tags">${tagsHtml}</div>`;
                     grid.appendChild(card);
                 });
             } catch (e) {
