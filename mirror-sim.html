@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elliptical Mirror - Advanced Metrics</title>
+    <title>Elliptical Mirror - Geometric Snap</title>
     <style>
         :root {
             --bg-color: #050505;
             --panel-color: #1a1a1a;
             --accent-color: #00d2ff;
             --text-color: #e0e0e0;
-            --header-height: 70px;
+            --header-height: 75px;
         }
 
         body {
@@ -28,35 +28,25 @@
             display: flex; align-items: center;
             padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             z-index: 10; gap: 15px;
-            flex-wrap: nowrap;
         }
 
-        .control-group { display: flex; flex-direction: column; gap: 4px; }
-        label { font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-        
+        .control-group { display: flex; flex-direction: column; gap: 4px; min-width: 90px; }
+        label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
         input[type="range"] { accent-color: var(--accent-color); cursor: pointer; }
-        #param-speed { width: 140px; }
-        #param-particles { width: 100px; }
-
-        .value-display { font-family: monospace; color: var(--accent-color); font-size: 0.85rem; }
+        .value-display { font-family: monospace; color: var(--accent-color); font-size: 0.8rem; }
 
         .stats-badge {
-            background: #222;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid #333;
-            min-width: 120px;
+            background: #222; padding: 6px 12px; border-radius: 4px; border: 1px solid #333; min-width: 110px;
         }
-        .stats-label { font-size: 0.6rem; color: #666; display: block; margin-bottom: 2px; }
-        .stats-value { font-family: monospace; color: #00ffaa; font-weight: bold; font-size: 0.9rem; }
+        .stats-label { font-size: 0.55rem; color: #666; display: block; }
+        .stats-value { font-family: monospace; color: #00ffaa; font-weight: bold; font-size: 0.85rem; }
 
         button {
             background-color: #333; color: white; border: 1px solid #555;
-            padding: 8px 14px; border-radius: 4px; cursor: pointer;
-            font-size: 0.85rem; transition: all 0.2s;
+            padding: 8px 12px; border-radius: 4px; cursor: pointer;
+            font-size: 0.8rem; transition: all 0.2s; white-space: nowrap;
         }
         button:hover { border-color: var(--accent-color); color: var(--accent-color); }
-        button.primary { background-color: #005f73; border-color: var(--accent-color); }
 
         #canvas-container { flex-grow: 1; position: relative; background: #000; }
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
@@ -86,14 +76,13 @@
         </div>
 
         <div class="stats-badge">
-            <span class="stats-label">REFLECTIONS / SEC</span>
+            <span class="stats-label">REFLECTIONS/SEC</span>
             <span class="stats-value" id="disp-cps">0</span>
         </div>
 
-        <div style="flex-grow: 1;"></div> 
-        
+        <button id="btn-heatmap">Heatmap: ON</button>
         <button id="btn-pause">Pause</button>
-        <button id="btn-fire" class="primary">Reset Pulse</button>
+        <button id="btn-fire" style="background:#005f73">Reset Pulse</button>
     </header>
 
     <div id="canvas-container">
@@ -105,190 +94,163 @@
     const ctx = canvas.getContext('2d', { alpha: false });
 
     let width, height, centerX, centerY, scale = 100;
-    let paramA = 1.5, speed = 50, precision = 20, isPaused = false;
+    let paramA = 1.5, speed = 50, precision = 20, isPaused = false, showHeatmap = true;
     let numParticles = 3000;
     
     let source = { x: -1.0, y: 0 };
     let particles = [];
+    let collisionCount = 0, lastMetricTime = performance.now();
+    const heatmapBins = new Float32Array(360);
 
-    // Metrics
-    let collisionCount = 0;
-    let lastMetricTime = performance.now();
-    let currentCPS = 0;
-
-    const uiA = document.getElementById('param-a');
-    const dispA = document.getElementById('disp-a');
-    const uiParticles = document.getElementById('param-particles');
-    const dispParticles = document.getElementById('disp-particles');
-    const uiPrec = document.getElementById('param-precision');
-    const dispPrec = document.getElementById('disp-precision');
-    const uiSpeed = document.getElementById('param-speed');
-    const dispSpeed = document.getElementById('disp-speed');
+    const uiA = document.getElementById('param-a'), dispA = document.getElementById('disp-a');
+    const uiParticles = document.getElementById('param-particles'), dispParticles = document.getElementById('disp-particles');
+    const uiPrec = document.getElementById('param-precision'), dispPrec = document.getElementById('disp-precision');
+    const uiSpeed = document.getElementById('param-speed'), dispSpeed = document.getElementById('disp-speed');
     const dispCPS = document.getElementById('disp-cps');
 
     function toScreen(x, y) { return { x: centerX + x * scale, y: centerY - y * scale }; }
     function fromScreen(sx, sy) { return { x: (sx - centerX) / scale, y: -(sy - centerY) / scale }; }
 
     function updateScale() {
-        const padding = 0.85;
+        const padding = 0.8;
         scale = Math.min((width * padding) / (paramA * 2), (height * padding) / 2);
     }
 
     function firePulse() {
         particles = [];
-        collisionCount = 0; // Reset metrics on new pulse
+        collisionCount = 0;
+        heatmapBins.fill(0);
         for (let i = 0; i < numParticles; i++) {
             const angle = (Math.PI * 2 * i) / numParticles;
-            particles.push({
-                x: source.x, y: source.y,
-                vx: Math.cos(angle), vy: Math.sin(angle)
-            });
+            particles.push({ x: source.x, y: source.y, vx: Math.cos(angle), vy: Math.sin(angle) });
         }
     }
 
     function updatePhysics() {
         if (isPaused) return;
-
-        const totalDt = speed * 0.001; 
-        const dt = totalDt / precision;
+        const dt = (speed * 0.001) / precision;
+        for(let i=0; i<360; i++) heatmapBins[i] *= 0.985;
 
         for (let step = 0; step < precision; step++) {
             for (let i = 0; i < numParticles; i++) {
                 let p = particles[i];
-                let nextX = p.x + p.vx * dt;
-                let nextY = p.y + p.vy * dt;
+                let nx_pos = p.x + p.vx * dt, ny_pos = p.y + p.vy * dt;
 
-                // Check Ellipse
-                if ((nextX / paramA) ** 2 + nextY ** 2 >= 1.0) {
-                    collisionCount++; // Track for CPS
-                    
-                    let nx = (2 * nextX) / (paramA * paramA);
-                    let ny = 2 * nextY;
+                if ((nx_pos / paramA) ** 2 + ny_pos ** 2 >= 1.0) {
+                    collisionCount++;
+                    const hitAngle = Math.atan2(ny_pos, nx_pos);
+                    let deg = Math.floor(((hitAngle + Math.PI) / (Math.PI * 2)) * 360) % 360;
+                    heatmapBins[deg] += 1.0;
+
+                    let nx = (2 * nx_pos) / (paramA * paramA), ny = 2 * ny_pos;
                     let len = Math.sqrt(nx*nx + ny*ny);
                     nx /= len; ny /= len;
 
                     const dot = p.vx * nx + p.vy * ny;
-                    p.vx = p.vx - 2 * dot * nx;
-                    p.vy = p.vy - 2 * dot * ny;
-
-                    const angle = Math.atan2(nextY, nextX / paramA);
+                    p.vx -= 2 * dot * nx; p.vy -= 2 * dot * ny;
+                    const angle = Math.atan2(ny_pos, nx_pos / paramA);
                     p.x = paramA * Math.cos(angle) * 0.9999;
                     p.y = Math.sin(angle) * 0.9999;
                 } else {
-                    p.x = nextX;
-                    p.y = nextY;
+                    p.x = nx_pos; p.y = ny_pos;
                 }
             }
         }
 
-        // Calculate CPS every 500ms
         const now = performance.now();
         const elapsed = now - lastMetricTime;
         if (elapsed > 500) {
-            currentCPS = Math.round((collisionCount / elapsed) * 1000);
-            dispCPS.textContent = currentCPS.toLocaleString();
-            collisionCount = 0;
-            lastMetricTime = now;
+            dispCPS.textContent = Math.round((collisionCount / elapsed) * 1000).toLocaleString();
+            collisionCount = 0; lastMetricTime = now;
         }
     }
 
     function draw() {
-        ctx.fillStyle = 'rgba(5, 5, 5, 0.15)'; 
+        ctx.fillStyle = 'rgba(5, 5, 5, 0.18)'; 
         ctx.fillRect(0, 0, width, height);
 
-        // Axes
+        if (showHeatmap) {
+            ctx.lineWidth = 6;
+            for (let i = 0; i < 360; i++) {
+                const val = Math.min(heatmapBins[i] * 0.5, 255);
+                if (val < 1) continue;
+                const a1 = (i / 360) * Math.PI * 2 - Math.PI, a2 = ((i + 1) / 360) * Math.PI * 2 - Math.PI;
+                ctx.strokeStyle = `hsla(${180 + val * 0.6}, 100%, 50%, ${Math.min(val/20, 0.8)})`;
+                ctx.beginPath(); ctx.ellipse(centerX, centerY, paramA * scale, 1 * scale, 0, a1, a2); ctx.stroke();
+            }
+        }
+
         ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
         ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(width, centerY); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, height); ctx.stroke();
         ctx.setLineDash([]);
-        
-        // Ellipse
+
         ctx.strokeStyle = '#444'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.ellipse(centerX, centerY, paramA * scale, 1 * scale, 0, 0, Math.PI * 2); ctx.stroke();
 
-        // Focal Points
-        if (paramA > 1) {
-            const c = Math.sqrt(paramA*paramA - 1);
-            [-c, c].forEach(fx => {
-                const f = toScreen(fx, 0);
-                ctx.fillStyle = (Math.hypot(source.x - fx, source.y) < 0.05) ? '#00d2ff' : '#444';
-                ctx.beginPath(); ctx.arc(f.x, f.y, 4, 0, Math.PI*2); ctx.fill();
-            });
-        }
-
-        // Particles
-        ctx.fillStyle = '#00d2ff'; 
-        ctx.globalCompositeOperation = 'lighter'; 
+        ctx.fillStyle = '#00d2ff'; ctx.globalCompositeOperation = 'lighter'; 
         for (let i = 0; i < numParticles; i++) {
-            const p = particles[i];
-            const s = toScreen(p.x, p.y);
+            const s = toScreen(particles[i].x, particles[i].y);
             ctx.fillRect(s.x, s.y, 1.2, 1.2);
         }
         ctx.globalCompositeOperation = 'source-over';
 
-        // Source
+        if (paramA > 1) {
+            const c = Math.sqrt(paramA*paramA - 1);
+            [-c, c].forEach(fx => {
+                const f = toScreen(fx, 0);
+                ctx.fillStyle = (Math.hypot(source.x - fx, source.y) < 0.01) ? '#00d2ff' : '#444';
+                ctx.beginPath(); ctx.arc(f.x, f.y, 4, 0, Math.PI*2); ctx.fill();
+            });
+        }
+
         const s = toScreen(source.x, source.y);
-        ctx.fillStyle = '#ffaa00';
-        ctx.beginPath(); ctx.arc(s.x, s.y, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffaa00'; ctx.beginPath(); ctx.arc(s.x, s.y, 6, 0, Math.PI*2); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
     }
 
     function loop() { updatePhysics(); draw(); requestAnimationFrame(loop); }
-
     function resize() {
-        const container = document.getElementById('canvas-container');
-        width = canvas.width = container.clientWidth;
-        height = canvas.height = container.clientHeight;
+        width = canvas.width = canvas.parentElement.clientWidth;
+        height = canvas.height = canvas.parentElement.clientHeight;
         centerX = width / 2; centerY = height / 2;
         updateScale();
     }
 
-    // UI Event Listeners
-    uiA.addEventListener('input', (e) => {
-        paramA = parseFloat(e.target.value);
-        dispA.textContent = paramA.toFixed(2);
-        updateScale();
-        firePulse();
-    });
-
-    uiParticles.addEventListener('input', (e) => {
-        numParticles = parseInt(e.target.value);
-        dispParticles.textContent = numParticles;
-        firePulse();
-    });
-
-    uiPrec.addEventListener('input', (e) => {
-        precision = parseInt(e.target.value);
-        dispPrec.textContent = precision;
-    });
-
-    uiSpeed.addEventListener('input', (e) => { 
-        speed = parseInt(e.target.value); 
-        dispSpeed.textContent = speed;
-    });
-    
+    uiA.addEventListener('input', (e) => { paramA = parseFloat(e.target.value); dispA.textContent = paramA.toFixed(2); updateScale(); firePulse(); });
+    uiParticles.addEventListener('input', (e) => { numParticles = parseInt(e.target.value); dispParticles.textContent = numParticles; firePulse(); });
+    uiPrec.addEventListener('input', (e) => { precision = parseInt(e.target.value); dispPrec.textContent = precision; });
+    uiSpeed.addEventListener('input', (e) => { speed = parseInt(e.target.value); dispSpeed.textContent = speed; });
+    document.getElementById('btn-heatmap').addEventListener('click', (e) => { showHeatmap = !showHeatmap; e.target.textContent = `Heatmap: ${showHeatmap ? 'ON' : 'OFF'}`; });
+    document.getElementById('btn-pause').addEventListener('click', (e) => { isPaused = !isPaused; e.target.textContent = isPaused ? "Resume" : "Pause"; });
     document.getElementById('btn-fire').addEventListener('click', firePulse);
-    
-    document.getElementById('btn-pause').addEventListener('click', (e) => {
-        isPaused = !isPaused;
-        e.target.textContent = isPaused ? "Resume" : "Pause";
-    });
 
     canvas.addEventListener('mousedown', (e) => {
         const rect = canvas.getBoundingClientRect();
         const pos = fromScreen(e.clientX - rect.left, e.clientY - rect.top);
         
-        let snapped = false;
-        if (paramA > 1) {
+        const SNAP_DIST = 0.12; 
+        const AXIS_SNAP = 0.06; 
+        let finalX = pos.x, finalY = pos.y;
+
+        // Point Snaps
+        if (Math.hypot(pos.x, pos.y) < SNAP_DIST) {
+            finalX = 0; finalY = 0;
+        } else if (paramA > 1) {
             const c = Math.sqrt(paramA*paramA - 1);
-            [-c, c].forEach(fx => {
-                if (Math.hypot(pos.x - fx, pos.y) < 0.15) { source.x = fx; source.y = 0; snapped = true; }
-            });
+            if (Math.hypot(pos.x - c, pos.y) < SNAP_DIST) { finalX = c; finalY = 0; }
+            else if (Math.hypot(pos.x + c, pos.y) < SNAP_DIST) { finalX = -c; finalY = 0; }
         }
-        if (!snapped && (pos.x / paramA) ** 2 + pos.y ** 2 <= 1) {
-            source.x = pos.x; source.y = pos.y;
+
+        // Axis Snaps
+        if (finalX === pos.x && finalY === pos.y) {
+            if (Math.abs(pos.y) < AXIS_SNAP) finalY = 0;
+            if (Math.abs(pos.x) < AXIS_SNAP) finalX = 0;
         }
-        firePulse();
+
+        if ((finalX / paramA) ** 2 + finalY ** 2 <= 1) {
+            source.x = finalX; source.y = finalY; firePulse();
+        }
     });
 
     window.addEventListener('resize', resize);
