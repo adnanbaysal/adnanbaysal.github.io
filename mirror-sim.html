@@ -69,6 +69,8 @@
         .btn-rec { background: #eb4d4b; color: #fff; }
         .btn-util { background: #444; color: #fff; }
         .btn-rand { background: #6c5ce7; color: #fff; }
+        .btn-audio { background: #d63031; color: #fff; width: 34px; font-size: 14px; }
+        .btn-audio.active { background: #00b894; }
         .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
 
         span.value { color: var(--accent); font-size: 11px; font-family: monospace; }
@@ -112,6 +114,17 @@
 
         <div class="stats-badge">REFL/S<br><span id="disp-cps">0</span></div>
 
+        <button id="audio-btn" class="btn-audio">🔇</button>
+        <div class="control-group">
+            <div class="label-row"><span>Audio Scale</span></div>
+            <select id="scale-select">
+                <option value="minorPentatonic">D Minor Pentatonic</option>
+                <option value="lydian">C Lydian (Cosmic)</option>
+                <option value="phrygian">E Phrygian (Ancient)</option>
+                <option value="wholeTone">Whole Tone (Dream)</option>
+                <option value="justIntonation">Harmonic Pure</option>
+            </select>
+        </div>
         <button id="rand-btn" class="btn-rand">🎲 Random</button>
         <button id="heatmap-btn" class="btn-util">Heatmap: ON</button>
         <button id="pause-btn" class="btn-util">Pause</button>
@@ -126,7 +139,7 @@
             <span class="close-info" id="close-info">&times;</span>
             <h2>Optics Laboratory</h2>
             <p><strong>Billiard Dynamics:</strong> Observe how ray paths evolve within closed geometries.</p>
-            <p><strong>Speed & Precision:</strong> At high speeds ($2^{14}$), increase precision to ensure particles don't "tunnel" through boundaries.</p>
+            <p><strong>Stereo Audio:</strong> Impact locations drive a harmonic bank of resonant filters. Left impacts pan left, right impacts pan right.</p>
             <p><strong>Tools:</strong> Use the 📸 Save button for high-res screenshots and ⏺ Record to capture video with automatic timestamps.</p>
         </div>
 
@@ -149,6 +162,13 @@
     let collisionCount = 0, lastMetricTime = performance.now();
     let mediaRecorder, recordedChunks = [], recStartTime;
 
+    // Audio Engine State
+    let audioCtx, masterGain, panner, audioEnabled = false;
+    let resonanceFilters = [];
+    let collisionDensity = { left: 0, right: 0, top: 0, bottom: 0 };
+
+    let audioStreamDest;
+
     const SNAP_DIST = 0.12, AXIS_SNAP = 0.06;
 
     const ui = {
@@ -159,8 +179,111 @@
         cps: document.getElementById('disp-cps'), shape: document.getElementById('shape-select'),
         info: document.getElementById('info-modal'), infoBtn: document.getElementById('info-btn'),
         recBtn: document.getElementById('rec-btn'), recInd: document.getElementById('rec-indicator'),
-        recTimer: document.getElementById('rec-timer'), pauseBtn: document.getElementById('pause-btn')
+        recTimer: document.getElementById('rec-timer'), pauseBtn: document.getElementById('pause-btn'),
+        audioBtn: document.getElementById('audio-btn')
     };
+
+    // Define the frequency sets
+    const scaleLibrary = {
+        minorPentatonic: [146.83, 174.61, 220.00, 261.63, 293.66, 349.23],
+        lydian: [130.81, 146.83, 164.81, 185.00, 196.00, 220.00],
+        phrygian: [164.81, 174.61, 207.65, 220.00, 246.94, 261.63],
+        wholeTone: [130.81, 146.83, 164.81, 185.00, 207.65, 233.08],
+        justIntonation: [110.00, 123.75, 137.50, 165.00, 185.63, 220.00]
+    };
+
+    // Listener for the dropdown
+    document.getElementById('scale-select').onchange = (e) => {
+        const newScale = scaleLibrary[e.target.value];
+        if (resonanceFilters.length > 0) {
+            newScale.forEach((freq, i) => {
+                // Smoothly glide to the new frequencies (Portamento)
+                resonanceFilters[i].osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.2);
+                resonanceFilters[i].filter.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.2);
+            });
+        }
+    };
+
+    /**
+     * AUDIO SYSTEM INITIALIZATION
+     */
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Create a destination specifically for the recorder
+        audioStreamDest = audioCtx.createMediaStreamDestination();
+
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.4;
+
+        panner = audioCtx.createStereoPanner();
+        // Connect panner to BOTH the speakers and the recorder destination
+        panner.connect(audioCtx.destination);
+        panner.connect(audioStreamDest);
+
+        masterGain.connect(panner);
+
+        // Harmonic scale: D Minor Pentatonic (Glassy resonance)
+        const freqs = [146.83, 174.61, 220.00, 261.63, 293.66, 349.23];
+        
+        freqs.forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+            
+            osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+            osc.frequency.value = f;
+            
+            filter.type = 'bandpass';
+            filter.frequency.value = f;
+            filter.Q.value = 25; 
+
+            g.gain.value = 0;
+            osc.connect(filter);
+            filter.connect(g);
+            g.connect(masterGain);
+            osc.start();
+            
+            resonanceFilters.push({ osc: osc, gain: g, filter });
+        });
+    }
+
+    function updateAudio() {
+        // If audio is disabled OR the simulation is paused, silence the resonators
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const isSilenced = !audioEnabled || isPaused;
+
+        if (isSilenced) {
+            resonanceFilters.forEach(f => {
+                f.gain.gain.setTargetAtTime(0, now, 0.05);
+            });
+            return; // Stop processing pan and energy calculations
+        }
+
+        // Standard spatial audio logic follows...
+        const totalHits = collisionDensity.left + collisionDensity.right + 0.001;
+        const panVal = (collisionDensity.right - collisionDensity.left) / totalHits;
+        panner.pan.setTargetAtTime(Math.max(-1, Math.min(1, panVal)), now, 0.1);
+
+        const energies = [
+            collisionDensity.left,
+            (collisionDensity.left + collisionDensity.top) / 2,
+            collisionDensity.top,
+            collisionDensity.bottom,
+            (collisionDensity.right + collisionDensity.bottom) / 2,
+            collisionDensity.right
+        ];
+
+        energies.forEach((energy, i) => {
+            const vol = Math.min(energy / (numParticles * 0.1), 0.3);
+            resonanceFilters[i].gain.gain.setTargetAtTime(vol, now, 0.05);
+            resonanceFilters[i].filter.Q.setTargetAtTime(15 + vol * 80, now, 0.1);
+        });
+
+        collisionDensity.left *= 0.8; collisionDensity.right *= 0.8;
+        collisionDensity.top *= 0.8; collisionDensity.bottom *= 0.8;
+    }
 
     function resize() {
         width = canvas.width = canvas.parentElement.clientWidth;
@@ -229,6 +352,17 @@
 
                 if (collided) {
                     collisionCount++;
+
+                    // Calculate velocity magnitude (hypotenuse of vx and vy)
+                    const impactVelocity = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+
+                    // Add the kinetic energy to the buffer instead of just '1'
+                    if (p.x < 0) collisionDensity.left += impactVelocity; 
+                    else collisionDensity.right += impactVelocity;
+                    
+                    if (p.y > 0) collisionDensity.top += impactVelocity; 
+                    else collisionDensity.bottom += impactVelocity;
+
                     const hitAngle = Math.atan2(p.y, p.x);
                     heatmapBins[Math.floor(((hitAngle + Math.PI) / (Math.PI * 2)) * 360) % 360] += 1.0;
                 } else { p.x = nx; p.y = ny; }
@@ -242,6 +376,7 @@
     }
 
     function draw() {
+        updateAudio();
         ctx.fillStyle = 'rgba(5, 5, 5, 0.2)'; ctx.fillRect(0, 0, width, height);
         ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
         ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(width, centerY); ctx.stroke();
@@ -333,48 +468,14 @@
         let rx = 0, ry = 0;
 
         switch(region) {
-            case 0: // Focal Point (or focal-analogue for Rect)
-                if (currentShape === 'ellipse' && paramA > 1) {
-                    const c = Math.sqrt(paramA*paramA - 1);
-                    rx = Math.random() > 0.5 ? c : -c; ry = 0;
-                } else { rx = (Math.random() > 0.5 ? 0.4 : -0.4) * paramA; ry = 0; }
-                break;
-            case 1: // Center
-                rx = 0; ry = 0;
-                break;
-            case 2: // On one of the axes
-                if (Math.random() > 0.5) { rx = (Math.random()*2-1)*paramA; ry = 0; }
-                else { rx = 0; ry = Math.random()*2-1; }
-                break;
-            case 3: // Edge where axes meet (Vertices)
-                const coin = Math.random();
-                if (coin < 0.25) { rx = paramA; ry = 0; }
-                else if (coin < 0.5) { rx = -paramA; ry = 0; }
-                else if (coin < 0.75) { rx = 0; ry = 1; }
-                else { rx = 0; ry = -1; }
-                break;
-            case 4: // Any point on the edge
-                const angle = Math.random() * Math.PI * 2;
-                if (currentShape === 'ellipse') { rx = paramA * Math.cos(angle); ry = Math.sin(angle); }
-                else {
-                    const side = Math.floor(Math.random() * 4);
-                    const t = Math.random() * 2 - 1;
-                    if (side === 0) { rx = paramA; ry = t; }
-                    else if (side === 1) { rx = -paramA; ry = t; }
-                    else if (side === 2) { rx = t * paramA; ry = 1; }
-                    else { rx = t * paramA; ry = -1; }
-                }
-                break;
-            case 5: // Any internal point
-                do {
-                    rx = (Math.random() * 2 - 1) * paramA;
-                    ry = Math.random() * 2 - 1;
-                } while (!checkBounds(rx, ry));
-                break;
+            case 0: if (currentShape === 'ellipse' && paramA > 1) { const c = Math.sqrt(paramA*paramA-1); rx = Math.random()>0.5?c:-c; ry=0; } else { rx=(Math.random()>0.5?0.4:-0.4)*paramA; ry=0; } break;
+            case 1: rx = 0; ry = 0; break;
+            case 2: if (Math.random() > 0.5) { rx = (Math.random()*2-1)*paramA; ry = 0; } else { rx = 0; ry = Math.random()*2-1; } break;
+            case 3: const coin = Math.random(); if (coin < 0.25) { rx = paramA; ry = 0; } else if (coin < 0.5) { rx = -paramA; ry = 0; } else if (coin < 0.75) { rx = 0; ry = 1; } else { rx = 0; ry = -1; } break;
+            case 4: const angle = Math.random() * Math.PI * 2; if (currentShape === 'ellipse') { rx = paramA * Math.cos(angle); ry = Math.sin(angle); } else { const side = Math.floor(Math.random() * 4); const t = Math.random() * 2 - 1; if (side === 0) { rx = paramA; ry = t; } else if (side === 1) { rx = -paramA; ry = t; } else if (side === 2) { rx = t * paramA; ry = 1; } else { rx = t * paramA; ry = -1; } } break;
+            case 5: do { rx = (Math.random() * 2 - 1) * paramA; ry = Math.random() * 2 - 1; } while (!checkBounds(rx, ry)); break;
         }
-
-        source.x = rx; source.y = ry;
-        firePulse();
+        source.x = rx; source.y = ry; firePulse();
     }
 
     ui.infoBtn.onclick = () => { ui.info.style.display = (ui.info.style.display === 'block') ? 'none' : 'block'; };
@@ -386,7 +487,7 @@
         isPaused = true;
         requestAnimationFrame(() => {
             const link = document.createElement('a');
-            link.download = `optics-${getTimestamp()}.png`;
+            link.download = `mirror-sim-${getTimestamp()}.png`;
             link.href = canvas.toDataURL();
             link.click();
             if (!preSavePaused) isPaused = false;
@@ -395,21 +496,76 @@
 
     document.getElementById('rec-btn').onclick = () => {
         if (mediaRecorder && mediaRecorder.state === "recording") {
-            mediaRecorder.stop(); ui.recBtn.textContent = "⏺ Record"; ui.recInd.style.display = 'none';
+            mediaRecorder.stop(); 
+            ui.recBtn.textContent = "⏺ Record"; 
+            ui.recInd.style.display = 'none';
         } else {
             recordedChunks = [];
-            mediaRecorder = new MediaRecorder(canvas.captureStream(60), { mimeType: 'video/webm' });
-            mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+            
+            // 1. Capture the visual stream (60fps)
+            const videoStream = canvas.captureStream(60);
+            
+            // 2. Combine with Audio (if initialized)
+            let combinedStream;
+            if (audioCtx && audioStreamDest) {
+                combinedStream = new MediaStream([
+                    ...videoStream.getVideoTracks(),
+                    ...audioStreamDest.stream.getAudioTracks()
+                ]);
+            } else {
+                combinedStream = videoStream;
+            }
+            
+            // 3. Set High-Quality WebM options with Opus audio
+            const options = {
+                mimeType: 'video/webm;codecs=vp9,opus',
+                videoBitsPerSecond: 15000000, // 15Mbps
+                audioBitsPerSecond: 128000    // High quality audio bitrate
+            };
+
+            // Fallback for browsers that don't support VP9/Opus
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options.mimeType = 'video/webm';
+            }
+
+            mediaRecorder = new MediaRecorder(combinedStream, options);
+            
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            
             mediaRecorder.onstop = () => {
                 const b = new Blob(recordedChunks, { type: 'video/webm' });
-                const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `optics-${getTimestamp()}.webm`; a.click();
+                const a = document.createElement('a'); 
+                a.href = URL.createObjectURL(b); 
+                a.download = `mirror-sim-${getTimestamp()}.webm`; 
+                a.click();
             };
-            recStartTime = performance.now(); mediaRecorder.start();
-            ui.recBtn.textContent = "⏹ Stop"; ui.recInd.style.display = 'flex';
+
+            recStartTime = performance.now(); 
+            mediaRecorder.start(100); 
+            ui.recBtn.textContent = "⏹ Stop"; 
+            ui.recInd.style.display = 'flex';
         }
     };
 
-    ui.pauseBtn.onclick = (e) => { isPaused = !isPaused; e.target.textContent = isPaused ? 'Resume' : 'Pause'; };
+    ui.audioBtn.onclick = () => {
+        if (!audioCtx) initAudio();
+        audioEnabled = !audioEnabled;
+        
+        // Smoothly ramp master volume to 0 or 0.4 to prevent "popping"
+        const targetMaster = audioEnabled ? 0.4 : 0;
+        masterGain.gain.setTargetAtTime(targetMaster, audioCtx.currentTime, 0.1);
+        
+        ui.audioBtn.textContent = audioEnabled ? '🔊' : '🔇';
+        ui.audioBtn.classList.toggle('active', audioEnabled);
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    };
+
+    ui.pauseBtn.onclick = (e) => { 
+        isPaused = !isPaused; 
+        e.target.textContent = isPaused ? 'Resume' : 'Pause'; 
+    };
     document.getElementById('fire-btn').onclick = firePulse;
     document.getElementById('heatmap-btn').onclick = (e) => { showHeatmap = !showHeatmap; e.target.textContent = `Heatmap: ${showHeatmap ? 'ON' : 'OFF'}`; };
     ui.shape.onchange = (e) => { currentShape = e.target.value; firePulse(); };
