@@ -94,7 +94,8 @@
 
         <div class="control-group">
             <div class="label-row"><span>Width (a)</span> <span id="a-val" class="value">1.50</span></div>
-            <input type="range" id="param-a" min="0.5" max="2.5" step="0.01" value="1.5">
+            <input type="range" id="param-a" min="-1" max="1" step="0.01" value="0.176" list="a-markers">
+            <datalist id="a-markers"><option value="0"></option></datalist>
         </div>
 
         <div class="control-group">
@@ -298,10 +299,17 @@
     function getSnap(px, py) {
         let fx = px, fy = py, type = 'none';
         if (Math.hypot(px, py) < SNAP_DIST) { fx = 0; fy = 0; type = 'point'; } 
-        else if (currentShape === 'ellipse' && paramA > 1) {
-            const c = Math.sqrt(paramA*paramA - 1);
-            if (Math.hypot(px - c, py) < SNAP_DIST) { fx = c; fy = 0; type = 'point'; }
-            else if (Math.hypot(px + c, py) < SNAP_DIST) { fx = -c; fy = 0; type = 'point'; }
+        else if (currentShape === 'ellipse') {
+            // SNAP TO FOCI
+            if (paramA > 1) { // Horizontal Ellipse
+                const c = Math.sqrt(paramA*paramA - 1);
+                if (Math.hypot(px - c, py) < SNAP_DIST) { fx = c; fy = 0; type = 'point'; }
+                else if (Math.hypot(px + c, py) < SNAP_DIST) { fx = -c; fy = 0; type = 'point'; }
+            } else if (paramA < 1) { // Vertical Ellipse
+                const c = Math.sqrt(1 - paramA*paramA);
+                if (Math.hypot(px, py - c) < SNAP_DIST) { fx = 0; fy = c; type = 'point'; }
+                else if (Math.hypot(px, py + c) < SNAP_DIST) { fx = 0; fy = -c; type = 'point'; }
+            }
         }
         if (type === 'none') {
             if (Math.abs(py) < AXIS_SNAP) { fy = 0; type = 'axis'; }
@@ -412,11 +420,21 @@
         else { const tl = toScreen(-paramA, 1), br = toScreen(paramA, -1); ctx.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y); }
         ctx.stroke();
 
-        if (currentShape === 'ellipse' && paramA > 1) {
-            const c = Math.sqrt(paramA*paramA - 1);
-            [-c, c].forEach(fx => {
-                const f = toScreen(fx, 0); ctx.fillStyle = '#333';
-                ctx.beginPath(); ctx.arc(f.x, f.y, 4, 0, Math.PI*2); ctx.fill();
+        if (currentShape === 'ellipse') {
+            // DRAW FOCI
+            let foci = [];
+            if (paramA > 1) {
+                const c = Math.sqrt(paramA*paramA - 1);
+                foci = [{x: -c, y: 0}, {x: c, y: 0}];
+            } else if (paramA < 1) {
+                const c = Math.sqrt(1 - paramA*paramA);
+                foci = [{x: 0, y: -c}, {x: 0, y: c}];
+            }
+            
+            foci.forEach(f => {
+                const s = toScreen(f.x, f.y); 
+                ctx.fillStyle = '#333';
+                ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI*2); ctx.fill();
             });
         }
 
@@ -449,17 +467,23 @@
         const randLogSpeed = Math.floor(Math.random() * 6); 
         const randParticles = 5250 + Math.floor(Math.random() * 4751); 
         const randPrecision = 51 + Math.floor(Math.random() * 50); 
-        const randA = 0.5 + Math.random() * 2.0;
+        
+        // Randomize 'a' in the Logarithmic Domain (-1 to 1)
+        const randLogA = (Math.random() * 2) - 1; 
+        const randA = Math.pow(10, randLogA); // Converts -1..1 to 0.1..10
 
         ui.spd.value = randLogSpeed;
         ui.part.value = randParticles;
         ui.prec.value = randPrecision;
-        ui.a.value = randA;
+        
+        // Update UI Slider (Log value) and Text (Actual value)
+        ui.a.value = randLogA; 
+        ui.aVal.textContent = randA.toFixed(2);
+        paramA = randA;
 
         speed = Math.pow(2, randLogSpeed); ui.spdVal.textContent = speed;
         numParticles = randParticles; ui.partVal.textContent = numParticles;
         precision = randPrecision; ui.precVal.textContent = precision;
-        paramA = randA; ui.aVal.textContent = paramA.toFixed(2);
         
         resize();
 
@@ -529,11 +553,7 @@
             }
 
             mediaRecorder = new MediaRecorder(combinedStream, options);
-            
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) recordedChunks.push(e.data);
-            };
-            
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
             mediaRecorder.onstop = () => {
                 const b = new Blob(recordedChunks, { type: 'video/webm' });
                 const a = document.createElement('a'); 
@@ -569,7 +589,15 @@
     document.getElementById('fire-btn').onclick = firePulse;
     document.getElementById('heatmap-btn').onclick = (e) => { showHeatmap = !showHeatmap; e.target.textContent = `Heatmap: ${showHeatmap ? 'ON' : 'OFF'}`; };
     ui.shape.onchange = (e) => { currentShape = e.target.value; firePulse(); };
-    ui.a.oninput = (e) => { paramA = parseFloat(e.target.value); ui.aVal.textContent = paramA.toFixed(2); resize(); firePulse(); };
+    
+    // Logarithmic Slider Logic
+    ui.a.oninput = (e) => { 
+        const logVal = parseFloat(e.target.value);
+        paramA = Math.pow(10, logVal); 
+        ui.aVal.textContent = paramA.toFixed(2); 
+        resize(); firePulse(); 
+    };
+
     ui.spd.oninput = (e) => { speed = Math.pow(2, parseInt(e.target.value)); ui.spdVal.textContent = speed.toLocaleString(); };
     ui.part.oninput = (e) => { numParticles = parseInt(e.target.value); ui.partVal.textContent = numParticles; firePulse(); };
     ui.prec.oninput = (e) => { precision = parseInt(e.target.value); ui.precVal.textContent = precision; };
