@@ -22,5 +22,17 @@
             "Mirror"
         ],
         "date": "2026-01-28"
+    },
+    {
+        "id": "truchet-tiling",
+        "title": "Programmable Truchet-Smith Tiling",
+        "description": "Smith's version of Truchet tiling with user defined tiling functions.",
+        "url": "./truchet.html",
+        "tags": [
+            "Canvas API",
+            "Truchet tiling",
+            "Fractal"
+        ],
+        "date": "2026-02-01"
     }
 ]

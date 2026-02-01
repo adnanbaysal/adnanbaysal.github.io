@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programmable Truchet-Smith Tiling</title>
+    <style>
+        :root { 
+            --accent: #00d2ff; 
+            --accent-dim: rgba(0, 210, 255, 0.1);
+            --bg: #050505; 
+            --panel: #111; 
+            --code-bg: #0d0d0d;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; 
+            display: flex; flex-direction: column; 
+            background: var(--bg); color: #fff; 
+            margin: 0; height: 100vh; overflow: hidden; 
+        }
+        
+        /* --- Header --- */
+        header { 
+            background: var(--panel); padding: 8px 16px; 
+            border-bottom: 1px solid #333; 
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+            gap: 15px; z-index: 10; height: 50px; flex-shrink: 0;
+        }
+        
+        .control-group { 
+            display: flex; flex-direction: column; gap: 2px; 
+            min-width: 100px;
+        }
+
+        .label-row { 
+            display: flex; justify-content: space-between; 
+            color: #888; font-size: 10px; font-weight: bold; text-transform: uppercase; 
+        }
+        
+        span.value { color: var(--accent); font-family: monospace; }
+        input[type="range"] { width: 100px; accent-color: var(--accent); cursor: pointer; height: 10px; }
+
+        /* --- Main Layout --- */
+        main { 
+            flex-grow: 1; display: flex; flex-direction: row; 
+            padding: 15px; gap: 15px; min-height: 0;
+            background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+        }
+
+        /* Left Column: Matrix + Editor */
+        .left-col {
+            display: flex; flex-direction: column; 
+            width: 350px; gap: 10px; flex-shrink: 0;
+        }
+
+        /* Right Column: Tiling */
+        .right-col {
+            flex-grow: 1; display: flex; flex-direction: column;
+            border: 1px solid #222; border-radius: 6px;
+            background: #000; position: relative;
+        }
+
+        .panel-header {
+            font-size: 11px; letter-spacing: 1px; color: var(--accent);
+            text-transform: uppercase; font-weight: bold; opacity: 0.8;
+            margin-bottom: 5px; display: flex; justify-content: space-between;
+        }
+
+        /* Canvas Containers */
+        .canvas-wrapper {
+            background: #000; border: 1px solid #222; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        #matrix-wrapper { height: 350px; flex-shrink: 0; }
+        #tile-wrapper { height: 100%; width: 100%; }
+
+        canvas { cursor: crosshair; image-rendering: pixelated; }
+
+        /* --- Code Editor Area --- */
+        .editor-container {
+            flex-grow: 1; display: flex; flex-direction: column;
+            background: var(--panel); border: 1px solid #333; border-radius: 6px;
+            padding: 10px; min-height: 0;
+        }
+
+        .editor-controls {
+            display: flex; gap: 5px; margin-bottom: 8px;
+        }
+
+        select {
+            background: #222; color: #fff; border: 1px solid #444; 
+            font-family: monospace; font-size: 11px; padding: 4px; 
+            border-radius: 3px; flex-grow: 1; cursor: pointer;
+        }
+
+        textarea {
+            flex-grow: 1; background: var(--code-bg); color: #ccc;
+            border: 1px solid #333; border-radius: 4px;
+            padding: 10px; font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px; line-height: 1.4; resize: none;
+            outline: none; white-space: pre;
+        }
+        textarea:focus { border-color: var(--accent); color: #fff; }
+
+        .editor-actions {
+            display: flex; gap: 8px; margin-top: 8px;
+        }
+
+        /* --- Buttons --- */
+        button { 
+            border: none; padding: 0 12px; border-radius: 4px; 
+            font-weight: bold; cursor: pointer; transition: all 0.2s; 
+            text-transform: uppercase; font-size: 10px; height: 30px;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            font-family: inherit;
+        }
+        .btn-run { background: var(--accent); color: #000; flex-grow: 1; }
+        .btn-run:hover { filter: brightness(1.2); box-shadow: 0 0 8px var(--accent-dim); }
+        .btn-sec { background: #333; color: #ccc; }
+        .btn-sec:hover { background: #444; color: #fff; }
+        .btn-icon { width: 30px; padding: 0; font-size: 14px; }
+
+        /* --- Modal --- */
+        #info-modal {
+            position: absolute; top: 60px; left: 20px; z-index: 20;
+            background: rgba(17, 17, 17, 0.96); backdrop-filter: blur(12px);
+            border: 1px solid #333; border-radius: 8px;
+            width: 320px; padding: 20px; font-size: 13px; line-height: 1.6;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: none;
+        }
+        #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; }
+        .close-info { position: absolute; top: 10px; right: 10px; cursor: pointer; color: #666; font-size: 18px; }
+        code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <button id="info-btn" class="btn-sec btn-icon">?</button>
+        
+        <div class="control-group">
+            <div class="label-row"><span>Grid (N)</span> <span id="n-val" class="value">8</span></div>
+            <input type="range" id="param-n" min="2" max="64" step="1" value="8">
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Thickness</span> <span id="w-val" class="value">2.5</span></div>
+            <input type="range" id="param-w" min="0.5" max="10" step="0.5" value="2.5">
+        </div>
+
+        <div style="flex-grow:1"></div>
+        <button id="save-img-btn" class="btn-sec">📸 PNG</button>
+        <button onclick="window.location.href='index.html'" class="btn-util" style="background:#222">🏠</button>
+    </header>
+
+    <main>
+        <div class="left-col">
+            
+            <div>
+                <div class="panel-header">Matrix State</div>
+                <div id="matrix-wrapper" class="canvas-wrapper">
+                    <canvas id="matrixCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="editor-container">
+                <div class="panel-header">Generator Function</div>
+                
+                <div class="editor-controls">
+                    <select id="preset-select">
+                        <optgroup label="Basic">
+                            <option value="reset">Reset (All 0)</option>
+                            <option value="random">Random Noise</option>
+                            <option value="invert">Invert Current</option>
+                        </optgroup>
+                        <optgroup label="Patterns">
+                            <option value="xor">XOR Parity</option>
+                            <option value="checker">Checkers</option>
+                            <option value="stripes">Vertical Stripes</option>
+                            <option value="diagonals">Diagonals</option>
+                            <option value="quarters">Quarters</option>
+                            <option value="radial">Radial Ring</option>
+                        </optgroup>
+                        <optgroup label="User Saved" id="user-presets-group">
+                        </optgroup>
+                    </select>
+                </div>
+
+                <textarea id="code-area" spellcheck="false">// Available: row, col, n
+// Return 0 or 1
+return 0;</textarea>
+
+                <div class="editor-actions">
+                    <button id="save-preset-btn" class="btn-sec" title="Save Custom Preset">💾 Save</button>
+                    <button id="run-btn" class="btn-run">▶ Run Code</button>
+                </div>
+                <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div style="position: absolute; top: 10px; left: 10px; z-index: 5;" class="panel-header">Truchet-Smith Tiling</div>
+            <div id="tile-wrapper" class="canvas-wrapper">
+                <canvas id="tileCanvas"></canvas>
+            </div>
+        </div>
+
+        <div id="info-modal">
+            <span class="close-info" id="close-info">&times;</span>
+            <h2>Programmable Tiling</h2>
+            <p><strong>Logic:</strong> Write a JavaScript function body that returns <code>0</code> or <code>1</code> for every cell in the grid.</p>
+            <p><strong>Variables:</strong>
+                <br><code>row</code>: Current row index (0 to n-1)
+                <br><code>col</code>: Current column index (0 to n-1)
+                <br><code>n</code>: Total grid size
+            </p>
+            <p><strong>Example:</strong><br><code>return (row + col) % 2;</code></p>
+            <p><strong>Interaction:</strong> Click the matrix or the tiling to flip specific bits manually.</p>
+        </div>
+    </main>
+
+<script>
+    /**
+     * STATE & CONFIG
+     */
+    let N = 8;
+    let lineWidth = 2.5;
+    let grid = []; 
+
+    // DOM Elements
+    const matrixCanvas = document.getElementById('matrixCanvas');
+    const tileCanvas = document.getElementById('tileCanvas');
+    const mCtx = matrixCanvas.getContext('2d');
+    const tCtx = tileCanvas.getContext('2d');
+    
+    const ui = {
+        n: document.getElementById('param-n'),
+        nVal: document.getElementById('n-val'),
+        w: document.getElementById('param-w'),
+        wVal: document.getElementById('w-val'),
+        editor: document.getElementById('code-area'),
+        select: document.getElementById('preset-select'),
+        userGroup: document.getElementById('user-presets-group'),
+        runBtn: document.getElementById('run-btn'),
+        savePresetBtn: document.getElementById('save-preset-btn'),
+        saveImgBtn: document.getElementById('save-img-btn'),
+        errorMsg: document.getElementById('code-error'),
+        info: document.getElementById('info-modal'),
+        infoBtn: document.getElementById('info-btn'),
+        closeInfo: document.getElementById('close-info')
+    };
+
+    /**
+     * PRESET LIBRARY
+     */
+    const presets = {
+        reset: "return 0;",
+        random: "return Math.random() > 0.5 ? 1 : 0;",
+        invert: "return (row % 2) === 0 ? 1 : 0; // Fallback logic (true invert needs state)", 
+        checker: "return (row + col) % 2;",
+        stripes: "return col % 2;",
+        diagonals: "return (row % 2) === (col % 2) ? 1 : 0;",
+        quarters: "return (row < n/2) === (col < n/2) ? 0 : 1;",
+        radial: "let cx = n/2 - 0.5, cy = n/2 - 0.5;\nlet dist = Math.sqrt((row-cy)**2 + (col-cx)**2);\nreturn Math.floor(dist) % 2;",
+        xor: `// Parity: 1 if odd number of 1s in binary, else 0
+// We use regex match(/1/g) to count set bits
+let rP = (row.toString(2).match(/1/g) || []).length % 2;
+let cP = (col.toString(2).match(/1/g) || []).length % 2;
+return rP ^ cP;`
+    };
+
+    // Load user presets from LocalStorage
+    let userPresets = JSON.parse(localStorage.getItem('truchet_user_presets') || '{}');
+
+    function updatePresetDropdown() {
+        ui.userGroup.innerHTML = '';
+        Object.keys(userPresets).forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = `user:${name}`;
+            opt.textContent = name;
+            ui.userGroup.appendChild(opt);
+        });
+    }
+
+    /**
+     * INITIALIZATION
+     */
+    function init() {
+        // Init Grid
+        grid = Array(N).fill().map(() => Array(N).fill(0));
+        
+        // Listeners
+        window.addEventListener('resize', resize);
+        
+        ui.n.addEventListener('input', (e) => {
+            N = parseInt(e.target.value);
+            ui.nVal.textContent = N;
+            // When resizing, we try to preserve data, or just run current code?
+            // Let's run current code to refill new size
+            runCode();
+        });
+
+        ui.w.addEventListener('input', (e) => {
+            lineWidth = parseFloat(e.target.value);
+            ui.wVal.textContent = lineWidth.toFixed(1);
+            drawTiling();
+        });
+
+        // Editor Listeners
+        ui.select.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val === 'invert') {
+                invertGrid();
+                return; // Don't replace editor text
+            }
+            
+            if (val.startsWith('user:')) {
+                const key = val.split(':')[1];
+                ui.editor.value = userPresets[key];
+            } else if (presets[val]) {
+                ui.editor.value = presets[val];
+            }
+            // Auto-run on select change? Yes, feels snappy.
+            runCode(); 
+        });
+
+        ui.runBtn.addEventListener('click', runCode);
+        
+        // Keyboard shortcut for Run (Ctrl/Cmd + Enter)
+        ui.editor.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                runCode();
+            }
+        });
+
+        ui.savePresetBtn.addEventListener('click', () => {
+            const name = prompt("Name your function:");
+            if (name) {
+                userPresets[name] = ui.editor.value;
+                localStorage.setItem('truchet_user_presets', JSON.stringify(userPresets));
+                updatePresetDropdown();
+                ui.select.value = `user:${name}`;
+            }
+        });
+
+        ui.saveImgBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `truchet-${Date.now()}.png`;
+            link.href = tileCanvas.toDataURL();
+            link.click();
+        });
+
+        // Canvas Interactions
+        matrixCanvas.addEventListener('mousedown', (e) => handleInput(e, matrixCanvas));
+        tileCanvas.addEventListener('mousedown', (e) => handleInput(e, tileCanvas));
+
+        ui.infoBtn.onclick = () => ui.info.style.display = (ui.info.style.display === 'block') ? 'none' : 'block';
+        ui.closeInfo.onclick = () => ui.info.style.display = 'none';
+
+        // Boot
+        updatePresetDropdown();
+        ui.editor.value = presets.reset;
+        resize();
+    }
+
+    /**
+     * LOGIC ENGINE
+     */
+    function invertGrid() {
+        for(let r=0; r<N; r++) {
+            for(let c=0; c<N; c++) {
+                grid[r][c] = grid[r][c] === 1 ? 0 : 1;
+            }
+        }
+        draw();
+    }
+
+    function runCode() {
+        const userCode = ui.editor.value;
+        ui.errorMsg.style.display = 'none';
+        
+        try {
+            // Create function from string
+            // We pass row, col, n as arguments
+            const genFunc = new Function('row', 'col', 'n', userCode);
+            
+            // Re-initialize grid with new size if needed (handled by N change)
+            // But here we just overwrite existing N sized grid
+            const newGrid = [];
+            
+            for (let r = 0; r < N; r++) {
+                const rowArr = [];
+                for (let c = 0; c < N; c++) {
+                    let val = 0;
+                    const result = genFunc(r, c, N);
+                    
+                    // Normalize result to 0 or 1
+                    if (typeof result === 'boolean') val = result ? 1 : 0;
+                    else if (typeof result === 'number') val = Math.abs(Math.round(result)) % 2;
+                    else val = result ? 1 : 0;
+                    
+                    rowArr.push(val);
+                }
+                newGrid.push(rowArr);
+            }
+            grid = newGrid;
+            
+            // If we resized, we need to ensure canvases are ready
+            resize(); 
+        } catch (err) {
+            ui.errorMsg.textContent = "Error: " + err.message;
+            ui.errorMsg.style.display = 'block';
+        }
+    }
+
+    /**
+     * DRAWING
+     */
+    function resize() {
+        // Resize Matrix Canvas (Fit in container)
+        const mWrap = document.getElementById('matrix-wrapper');
+        const mSize = Math.min(mWrap.clientWidth, mWrap.clientHeight) - 20;
+        matrixCanvas.width = mSize * 2;
+        matrixCanvas.height = mSize * 2;
+        matrixCanvas.style.width = `${mSize}px`;
+        matrixCanvas.style.height = `${mSize}px`;
+        mCtx.scale(2, 2);
+
+        // Resize Tile Canvas
+        const tWrap = document.getElementById('tile-wrapper');
+        const tSize = Math.min(tWrap.clientWidth, tWrap.clientHeight) - 20;
+        tileCanvas.width = tSize * 2;
+        tileCanvas.height = tSize * 2;
+        tileCanvas.style.width = `${tSize}px`;
+        tileCanvas.style.height = `${tSize}px`;
+        tCtx.scale(2, 2);
+
+        draw();
+    }
+
+    function draw() {
+        drawMatrix();
+        drawTiling();
+    }
+
+    function drawMatrix() {
+        const w = matrixCanvas.width / 2;
+        const cellSize = w / N;
+
+        mCtx.fillStyle = '#080808';
+        mCtx.fillRect(0, 0, w, w);
+
+        mCtx.font = `bold ${Math.max(8, cellSize * 0.5)}px monospace`;
+        mCtx.textAlign = 'center';
+        mCtx.textBaseline = 'middle';
+
+        for (let y = 0; y < N; y++) {
+            for (let x = 0; x < N; x++) {
+                const val = grid[y] ? grid[y][x] : 0;
+                const px = x * cellSize;
+                const py = y * cellSize;
+
+                // Highlight background
+                if (val === 1) {
+                    mCtx.fillStyle = '#111';
+                    mCtx.fillRect(px, py, cellSize, cellSize);
+                }
+
+                // Text
+                mCtx.fillStyle = val === 1 ? '#00d2ff' : '#333';
+                // Only draw text if cell is big enough
+                if (cellSize > 12) {
+                    mCtx.fillText(val, px + cellSize/2, py + cellSize/2);
+                } else if (val === 1) {
+                    // Just a dot for tiny cells
+                    mCtx.fillRect(px+2, py+2, cellSize-4, cellSize-4);
+                }
+
+                // Grid lines
+                mCtx.strokeStyle = '#1a1a1a';
+                mCtx.lineWidth = 0.5;
+                mCtx.strokeRect(px, py, cellSize, cellSize);
+            }
+        }
+    }
+
+    function drawTiling() {
+        const w = tileCanvas.width / 2;
+        const cellSize = w / N;
+
+        tCtx.fillStyle = '#000';
+        tCtx.fillRect(0, 0, w, w);
+
+        tCtx.shadowBlur = 8;
+        tCtx.lineCap = 'round';
+        tCtx.lineWidth = lineWidth;
+
+        for (let y = 0; y < N; y++) {
+            for (let x = 0; x < N; x++) {
+                const val = grid[y] ? grid[y][x] : 0;
+                const px = x * cellSize;
+                const py = y * cellSize;
+                const mid = cellSize / 2;
+
+                if(val === 0) {
+                    tCtx.strokeStyle = '#007799'; 
+                    tCtx.shadowColor = 'rgba(0, 119, 153, 0.4)';
+                } else {
+                    tCtx.strokeStyle = '#00d2ff'; 
+                    tCtx.shadowColor = 'rgba(0, 210, 255, 0.6)';
+                }
+
+                tCtx.beginPath();
+                if (val === 0) {
+                    // Tile 0: Left->Top, Bottom->Right
+                    tCtx.moveTo(px, py + mid); tCtx.lineTo(px + mid, py);
+                    tCtx.moveTo(px + mid, py + cellSize); tCtx.lineTo(px + cellSize, py + mid);
+                } else {
+                    // Tile 1: Bottom->Left, Top->Right
+                    tCtx.moveTo(px + mid, py + cellSize); tCtx.lineTo(px, py + mid);
+                    tCtx.moveTo(px + mid, py); tCtx.lineTo(px + cellSize, py + mid);
+                }
+                tCtx.stroke();
+            }
+        }
+        tCtx.shadowBlur = 0;
+    }
+
+    function handleInput(e, canvasRef) {
+        const rect = canvasRef.getBoundingClientRect();
+        // Visual Size
+        const visualW = canvasRef.offsetWidth;
+        const visualH = canvasRef.offsetHeight;
+        
+        // Coords within visual element
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const col = Math.floor((x / visualW) * N);
+        const row = Math.floor((y / visualH) * N);
+
+        if (col >= 0 && col < N && row >= 0 && row < N) {
+            // Flip bit
+            grid[row][col] = grid[row][col] === 0 ? 1 : 0;
+            draw();
+        }
+    }
+
+    // Start
+    init();
+
+</script>
+</body>
+</html>
