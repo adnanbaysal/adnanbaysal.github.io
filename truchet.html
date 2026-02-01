@@ -177,6 +177,7 @@
                             <option value="invert">Invert Current</option>
                         </optgroup>
                         <optgroup label="Patterns">
+                            <option value="xor">XOR Parity</option>
                             <option value="checker">Checkers</option>
                             <option value="stripes">Vertical Stripes</option>
                             <option value="diagonals">Diagonals</option>
@@ -258,12 +259,17 @@ return 0;</textarea>
     const presets = {
         reset: "return 0;",
         random: "return Math.random() > 0.5 ? 1 : 0;",
-        invert: "// Invert based on current state (requires accessing grid outside simple function scope, so we simulate)\n// This is a special case handled by logic, but for pure math generation:\nreturn (row % 2) === 0 ? 1 : 0;", 
+        invert: "return (row % 2) === 0 ? 1 : 0; // Fallback logic (true invert needs state)", 
         checker: "return (row + col) % 2;",
         stripes: "return col % 2;",
         diagonals: "return (row % 2) === (col % 2) ? 1 : 0;",
         quarters: "return (row < n/2) === (col < n/2) ? 0 : 1;",
-        radial: "let cx = n/2 - 0.5, cy = n/2 - 0.5;\nlet dist = Math.sqrt((row-cy)**2 + (col-cx)**2);\nreturn Math.floor(dist) % 2;"
+        radial: "let cx = n/2 - 0.5, cy = n/2 - 0.5;\nlet dist = Math.sqrt((row-cy)**2 + (col-cx)**2);\nreturn Math.floor(dist) % 2;",
+        xor: `// Parity: 1 if odd number of 1s in binary, else 0
+// We use regex match(/1/g) to count set bits
+let rP = (row.toString(2).match(/1/g) || []).length % 2;
+let cP = (col.toString(2).match(/1/g) || []).length % 2;
+return rP ^ cP;`
     };
 
     // Load user presets from LocalStorage
@@ -306,6 +312,11 @@ return 0;</textarea>
         // Editor Listeners
         ui.select.addEventListener('change', (e) => {
             const val = e.target.value;
+            if (val === 'invert') {
+                invertGrid();
+                return; // Don't replace editor text
+            }
+            
             if (val.startsWith('user:')) {
                 const key = val.split(':')[1];
                 ui.editor.value = userPresets[key];
@@ -358,6 +369,15 @@ return 0;</textarea>
     /**
      * LOGIC ENGINE
      */
+    function invertGrid() {
+        for(let r=0; r<N; r++) {
+            for(let c=0; c<N; c++) {
+                grid[r][c] = grid[r][c] === 1 ? 0 : 1;
+            }
+        }
+        draw();
+    }
+
     function runCode() {
         const userCode = ui.editor.value;
         ui.errorMsg.style.display = 'none';
@@ -375,15 +395,9 @@ return 0;</textarea>
                 const rowArr = [];
                 for (let c = 0; c < N; c++) {
                     let val = 0;
-                    // Handle "invert" special case in logic or just use grid access
-                    // Since new Function doesn't easily see outer scope 'grid', 
-                    // pure math functions are safer. 
-                    // However, if user wants noise, they use Math.random
-                    
                     const result = genFunc(r, c, N);
                     
                     // Normalize result to 0 or 1
-                    // Truthy = 1, Falsy = 0. Or modulo 2 if number.
                     if (typeof result === 'boolean') val = result ? 1 : 0;
                     else if (typeof result === 'number') val = Math.abs(Math.round(result)) % 2;
                     else val = result ? 1 : 0;
