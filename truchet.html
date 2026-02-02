@@ -459,7 +459,9 @@ return rP ^ cP;`,
         for(let r=0; r<N; r++) {
             for(let c=0; c<N; c++) {
                 const x = c*tc, y = r*tc, m = tc/2;
-                tCtx.strokeStyle = varColor(grid[r][c]);
+                // Visual Bugfix: Use the lighter color for all curved tiles, 
+                // but keep orientation-dependent colors for straight mode.
+                tCtx.strokeStyle = (drawMode === 'curved') ? varColor(1) : varColor(grid[r][c]);
                 tCtx.beginPath();
                 
                 if (drawMode === 'straight') {
