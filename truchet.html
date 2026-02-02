@@ -24,12 +24,12 @@
             background: var(--panel); padding: 8px 16px; 
             border-bottom: 1px solid #333; 
             display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-            gap: 15px; z-index: 10; height: 50px; flex-shrink: 0;
+            gap: 12px; z-index: 10; height: 50px; flex-shrink: 0;
         }
         
         .control-group { 
             display: flex; flex-direction: column; gap: 2px; 
-            min-width: 100px;
+            min-width: 80px;
         }
 
         .label-row { 
@@ -38,7 +38,26 @@
         }
         
         span.value { color: var(--accent); font-family: monospace; }
-        input[type="range"] { width: 100px; accent-color: var(--accent); cursor: pointer; height: 10px; }
+        input[type="range"] { width: 90px; accent-color: var(--accent); cursor: pointer; height: 10px; }
+
+        /* UI Controls */
+        .ui-row { display: flex; align-items: center; gap: 8px; }
+
+        .check-group { 
+            display: flex; align-items: center; gap: 6px; 
+            font-size: 11px; font-weight: bold; text-transform: uppercase; 
+            color: #ccc; cursor: pointer; border: 1px solid #333; 
+            padding: 0 8px; border-radius: 4px; background: #1a1a1a; height: 30px;
+        }
+        .check-group:hover { border-color: #666; color: #fff; }
+        .check-group input { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; margin: 0; }
+
+        select.mode-select {
+            background: #1a1a1a; color: #fff; border: 1px solid #333;
+            font-size: 11px; font-weight: bold; text-transform: uppercase;
+            height: 30px; border-radius: 4px; padding: 0 8px; cursor: pointer;
+        }
+        select.mode-select:hover { border-color: #666; }
 
         /* --- Main Layout --- */
         main { 
@@ -47,18 +66,8 @@
             background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
         }
 
-        /* Left Column: Matrix + Editor */
-        .left-col {
-            display: flex; flex-direction: column; 
-            width: 350px; gap: 10px; flex-shrink: 0;
-        }
-
-        /* Right Column: Tiling */
-        .right-col {
-            flex-grow: 1; display: flex; flex-direction: column;
-            border: 1px solid #222; border-radius: 6px;
-            background: #000; position: relative;
-        }
+        .left-col { display: flex; flex-direction: column; width: 350px; gap: 10px; flex-shrink: 0; }
+        .right-col { flex-grow: 1; display: flex; flex-direction: column; border: 1px solid #222; border-radius: 6px; background: #000; position: relative; }
 
         .panel-header {
             font-size: 11px; letter-spacing: 1px; color: var(--accent);
@@ -66,7 +75,6 @@
             margin-bottom: 5px; display: flex; justify-content: space-between;
         }
 
-        /* Canvas Containers */
         .canvas-wrapper {
             background: #000; border: 1px solid #222; border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
@@ -74,26 +82,22 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
-        #matrix-wrapper { height: 350px; flex-shrink: 0; }
+        #matrix-wrapper { height: 280px; flex-shrink: 0; }
         #tile-wrapper { height: 100%; width: 100%; }
 
-        canvas { cursor: crosshair; image-rendering: pixelated; }
+        canvas { cursor: crosshair; image-rendering: auto; }
 
-        /* --- Code Editor Area --- */
+        /* --- Code Editor --- */
         .editor-container {
             flex-grow: 1; display: flex; flex-direction: column;
             background: var(--panel); border: 1px solid #333; border-radius: 6px;
             padding: 10px; min-height: 0;
         }
 
-        .editor-controls {
-            display: flex; gap: 5px; margin-bottom: 8px;
-        }
-
-        select {
+        select.preset-select {
             background: #222; color: #fff; border: 1px solid #444; 
             font-family: monospace; font-size: 11px; padding: 4px; 
-            border-radius: 3px; flex-grow: 1; cursor: pointer;
+            border-radius: 3px; width: 100%; cursor: pointer; margin-bottom: 8px;
         }
 
         textarea {
@@ -101,13 +105,11 @@
             border: 1px solid #333; border-radius: 4px;
             padding: 10px; font-family: 'Consolas', 'Monaco', monospace;
             font-size: 12px; line-height: 1.4; resize: none;
-            outline: none; white-space: pre;
+            outline: none; white-space: pre; margin-bottom: 8px;
         }
         textarea:focus { border-color: var(--accent); color: #fff; }
 
-        .editor-actions {
-            display: flex; gap: 8px; margin-top: 8px;
-        }
+        .editor-actions { display: flex; gap: 8px; }
 
         /* --- Buttons --- */
         button { 
@@ -122,18 +124,30 @@
         .btn-sec { background: #333; color: #ccc; }
         .btn-sec:hover { background: #444; color: #fff; }
         .btn-icon { width: 30px; padding: 0; font-size: 14px; }
+        .btn-util { background: #222; color: #888; }
+        .btn-util:hover { color: #fff; }
+        
+        .btn-invert { 
+            width: 30px; padding: 0; font-size: 16px; background: #1a1a1a; 
+            border: 1px solid #333; color: var(--accent); 
+        }
+        .btn-invert:hover { background: #333; }
 
         /* --- Modal --- */
         #info-modal {
             position: absolute; top: 60px; left: 20px; z-index: 20;
             background: rgba(17, 17, 17, 0.96); backdrop-filter: blur(12px);
             border: 1px solid #333; border-radius: 8px;
-            width: 320px; padding: 20px; font-size: 13px; line-height: 1.6;
+            width: 350px; padding: 25px; font-size: 13px; line-height: 1.6;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: none;
+            max-height: 80vh; overflow-y: auto;
         }
-        #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; }
-        .close-info { position: absolute; top: 10px; right: 10px; cursor: pointer; color: #666; font-size: 18px; }
-        code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); }
+        #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        #info-modal h3 { margin: 15px 0 5px 0; font-size: 12px; color: #fff; text-transform: uppercase; }
+        #info-modal p { margin: 0 0 10px 0; color: #aaa; }
+        .close-info { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #666; font-size: 18px; }
+        code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace; }
+        .shortcut { background: #333; color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 
     </style>
 </head>
@@ -143,23 +157,35 @@
         <button id="info-btn" class="btn-sec btn-icon">?</button>
         
         <div class="control-group">
-            <div class="label-row"><span>Grid (N)</span> <span id="n-val" class="value">8</span></div>
-            <input type="range" id="param-n" min="2" max="64" step="1" value="8">
+            <div class="label-row"><span>Grid (N)</span> <span id="n-val" class="value">12</span></div>
+            <input type="range" id="param-n" min="2" max="64" step="1" value="12">
         </div>
 
         <div class="control-group">
             <div class="label-row"><span>Thickness</span> <span id="w-val" class="value">2.5</span></div>
-            <input type="range" id="param-w" min="0.5" max="10" step="0.5" value="2.5">
+            <input type="range" id="param-w" min="0.5" max="15" step="0.5" value="2.5">
+        </div>
+
+        <div class="ui-row">
+            <select id="draw-mode" class="mode-select">
+                <option value="straight">Straight</option>
+                <option value="curved">Curved</option>
+            </select>
+            
+            <label class="check-group" title="Fill regions with unit width">
+                <input type="checkbox" id="check-filled"> Filled
+            </label>
+            
+            <button id="invert-fill-btn" class="btn-invert" title="Invert Colors">⇄</button>
         </div>
 
         <div style="flex-grow:1"></div>
         <button id="save-img-btn" class="btn-sec">📸 PNG</button>
-        <button onclick="window.location.href='index.html'" class="btn-util" style="background:#222">🏠</button>
+        <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
     </header>
 
     <main>
         <div class="left-col">
-            
             <div>
                 <div class="panel-header">Matrix State</div>
                 <div id="matrix-wrapper" class="canvas-wrapper">
@@ -170,32 +196,28 @@
             <div class="editor-container">
                 <div class="panel-header">Generator Function</div>
                 
-                <div class="editor-controls">
-                    <select id="preset-select">
-                        <optgroup label="Basic">
-                            <option value="reset">Reset (All 0)</option>
-                            <option value="random">Random Noise</option>
-                            <option value="invert">Invert Current</option>
-                        </optgroup>
-                        <optgroup label="Patterns">
-                            <option value="xor">XOR Parity</option>
-                            <option value="checker">Checkers</option>
-                            <option value="stripes">Vertical Stripes</option>
-                            <option value="diagonals">Diagonals</option>
-                            <option value="quarters">Quarters</option>
-                            <option value="radial">Radial Ring</option>
-                        </optgroup>
-                        <optgroup label="User Saved" id="user-presets-group">
-                        </optgroup>
-                    </select>
-                </div>
+                <select id="preset-select" class="preset-select">
+                    <optgroup label="Patterns">
+                        <option value="xor">XOR Parity</option>
+                        <option value="checker">Checkers</option>
+                        <option value="stripes">Vertical Stripes</option>
+                        <option value="diagonals">Diagonals</option>
+                        <option value="quarters">Quarters</option>
+                        <option value="radial">Radial Ring</option>
+                    </optgroup>
+                    <optgroup label="Basic">
+                        <option value="reset">Reset (All 0)</option>
+                        <option value="random">Random Noise</option>
+                        <option value="invert">Invert Grid</option>
+                    </optgroup>
+                    <optgroup label="User Saved" id="user-presets-group">
+                    </optgroup>
+                </select>
 
-                <textarea id="code-area" spellcheck="false">// Available: row, col, n
-// Return 0 or 1
-return 0;</textarea>
+                <textarea id="code-area" spellcheck="false"></textarea>
 
                 <div class="editor-actions">
-                    <button id="save-preset-btn" class="btn-sec" title="Save Custom Preset">💾 Save</button>
+                    <button id="save-preset-btn" class="btn-sec">💾 Save</button>
                     <button id="run-btn" class="btn-run">▶ Run Code</button>
                 </div>
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
@@ -211,15 +233,21 @@ return 0;</textarea>
 
         <div id="info-modal">
             <span class="close-info" id="close-info">&times;</span>
-            <h2>Programmable Tiling</h2>
-            <p><strong>Logic:</strong> Write a JavaScript function body that returns <code>0</code> or <code>1</code> for every cell in the grid.</p>
-            <p><strong>Variables:</strong>
-                <br><code>row</code>: Current row index (0 to n-1)
-                <br><code>col</code>: Current column index (0 to n-1)
-                <br><code>n</code>: Total grid size
-            </p>
-            <p><strong>Example:</strong><br><code>return (row + col) % 2;</code></p>
-            <p><strong>Interaction:</strong> Click the matrix or the tiling to flip specific bits manually.</p>
+            <h2>About this Tool</h2>
+            
+            <h3>How It Works</h3>
+            <p>This is a playground for <strong>Truchet-Smith Tiling</strong>. The grid on the left controls the rotation of tiles on the right. <code>0</code> represents one orientation, <code>1</code> represents its 90-degree rotation.</p>
+            <p><strong>Modes:</strong> Switch between <em>Straight</em> lines and <em>Curved</em> arcs (Smith tiles). Toggle <em>Filled</em> to visualize the continuous ribbons (unit-width paths) formed by the tiling.</p>
+
+            <h3>Functions</h3>
+            <p>You can program the grid using JavaScript. The function runs for every cell (row, col) and returns 0 or 1.</p>
+            <p><strong>Variables:</strong> <code>row</code>, <code>col</code>, <code>n</code> (grid size).<br>
+            <strong>Example:</strong> <code>return (row + col) % 2;</code> creates a checkerboard.</p>
+
+            <h3>Saving Code</h3>
+            <p>Modified a function? Click <strong>💾 Save</strong> to store it in your browser's local storage. It will appear in the dropdown menu for future use.</p>
+            
+            <p style="margin-top:15px; font-size:11px; color:#666;">Use <span class="shortcut">Ctrl</span>+<span class="shortcut">Enter</span> to run code quickly.</p>
         </div>
     </main>
 
@@ -227,8 +255,11 @@ return 0;</textarea>
     /**
      * STATE & CONFIG
      */
-    let N = 8;
+    let N = 12;
     let lineWidth = 2.5;
+    let isFilled = false;
+    let isInvertedFill = false;
+    let drawMode = 'straight'; // 'straight' or 'curved'
     let grid = []; 
 
     // DOM Elements
@@ -238,10 +269,11 @@ return 0;</textarea>
     const tCtx = tileCanvas.getContext('2d');
     
     const ui = {
-        n: document.getElementById('param-n'),
-        nVal: document.getElementById('n-val'),
-        w: document.getElementById('param-w'),
-        wVal: document.getElementById('w-val'),
+        n: document.getElementById('param-n'), nVal: document.getElementById('n-val'),
+        w: document.getElementById('param-w'), wVal: document.getElementById('w-val'),
+        filled: document.getElementById('check-filled'),
+        mode: document.getElementById('draw-mode'),
+        invertFill: document.getElementById('invert-fill-btn'),
         editor: document.getElementById('code-area'),
         select: document.getElementById('preset-select'),
         userGroup: document.getElementById('user-presets-group'),
@@ -255,25 +287,23 @@ return 0;</textarea>
     };
 
     /**
-     * PRESET LIBRARY
+     * PRESETS
      */
     const presets = {
-        reset: "return 0;",
-        random: "return Math.random() > 0.5 ? 1 : 0;",
-        invert: "return (row % 2) === 0 ? 1 : 0; // Fallback logic (true invert needs state)", 
+        xor: `// Parity: 1 if odd number of 1s in binary, else 0
+let rP = (row.toString(2).match(/1/g) || []).length % 2;
+let cP = (col.toString(2).match(/1/g) || []).length % 2;
+return rP ^ cP;`,
         checker: "return (row + col) % 2;",
         stripes: "return col % 2;",
         diagonals: "return (row % 2) === (col % 2) ? 1 : 0;",
         quarters: "return (row < n/2) === (col < n/2) ? 0 : 1;",
         radial: "let cx = n/2 - 0.5, cy = n/2 - 0.5;\nlet dist = Math.sqrt((row-cy)**2 + (col-cx)**2);\nreturn Math.floor(dist) % 2;",
-        xor: `// Parity: 1 if odd number of 1s in binary, else 0
-// We use regex match(/1/g) to count set bits
-let rP = (row.toString(2).match(/1/g) || []).length % 2;
-let cP = (col.toString(2).match(/1/g) || []).length % 2;
-return rP ^ cP;`
+        reset: "return 0;",
+        random: "return Math.random() > 0.5 ? 1 : 0;",
+        invert: "return (row % 2) === 0 ? 1 : 0; // Fallback"
     };
 
-    // Load user presets from LocalStorage
     let userPresets = JSON.parse(localStorage.getItem('truchet_user_presets') || '{}');
 
     function updatePresetDropdown() {
@@ -286,56 +316,33 @@ return rP ^ cP;`
         });
     }
 
-    /**
-     * INITIALIZATION
-     */
     function init() {
-        // Init Grid
         grid = Array(N).fill().map(() => Array(N).fill(0));
-        
+        ui.editor.value = presets.xor;
+
         // Listeners
         window.addEventListener('resize', resize);
         
-        ui.n.addEventListener('input', (e) => {
-            N = parseInt(e.target.value);
-            ui.nVal.textContent = N;
-            // When resizing, we try to preserve data, or just run current code?
-            // Let's run current code to refill new size
-            runCode();
-        });
+        ui.n.addEventListener('input', (e) => { N = parseInt(e.target.value); ui.nVal.textContent = N; runCode(); });
+        ui.w.addEventListener('input', (e) => { lineWidth = parseFloat(e.target.value); ui.wVal.textContent = lineWidth.toFixed(1); draw(); });
+        
+        ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; draw(); });
+        ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; draw(); });
+        ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; draw(); });
 
-        ui.w.addEventListener('input', (e) => {
-            lineWidth = parseFloat(e.target.value);
-            ui.wVal.textContent = lineWidth.toFixed(1);
-            drawTiling();
-        });
-
-        // Editor Listeners
         ui.select.addEventListener('change', (e) => {
             const val = e.target.value;
-            if (val === 'invert') {
-                invertGrid();
-                return; // Don't replace editor text
-            }
-            
+            if (val === 'invert') { invertGrid(); return; }
             if (val.startsWith('user:')) {
-                const key = val.split(':')[1];
-                ui.editor.value = userPresets[key];
+                ui.editor.value = userPresets[val.split(':')[1]];
             } else if (presets[val]) {
                 ui.editor.value = presets[val];
             }
-            // Auto-run on select change? Yes, feels snappy.
             runCode(); 
         });
 
         ui.runBtn.addEventListener('click', runCode);
-        
-        // Keyboard shortcut for Run (Ctrl/Cmd + Enter)
-        ui.editor.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                runCode();
-            }
-        });
+        ui.editor.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runCode(); });
 
         ui.savePresetBtn.addEventListener('click', () => {
             const name = prompt("Name your function:");
@@ -349,67 +356,45 @@ return rP ^ cP;`
 
         ui.saveImgBtn.addEventListener('click', () => {
             const link = document.createElement('a');
-            link.download = `truchet-${Date.now()}.png`;
+            link.download = `truchet-${drawMode}-${Date.now()}.png`;
             link.href = tileCanvas.toDataURL();
             link.click();
         });
 
-        // Canvas Interactions
-        matrixCanvas.addEventListener('mousedown', (e) => handleInput(e, matrixCanvas));
-        tileCanvas.addEventListener('mousedown', (e) => handleInput(e, tileCanvas));
+        matrixCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e, matrixCanvas));
+        tileCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e, tileCanvas));
 
         ui.infoBtn.onclick = () => ui.info.style.display = (ui.info.style.display === 'block') ? 'none' : 'block';
         ui.closeInfo.onclick = () => ui.info.style.display = 'none';
 
-        // Boot
         updatePresetDropdown();
-        ui.editor.value = presets.reset;
         resize();
+        runCode();
     }
 
-    /**
-     * LOGIC ENGINE
-     */
     function invertGrid() {
-        for(let r=0; r<N; r++) {
-            for(let c=0; c<N; c++) {
-                grid[r][c] = grid[r][c] === 1 ? 0 : 1;
-            }
-        }
+        for(let r=0; r<N; r++) for(let c=0; c<N; c++) grid[r][c] = 1 - grid[r][c];
         draw();
     }
 
     function runCode() {
         const userCode = ui.editor.value;
         ui.errorMsg.style.display = 'none';
-        
         try {
-            // Create function from string
-            // We pass row, col, n as arguments
             const genFunc = new Function('row', 'col', 'n', userCode);
-            
-            // Re-initialize grid with new size if needed (handled by N change)
-            // But here we just overwrite existing N sized grid
             const newGrid = [];
-            
             for (let r = 0; r < N; r++) {
                 const rowArr = [];
                 for (let c = 0; c < N; c++) {
                     let val = 0;
                     const result = genFunc(r, c, N);
-                    
-                    // Normalize result to 0 or 1
                     if (typeof result === 'boolean') val = result ? 1 : 0;
                     else if (typeof result === 'number') val = Math.abs(Math.round(result)) % 2;
-                    else val = result ? 1 : 0;
-                    
                     rowArr.push(val);
                 }
                 newGrid.push(rowArr);
             }
             grid = newGrid;
-            
-            // If we resized, we need to ensure canvases are ready
             resize(); 
         } catch (err) {
             ui.errorMsg.textContent = "Error: " + err.message;
@@ -417,142 +402,187 @@ return rP ^ cP;`
         }
     }
 
-    /**
-     * DRAWING
-     */
     function resize() {
-        // Resize Matrix Canvas (Fit in container)
         const mWrap = document.getElementById('matrix-wrapper');
-        const mSize = Math.min(mWrap.clientWidth, mWrap.clientHeight) - 20;
-        matrixCanvas.width = mSize * 2;
-        matrixCanvas.height = mSize * 2;
-        matrixCanvas.style.width = `${mSize}px`;
-        matrixCanvas.style.height = `${mSize}px`;
-        mCtx.scale(2, 2);
+        const mSize = Math.min(mWrap.clientWidth, mWrap.clientHeight) - 10;
+        matrixCanvas.width = mSize * 2; matrixCanvas.height = mSize * 2;
+        matrixCanvas.style.width = `${mSize}px`; matrixCanvas.style.height = `${mSize}px`;
+        mCtx.setTransform(2,0,0,2,0,0);
 
-        // Resize Tile Canvas
         const tWrap = document.getElementById('tile-wrapper');
-        const tSize = Math.min(tWrap.clientWidth, tWrap.clientHeight) - 20;
-        tileCanvas.width = tSize * 2;
-        tileCanvas.height = tSize * 2;
-        tileCanvas.style.width = `${tSize}px`;
-        tileCanvas.style.height = `${tSize}px`;
-        tCtx.scale(2, 2);
+        const tSize = Math.min(tWrap.clientWidth, tWrap.clientHeight) - 10;
+        tileCanvas.width = tSize * 2; tileCanvas.height = tSize * 2;
+        tileCanvas.style.width = `${tSize}px`; tileCanvas.style.height = `${tSize}px`;
+        tCtx.setTransform(2,0,0,2,0,0);
 
         draw();
     }
 
     function draw() {
-        drawMatrix();
-        drawTiling();
-    }
-
-    function drawMatrix() {
-        const w = matrixCanvas.width / 2;
-        const cellSize = w / N;
-
-        mCtx.fillStyle = '#080808';
-        mCtx.fillRect(0, 0, w, w);
-
-        mCtx.font = `bold ${Math.max(8, cellSize * 0.5)}px monospace`;
-        mCtx.textAlign = 'center';
-        mCtx.textBaseline = 'middle';
-
-        for (let y = 0; y < N; y++) {
-            for (let x = 0; x < N; x++) {
-                const val = grid[y] ? grid[y][x] : 0;
-                const px = x * cellSize;
-                const py = y * cellSize;
-
-                // Highlight background
-                if (val === 1) {
-                    mCtx.fillStyle = '#111';
-                    mCtx.fillRect(px, py, cellSize, cellSize);
+        // Draw Matrix
+        const mSz = matrixCanvas.width/2;
+        const mc = mSz/N;
+        mCtx.fillStyle = '#050505'; mCtx.fillRect(0,0,mSz,mSz);
+        
+        for(let r=0; r<N; r++) {
+            for(let c=0; c<N; c++) {
+                const px = c*mc, py = r*mc;
+                mCtx.strokeStyle = '#222'; mCtx.strokeRect(px, py, mc, mc);
+                if(grid[r][c]) {
+                    mCtx.fillStyle = '#111'; mCtx.fillRect(px, py, mc, mc);
+                    mCtx.fillStyle = varColor(1);
+                    if(mc > 12) mCtx.fillText("1", px+mc/2-3, py+mc/2+3);
+                    else mCtx.fillRect(px+2, py+2, mc-4, mc-4);
+                } else {
+                    mCtx.fillStyle = '#333';
+                    if(mc > 12) mCtx.fillText("0", px+mc/2-3, py+mc/2+3);
                 }
-
-                // Text
-                mCtx.fillStyle = val === 1 ? '#00d2ff' : '#333';
-                // Only draw text if cell is big enough
-                if (cellSize > 12) {
-                    mCtx.fillText(val, px + cellSize/2, py + cellSize/2);
-                } else if (val === 1) {
-                    // Just a dot for tiny cells
-                    mCtx.fillRect(px+2, py+2, cellSize-4, cellSize-4);
-                }
-
-                // Grid lines
-                mCtx.strokeStyle = '#1a1a1a';
-                mCtx.lineWidth = 0.5;
-                mCtx.strokeRect(px, py, cellSize, cellSize);
             }
+        }
+
+        // Draw Tiling
+        const tSz = tileCanvas.width/2;
+        const tc = tSz/N;
+        tCtx.fillStyle = '#000'; tCtx.fillRect(0,0,tSz,tSz);
+
+        if (isFilled) {
+            drawFilledTiling(tc);
+        } else {
+            drawStrokeTiling(tc);
         }
     }
 
-    function drawTiling() {
-        const w = tileCanvas.width / 2;
-        const cellSize = w / N;
-
-        tCtx.fillStyle = '#000';
-        tCtx.fillRect(0, 0, w, w);
-
-        tCtx.shadowBlur = 8;
-        tCtx.lineCap = 'round';
+    function drawStrokeTiling(tc) {
         tCtx.lineWidth = lineWidth;
-
-        for (let y = 0; y < N; y++) {
-            for (let x = 0; x < N; x++) {
-                const val = grid[y] ? grid[y][x] : 0;
-                const px = x * cellSize;
-                const py = y * cellSize;
-                const mid = cellSize / 2;
-
-                if(val === 0) {
-                    tCtx.strokeStyle = '#007799'; 
-                    tCtx.shadowColor = 'rgba(0, 119, 153, 0.4)';
-                } else {
-                    tCtx.strokeStyle = '#00d2ff'; 
-                    tCtx.shadowColor = 'rgba(0, 210, 255, 0.6)';
-                }
-
+        tCtx.lineCap = drawMode === 'curved' ? 'butt' : 'round';
+        
+        for(let r=0; r<N; r++) {
+            for(let c=0; c<N; c++) {
+                const x = c*tc, y = r*tc, m = tc/2;
+                // Visual Bugfix: Use the lighter color for all curved tiles, 
+                // but keep orientation-dependent colors for straight mode.
+                tCtx.strokeStyle = (drawMode === 'curved') ? varColor(1) : varColor(grid[r][c]);
                 tCtx.beginPath();
-                if (val === 0) {
-                    // Tile 0: Left->Top, Bottom->Right
-                    tCtx.moveTo(px, py + mid); tCtx.lineTo(px + mid, py);
-                    tCtx.moveTo(px + mid, py + cellSize); tCtx.lineTo(px + cellSize, py + mid);
-                } else {
-                    // Tile 1: Bottom->Left, Top->Right
-                    tCtx.moveTo(px + mid, py + cellSize); tCtx.lineTo(px, py + mid);
-                    tCtx.moveTo(px + mid, py); tCtx.lineTo(px + cellSize, py + mid);
+                
+                if (drawMode === 'straight') {
+                    if(grid[r][c] === 0) { // /
+                        tCtx.moveTo(x, y+m); tCtx.lineTo(x+m, y);
+                        tCtx.moveTo(x+m, y+tc); tCtx.lineTo(x+tc, y+m);
+                    } else { // \
+                        tCtx.moveTo(x+m, y); tCtx.lineTo(x+tc, y+m);
+                        tCtx.moveTo(x, y+m); tCtx.lineTo(x+m, y+tc);
+                    }
+                } else { // Curved
+                    if (grid[r][c] === 0) {
+                        tCtx.arc(x, y, m, 0, Math.PI/2); // Top-Left corner
+                        tCtx.stroke(); tCtx.beginPath();
+                        tCtx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); // Btm-Right corner
+                    } else {
+                        tCtx.arc(x, y+tc, m, 1.5*Math.PI, 0); // Btm-Left corner
+                        tCtx.stroke(); tCtx.beginPath();
+                        tCtx.arc(x+tc, y, m, Math.PI/2, Math.PI); // Top-Right corner
+                    }
                 }
                 tCtx.stroke();
             }
         }
-        tCtx.shadowBlur = 0;
     }
 
-    function handleInput(e, canvasRef) {
-        const rect = canvasRef.getBoundingClientRect();
-        // Visual Size
-        const visualW = canvasRef.offsetWidth;
-        const visualH = canvasRef.offsetHeight;
+    function drawFilledTiling(tc) {
+        // 1. Color Propagation
+        let colors = Array(N).fill().map(() => Array(N).fill(0));
         
-        // Coords within visual element
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const col = Math.floor((x / visualW) * N);
-        const row = Math.floor((y / visualH) * N);
+        for(let r=0; r<N; r++) {
+            for(let c=0; c<N; c++) {
+                if(r===0 && c===0) { colors[r][c] = isInvertedFill ? 1 : 0; continue; }
+                
+                let prevR, prevC;
+                if (c > 0) { prevR = r; prevC = c-1; }
+                else { prevR = r-1; prevC = 0; }
+                
+                let sameRotation = (grid[r][c] === grid[prevR][prevC]);
+                colors[r][c] = sameRotation ? (1 - colors[prevR][prevC]) : colors[prevR][prevC];
+            }
+        }
 
-        if (col >= 0 && col < N && row >= 0 && row < N) {
-            // Flip bit
-            grid[row][col] = grid[row][col] === 0 ? 1 : 0;
+        // 2. Render
+        for(let r=0; r<N; r++) {
+            for(let c=0; c<N; c++) {
+                const x = c*tc, y = r*tc, m = tc/2;
+                const rot = grid[r][c];
+                const col = colors[r][c];
+                
+                tCtx.fillStyle = varColor(1);
+                tCtx.beginPath();
+                
+                if (col === 0) {
+                    // COLOR 0: The "Corridor" (Connects regions between lines)
+                    if (drawMode === 'straight') {
+                        if (rot === 0) { // Connects Left-Bottom to Right-Top
+                            tCtx.moveTo(x, y+m); tCtx.lineTo(x, y+tc); tCtx.lineTo(x+m, y+tc); 
+                            tCtx.lineTo(x+tc, y+m); tCtx.lineTo(x+tc, y); tCtx.lineTo(x+m, y);
+                        } else { // Connects Left-Top to Right-Bottom
+                            tCtx.moveTo(x, y+m); tCtx.lineTo(x, y); tCtx.lineTo(x+m, y);
+                            tCtx.lineTo(x+tc, y+m); tCtx.lineTo(x+tc, y+tc); tCtx.lineTo(x+m, y+tc);
+                        }
+                    } else { // Curved Corridor
+                        if (rot === 0) { // Fills between TL and BR arcs
+                            tCtx.moveTo(x+m, y); 
+                            tCtx.arc(x, y, m, 0, Math.PI/2); // Inner Arc TL
+                            tCtx.lineTo(x, y+tc); // Fill Corner BL
+                            tCtx.lineTo(x+m, y+tc);
+                            tCtx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); // Inner Arc BR
+                            tCtx.lineTo(x+tc, y); // Fill Corner TR
+                            tCtx.lineTo(x+m, y);
+                        } else { // Fills between BL and TR arcs
+                            tCtx.moveTo(x, y+m);
+                            tCtx.arc(x, y+tc, m, 1.5*Math.PI, 0); // Inner Arc BL
+                            tCtx.lineTo(x+tc, y+tc); // Fill Corner BR
+                            tCtx.lineTo(x+tc, y+m);
+                            tCtx.arc(x+tc, y, m, Math.PI/2, Math.PI); // Inner Arc TR
+                            tCtx.lineTo(x, y); // Fill Corner TL
+                            tCtx.lineTo(x, y+m);
+                        }
+                    }
+                } else {
+                    // COLOR 1: The "Corners" (Behind the lines)
+                    if (drawMode === 'straight') {
+                        if (rot === 0) {
+                            tCtx.moveTo(x, y); tCtx.lineTo(x+m, y); tCtx.lineTo(x, y+m); 
+                            tCtx.moveTo(x+tc, y+tc); tCtx.lineTo(x+m, y+tc); tCtx.lineTo(x+tc, y+m);
+                        } else {
+                            tCtx.moveTo(x, y+tc); tCtx.lineTo(x+m, y+tc); tCtx.lineTo(x, y+m);
+                            tCtx.moveTo(x+tc, y); tCtx.lineTo(x+m, y); tCtx.lineTo(x+tc, y+m);
+                        }
+                    } else { // Curved Corners (Fans)
+                        if (rot === 0) {
+                            tCtx.moveTo(x, y); tCtx.arc(x, y, m, 0, Math.PI/2); 
+                            tCtx.moveTo(x+tc, y+tc); tCtx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI);
+                        } else {
+                            tCtx.moveTo(x, y+tc); tCtx.arc(x, y+tc, m, 1.5*Math.PI, 0);
+                            tCtx.moveTo(x+tc, y); tCtx.arc(x+tc, y, m, Math.PI/2, Math.PI);
+                        }
+                    }
+                }
+                tCtx.fill();
+            }
+        }
+    }
+
+    function varColor(v) { return v === 1 ? '#00d2ff' : '#007799'; }
+
+    function handleCanvasClick(e, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        const r = Math.floor(y * N), c = Math.floor(x * N);
+        if(r >=0 && r < N && c >= 0 && c < N) {
+            grid[r][c] = 1 - grid[r][c];
             draw();
         }
     }
 
-    // Start
     init();
-
 </script>
 </body>
 </html>
