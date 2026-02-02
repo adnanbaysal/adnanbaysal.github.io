@@ -527,13 +527,19 @@ return rP ^ cP;`,
                         if (rot === 0) { // Fills between TL and BR arcs
                             tCtx.moveTo(x+m, y); 
                             tCtx.arc(x, y, m, 0, Math.PI/2); // Inner Arc TL
+                            tCtx.lineTo(x, y+tc); // Fill Corner BL
                             tCtx.lineTo(x+m, y+tc);
                             tCtx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); // Inner Arc BR
+                            tCtx.lineTo(x+tc, y); // Fill Corner TR
+                            tCtx.lineTo(x+m, y);
                         } else { // Fills between BL and TR arcs
                             tCtx.moveTo(x, y+m);
                             tCtx.arc(x, y+tc, m, 1.5*Math.PI, 0); // Inner Arc BL
+                            tCtx.lineTo(x+tc, y+tc); // Fill Corner BR
                             tCtx.lineTo(x+tc, y+m);
                             tCtx.arc(x+tc, y, m, Math.PI/2, Math.PI); // Inner Arc TR
+                            tCtx.lineTo(x, y); // Fill Corner TL
+                            tCtx.lineTo(x, y+m);
                         }
                     }
                 } else {
