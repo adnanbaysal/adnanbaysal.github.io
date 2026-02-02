@@ -34,5 +34,17 @@
             "Fractal"
         ],
         "date": "2026-02-01"
+    },
+    {
+        "id": "hex-truchet-tiling",
+        "title": "Programmable Hexagonal Truchet-Smith Tiling",
+        "description": "Hexagonal variant of the Smith's version of Truchet tiling with user defined tiling functions.",
+        "url": "./hex-truchet.html",
+        "tags": [
+            "Canvas API",
+            "Truchet tiling",
+            "Fractal"
+        ],
+        "date": "2026-02-02"
     }
 ]
