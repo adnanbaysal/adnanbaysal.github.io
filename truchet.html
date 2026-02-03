@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programmable Truchet-Smith Tiling</title>
+    <title>Truchet-Smith Tiling</title>
     <style>
         :root { 
             --accent: #00d2ff; 
@@ -148,6 +148,48 @@
         .close-info { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #666; font-size: 18px; }
         code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace; }
         .shortcut { background: #333; color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+
+        /* --- MOBILE RESPONSIVE FIXES --- */
+        @media (max-width: 900px) {
+            body {
+                height: auto;
+                overflow-y: auto; /* Enable scrolling on mobile */
+            }
+
+            header {
+                height: auto;
+                padding: 10px;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            main {
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+
+            .left-col {
+                width: 100%;
+                order: 2; /* Move Controls/Code below the art */
+            }
+
+            .right-col {
+                width: 100%;
+                order: 1; /* Move Tiling to TOP */
+                height: 55vh; /* Give it substantial height */
+                min-height: 350px;
+            }
+
+            #matrix-wrapper {
+                margin: 0 auto;
+                max-width: 300px; /* Keep matrix manageable */
+            }
+
+            .editor-container {
+                min-height: 300px; /* Ensure editor is usable */
+            }
+        }
 
     </style>
 </head>
