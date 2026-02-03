@@ -13,8 +13,8 @@
     },
     {
         "id": "mirror-sim",
-        "title": "Reflections inside a closed shaped mirror",
-        "description": "A reflection simulation inside an closed shaped mirror. AVOID IF YOU HAVE EPILEPSY OR SIMILAR DISEASE!",
+        "title": "Reflections inside a closed mirror",
+        "description": "A circular light wave reflection simulation inside an closed shaped mirror. AVOID IF YOU HAVE EPILEPSY OR SIMILAR DISEASE!",
         "url": "./mirror-sim.html",
         "tags": [
             "Canvas API",
@@ -25,7 +25,7 @@
     },
     {
         "id": "truchet-tiling",
-        "title": "Programmable Truchet-Smith Tiling",
+        "title": "Truchet-Smith Tiling",
         "description": "Smith's version of Truchet tiling with user defined tiling functions.",
         "url": "./truchet.html",
         "tags": [
@@ -37,7 +37,7 @@
     },
     {
         "id": "hex-truchet-tiling",
-        "title": "Programmable Hexagonal Truchet-Smith Tiling",
+        "title": "Hexagonal Truchet-Smith Tiling",
         "description": "Hexagonal variant of the Smith's version of Truchet tiling with user defined tiling functions.",
         "url": "./hex-truchet.html",
         "tags": [
