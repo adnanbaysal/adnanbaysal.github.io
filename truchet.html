@@ -207,8 +207,8 @@
         <div style="flex-grow:1"></div>
         
         <div class="control-group" style="border-right: 1px solid #333; padding-right: 10px;">
-            <div class="label-row"><span>Anim Speed</span> <span id="speed-val" class="value">50%</span></div>
-            <input type="range" id="anim-speed" min="1" max="100" step="1" value="50">
+            <div class="label-row"><span>Speed Lvl</span> <span id="speed-val" class="value">5</span></div>
+            <input type="range" id="anim-speed" min="1" max="10" step="1" value="5">
         </div>
         
         <select id="anim-type" class="mode-select" style="width: 100px;">
@@ -309,13 +309,20 @@
     let targetGrid = [];   // The final state (0 or 1)
     let angleGrid = [];    // Current rotation (Radians)
 
+    // --- CHANGED: Speed Configuration Array ---
+    // Maps Level 1-10 to seconds per step
+    const STEP_DURATION_LEVELS = [
+        0.1, 0.2, 0.3, 0.4, 0.5, 
+        0.8, 1.1, 1.4, 1.7, 2.0
+    ];
+
     // Animation State
     let animType = 'none';
     let isAnimating = false;
     let animProgress = 0; 
     let animDirection = 1; // 1 = forward, -1 = rewind
     let animationFrameId;
-    let animSpeedFactor = 0.5;
+    let currentStepDuration = STEP_DURATION_LEVELS[4]; // Default Level 5
 
     // Recording State
     let mediaRecorder;
@@ -453,7 +460,7 @@ return rP ^ cP;`,
         ui.animType.addEventListener('change', (e) => {
             animType = e.target.value;
             // Reset state on change
-            animProgress = -0.1; 
+            animProgress = -0.05; 
             animDirection = 1;
             
             if (animType === 'none') {
@@ -461,16 +468,17 @@ return rP ^ cP;`,
                 snapToTarget();
                 requestDraw();
             } else {
-                if(!isAnimating && ui.playBtn.textContent === "⏸") startAnimation(); // Auto-restart if already playing?
-                // Or just ensure angles are reset
+                if(!isAnimating && ui.playBtn.textContent === "⏸") startAnimation(); 
                 for(let r=0; r<N; r++) for(let c=0; c<N; c++) angleGrid[r][c] = 0;
                 requestDraw();
             }
         });
 
+        // --- CHANGED: Speed Listener ---
         ui.animSpeed.addEventListener('input', (e) => {
-            animSpeedFactor = parseInt(e.target.value) / 100;
-            ui.speedVal.textContent = e.target.value + '%';
+            const level = parseInt(e.target.value);
+            ui.speedVal.textContent = level;
+            currentStepDuration = STEP_DURATION_LEVELS[level - 1];
         });
 
         ui.playBtn.addEventListener('click', toggleAnimation);
@@ -551,10 +559,9 @@ return rP ^ cP;`,
         isAnimating = true;
         ui.playBtn.textContent = "⏸";
         animDirection = 1;
-        animProgress = -0.2; // Start with a brief pause at 0
+        animProgress = -0.05; 
         lastTime = performance.now();
         
-        // Reset angles to 0 for start of animation
         for(let r=0; r<N; r++) for(let c=0; c<N; c++) angleGrid[r][c] = 0;
         
         animationLoop();
@@ -574,21 +581,32 @@ return rP ^ cP;`,
         const dt = (now - lastTime) / 1000;
         lastTime = now;
 
-        // Logic Speed 
-        let logicSpeed = (animSpeedFactor * 1.5); 
-        
+        // --- CHANGED: Strict Timing Logic ---
+        let totalDuration = 1.0;
+
+        if (animType === 'cell') {
+            totalDuration = (N * N) * currentStepDuration;
+        } else if (animType === 'row') {
+            totalDuration = N * currentStepDuration;
+        } else if (animType === 'rings') {
+            totalDuration = (N / 2) * currentStepDuration;
+        } else {
+            // 'all' mode
+            totalDuration = currentStepDuration;
+        }
+
+        const logicSpeed = 1 / Math.max(0.001, totalDuration);
+
         if (animDirection === -1) animProgress -= dt * logicSpeed;
         else animProgress += dt * logicSpeed;
 
-        // "Ping-Pong" Rewind Logic for ALL modes
-        // 1.2 gives a small pause at full state before rewinding
-        // -0.2 gives a small pause at empty state before restarting
-        if (animProgress >= 1.2) { 
+        // "Ping-Pong" Buffer (Time based, using small percentage buffer)
+        if (animProgress >= 1.05) { 
             animDirection = -1; 
-            animProgress = 1.2; 
-        } else if (animProgress <= -0.2) {
+            animProgress = 1.05; 
+        } else if (animProgress <= -0.05) {
             animDirection = 1; 
-            animProgress = -0.2;
+            animProgress = -0.05;
         }
 
         updateGridAngles(dt);
@@ -599,10 +617,29 @@ return rP ^ cP;`,
     }
 
     function updateGridAngles(dt) {
-        // Rotational Speed - faster than logic wave
-        const rotSpeed = 5 * animSpeedFactor + 1; 
+        // --- CHANGED: Strict sequencing for cell/row modes ---
+        if (animType === 'cell' || animType === 'row') {
+            const totalSteps = (animType === 'cell') ? N*N : N;
+            const p = Math.max(0, Math.min(1, animProgress));
+            const currentStep = p * totalSteps;
 
-        // Use strict progress
+            for (let r = 0; r < N; r++) {
+                for (let c = 0; c < N; c++) {
+                    const stepIndex = (animType === 'cell') ? (r * N + c) : r;
+                    
+                    let localProgress = currentStep - stepIndex;
+                    localProgress = Math.max(0, Math.min(1, localProgress));
+
+                    const targetAngle = targetGrid[r][c] ? (Math.PI / 2) : 0;
+                    angleGrid[r][c] = localProgress * targetAngle;
+                }
+            }
+            return;
+        }
+        
+        // --- Default Physics Logic for All/Rings ---
+        const rotSpeed = (5 / currentStepDuration) + 1; // Faster visual rotation if step duration is low
+
         const t = animProgress;
 
         for (let r = 0; r < N; r++) {
@@ -611,16 +648,7 @@ return rP ^ cP;`,
                 let shouldBeActive = false;
                 
                 if (animType === 'all') {
-                    shouldBeActive = t > 0.1;
-                } else if (animType === 'row') {
-                    // Start rows slightly apart
-                    const rowProg = r / N;
-                    shouldBeActive = t > rowProg; // Strict inequality to help Reset
-                } else if (animType === 'cell') {
-                    const cellIdx = r * N + c;
-                    const totalCells = N * N;
-                    const cellProg = cellIdx / totalCells;
-                    shouldBeActive = t > cellProg;
+                    shouldBeActive = t > 0.05;
                 } else if (animType === 'rings') {
                     const cx = (N - 1) / 2;
                     const cy = (N - 1) / 2;
@@ -630,7 +658,6 @@ return rP ^ cP;`,
                     shouldBeActive = t > ringProg;
                 }
 
-                // If t is negative (Rewind phase finished), force everyone inactive
                 if (t < 0) shouldBeActive = false;
 
                 let targetAngle = 0;
@@ -697,7 +724,7 @@ return rP ^ cP;`,
 
     /* --- SVG EXPORT --- */
     function exportSVG() {
-        const size = 1000; // Resolution for high-quality vector output
+        const size = 1000; 
         const cellSize = size / N;
         const half = cellSize / 2;
         
@@ -707,7 +734,6 @@ return rP ^ cP;`,
         const colBg = "#111111"; 
         const lineWidthSVG = (lineWidth / (tileCanvas.width / 2 / N)) * cellSize;
 
-        // 1. Calculate the fill parity for the logical targetGrid
         let fillColors = Array(N).fill().map(() => Array(N).fill(0));
         for(let r = 0; r < N; r++) {
             for(let c = 0; c < N; c++) {
@@ -715,7 +741,6 @@ return rP ^ cP;`,
                     fillColors[r][c] = isInvertedFill ? 1 : 0; 
                     continue; 
                 }
-                // Trace parity from the previous tile (top or left)
                 let pr = (c > 0) ? r : r - 1;
                 let pc = (c > 0) ? c - 1 : 0;
                 let same = (targetGrid[r][c] === targetGrid[pr][pc]);
@@ -723,14 +748,12 @@ return rP ^ cP;`,
             }
         }
 
-        // 2. Generate Tile Geometry
         for (let r = 0; r < N; r++) {
             for (let c = 0; c < N; c++) {
                 const x = c * cellSize;
                 const y = r * cellSize;
                 const angDeg = targetGrid[r][c] * 90;
                 
-                // Group handles position and orientation
                 svg += `<g transform="translate(${x}, ${y}) rotate(${angDeg}, ${half}, ${half})">`;
                 
                 if (isFilled) {
@@ -738,19 +761,12 @@ return rP ^ cP;`,
                     const c2 = (fillColors[r][c] === 0) ? colBg : colMain; 
                     
                     if (drawMode === 'straight') {
-                        // Background
                         svg += `<path d="M0 0 L${half} 0 L0 ${half} Z" fill="${c2}" />`;
                         svg += `<path d="M${cellSize} ${cellSize} L${cellSize} ${half} L${half} ${cellSize} Z" fill="${c2}" />`;
-                        // Corridor
                         svg += `<path d="M${half} 0 L${cellSize} 0 L${cellSize} ${half} L${half} ${cellSize} L0 ${cellSize} L0 ${half} Z" fill="${c1}" />`;
                     } else {
-                        // Curved Background (Sweep flag 1 = Clockwise)
-                        // Top-Left corner wedge
                         svg += `<path d="M0 0 L${half} 0 A ${half} ${half} 0 0 1 0 ${half} Z" fill="${c2}" />`;
-                        // Bottom-Right corner wedge
                         svg += `<path d="M${cellSize} ${cellSize} L${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half} Z" fill="${c2}" />`;
-                        
-                        // Curved Corridor (Using Sweep flag 1 for both arcs to match wedges)
                         svg += `<path d="
                             M ${half} 0 
                             A ${half} ${half} 0 0 1 0 ${half} 
@@ -761,7 +777,6 @@ return rP ^ cP;`,
                             Z" fill="${c1}" />`;
                     }
                 } else {
-                    // Stroke Mode
                     if (drawMode === 'straight') {
                         svg += `<line x1="0" y1="${half}" x2="${half}" y2="0" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
                         svg += `<line x1="${half}" y1="${cellSize}" x2="${cellSize}" y2="${half}" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
@@ -781,18 +796,16 @@ return rP ^ cP;`,
         link.download = `truchet-static-${Date.now()}.svg`;
         link.click();
     }
+
     /* --- RENDERING --- */
 
     function requestDraw() {
         if (!isAnimating) draw();
     }
 
-    // New Helper: Compute flood fill based on CURRENT VISUAL ANGLES
     function computeDynamicFill() {
         let fColors = Array(N).fill().map(() => Array(N).fill(0));
         
-        // 1. Create a Discrete Grid Snapshot based on angles
-        // If angle > 45deg, it behaves like '1', else '0'
         let currentLogicGrid = [];
         for(let r=0; r<N; r++) {
             let rowArr = [];
@@ -802,7 +815,6 @@ return rP ^ cP;`,
             currentLogicGrid.push(rowArr);
         }
 
-        // 2. Propagate colors
         for(let r=0; r<N; r++) {
             for(let c=0; c<N; c++) {
                 if(r===0 && c===0) { fColors[r][c] = isInvertedFill ? 1 : 0; continue; }
@@ -828,7 +840,6 @@ return rP ^ cP;`,
             for(let c=0; c<N; c++) {
                 const px = c*mc, py = r*mc;
                 mCtx.strokeStyle = '#222'; mCtx.strokeRect(px, py, mc, mc);
-                // Matrix visualizes TARGET logic
                 if(targetGrid[r][c]) {
                     mCtx.fillStyle = '#111'; mCtx.fillRect(px, py, mc, mc);
                     mCtx.fillStyle = varColor(1);
@@ -859,7 +870,7 @@ return rP ^ cP;`,
 
                 tCtx.save();
                 tCtx.translate(cx, cy);
-                tCtx.rotate(ang); // ROTATE CANVAS
+                tCtx.rotate(ang); 
                 tCtx.translate(-cx, -cy);
 
                 if (isFilled) {
@@ -893,14 +904,12 @@ return rP ^ cP;`,
 
     function drawOneFilledTile(ctx, x, y, tc, colorVal) {
         const m = tc/2;
-        // High Contrast Colors
-        const colMain = varColor(1); // Blue
-        const colBg = '#111';        // Black/Dark Grey
+        const colMain = varColor(1);
+        const colBg = '#111';
         
-        const c1 = colorVal === 0 ? colMain : colBg; // Corridor
-        const c2 = colorVal === 0 ? colBg : colMain; // Background
+        const c1 = colorVal === 0 ? colMain : colBg; 
+        const c2 = colorVal === 0 ? colBg : colMain; 
         
-        // 1. Draw Backgrounds (Corners)
         ctx.fillStyle = c2;
         ctx.beginPath();
         if (drawMode === 'straight') {
@@ -912,7 +921,6 @@ return rP ^ cP;`,
         }
         ctx.fill();
 
-        // 2. Draw Corridor (Foreground)
         ctx.fillStyle = c1;
         ctx.beginPath();
         if (drawMode === 'straight') {
