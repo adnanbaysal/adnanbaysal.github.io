@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truchet-Smith Tiling</title>
+    <title>Truchet-Smith Tiling v3.0</title>
     <style>
         :root { 
             --accent: #00d2ff; 
@@ -11,6 +11,7 @@
             --bg: #050505; 
             --panel: #111; 
             --code-bg: #0d0d0d;
+            --record: #eb4d4b;
         }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; 
@@ -24,7 +25,7 @@
             background: var(--panel); padding: 8px 16px; 
             border-bottom: 1px solid #333; 
             display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-            gap: 12px; z-index: 10; height: 50px; flex-shrink: 0;
+            gap: 12px; z-index: 10; height: 60px; flex-shrink: 0;
         }
         
         .control-group { 
@@ -34,7 +35,7 @@
 
         .label-row { 
             display: flex; justify-content: space-between; 
-            color: #888; font-size: 10px; font-weight: bold; text-transform: uppercase; 
+            color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; 
         }
         
         span.value { color: var(--accent); font-family: monospace; }
@@ -80,12 +81,23 @@
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
         }
 
         #matrix-wrapper { height: 280px; flex-shrink: 0; }
         #tile-wrapper { height: 100%; width: 100%; }
 
         canvas { cursor: crosshair; image-rendering: auto; }
+
+        /* Recording Indicator */
+        #rec-indicator {
+            position: absolute; top: 15px; right: 15px; z-index: 20;
+            background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 6px;
+            display: none; align-items: center; gap: 8px; color: #fff;
+            font-family: monospace; font-size: 12px; border: 1px solid var(--record);
+        }
+        .dot { width: 8px; height: 8px; background: var(--record); border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         /* --- Code Editor --- */
         .editor-container {
@@ -123,6 +135,8 @@
         .btn-run:hover { filter: brightness(1.2); box-shadow: 0 0 8px var(--accent-dim); }
         .btn-sec { background: #333; color: #ccc; }
         .btn-sec:hover { background: #444; color: #fff; }
+        .btn-rec { background: var(--record); color: #fff; }
+        .btn-rec:hover { filter: brightness(1.1); }
         .btn-icon { width: 30px; padding: 0; font-size: 14px; }
         .btn-util { background: #222; color: #888; }
         .btn-util:hover { color: #fff; }
@@ -151,44 +165,13 @@
 
         /* --- MOBILE RESPONSIVE FIXES --- */
         @media (max-width: 900px) {
-            body {
-                height: auto;
-                overflow-y: auto; /* Enable scrolling on mobile */
-            }
-
-            header {
-                height: auto;
-                padding: 10px;
-                justify-content: center;
-                gap: 15px;
-            }
-
-            main {
-                flex-direction: column;
-                height: auto;
-                overflow: visible;
-            }
-
-            .left-col {
-                width: 100%;
-                order: 2; /* Move Controls/Code below the art */
-            }
-
-            .right-col {
-                width: 100%;
-                order: 1; /* Move Tiling to TOP */
-                height: 55vh; /* Give it substantial height */
-                min-height: 350px;
-            }
-
-            #matrix-wrapper {
-                margin: 0 auto;
-                max-width: 300px; /* Keep matrix manageable */
-            }
-
-            .editor-container {
-                min-height: 300px; /* Ensure editor is usable */
-            }
+            body { height: auto; overflow-y: auto; }
+            header { height: auto; padding: 10px; justify-content: center; gap: 15px; }
+            main { flex-direction: column; height: auto; overflow: visible; }
+            .left-col { width: 100%; order: 2; }
+            .right-col { width: 100%; order: 1; height: 55vh; min-height: 350px; }
+            #matrix-wrapper { margin: 0 auto; max-width: 300px; }
+            .editor-container { min-height: 300px; }
         }
 
     </style>
@@ -222,7 +205,27 @@
         </div>
 
         <div style="flex-grow:1"></div>
-        <button id="save-img-btn" class="btn-sec">📸 PNG</button>
+        
+        <div class="control-group" style="border-right: 1px solid #333; padding-right: 10px;">
+            <div class="label-row"><span>Anim Speed</span> <span id="speed-val" class="value">50%</span></div>
+            <input type="range" id="anim-speed" min="1" max="100" step="1" value="50">
+        </div>
+        
+        <select id="anim-type" class="mode-select" style="width: 100px;">
+            <option value="none">Static</option>
+            <option value="cell">Cell-by-Cell</option>
+            <option value="row">Row-wise</option>
+            <option value="rings">Rings</option>
+            <option value="all">All-at-Once</option>
+        </select>
+        
+        <button id="anim-play-btn" class="btn-sec btn-icon" title="Play Animation">▶</button>
+        <button id="rec-btn" class="btn-rec">⏺ REC</button>
+        
+        <div style="width: 1px; height: 30px; background: #333; margin: 0 5px;"></div>
+        
+        <button id="save-svg-btn" class="btn-util">SVG</button>
+        <button id="save-img-btn" class="btn-util">PNG</button>
         <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
     </header>
 
@@ -260,7 +263,7 @@
 
                 <div class="editor-actions">
                     <button id="save-preset-btn" class="btn-sec">💾 Save</button>
-                    <button id="run-btn" class="btn-run">▶ Run Code</button>
+                    <button id="run-btn" class="btn-run">▶ Update Grid</button>
                 </div>
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
             </div>
@@ -268,6 +271,7 @@
 
         <div class="right-col">
             <div style="position: absolute; top: 10px; left: 10px; z-index: 5;" class="panel-header">Truchet-Smith Tiling</div>
+            <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
             <div id="tile-wrapper" class="canvas-wrapper">
                 <canvas id="tileCanvas"></canvas>
             </div>
@@ -277,19 +281,17 @@
             <span class="close-info" id="close-info">&times;</span>
             <h2>About this Tool</h2>
             
-            <h3>How It Works</h3>
-            <p>This is a playground for <strong>Truchet-Smith Tiling</strong>. The grid on the left controls the rotation of tiles on the right. <code>0</code> represents one orientation, <code>1</code> represents its 90-degree rotation.</p>
-            <p><strong>Modes:</strong> Switch between <em>Straight</em> lines and <em>Curved</em> arcs (Smith tiles). Toggle <em>Filled</em> to visualize the continuous ribbons (unit-width paths) formed by the tiling.</p>
+            <h3>Animation Modes</h3>
+            <p><strong>Cell-by-Cell:</strong> Scans grid left-to-right, top-to-bottom.</p>
+            <p><strong>Row-wise:</strong> Activates one full row at a time.</p>
+            <p><strong>Rings:</strong> Concentric waves starting from center.</p>
+            <p><strong>All-at-Once:</strong> Global transition.</p>
+            <p><em>All animations now cycle back (rewind) to the zero state before restarting.</em></p>
 
-            <h3>Functions</h3>
-            <p>You can program the grid using JavaScript. The function runs for every cell (row, col) and returns 0 or 1.</p>
-            <p><strong>Variables:</strong> <code>row</code>, <code>col</code>, <code>n</code> (grid size).<br>
-            <strong>Example:</strong> <code>return (row + col) % 2;</code> creates a checkerboard.</p>
-
-            <h3>Saving Code</h3>
-            <p>Modified a function? Click <strong>💾 Save</strong> to store it in your browser's local storage. It will appear in the dropdown menu for future use.</p>
-            
-            <p style="margin-top:15px; font-size:11px; color:#666;">Use <span class="shortcut">Ctrl</span>+<span class="shortcut">Enter</span> to run code quickly.</p>
+            <h3>Export Options</h3>
+            <p><strong>⏺ REC:</strong> Records a .webm video of the animation.</p>
+            <p><strong>SVG:</strong> Exports a vector snapshot of the exact current frame.</p>
+            <p><strong>PNG:</strong> Saves the current canvas view.</p>
         </div>
     </main>
 
@@ -301,8 +303,25 @@
     let lineWidth = 2.5;
     let isFilled = false;
     let isInvertedFill = false;
-    let drawMode = 'straight'; // 'straight' or 'curved'
-    let grid = []; 
+    let drawMode = 'straight'; 
+    
+    // Grids
+    let targetGrid = [];   // The final state (0 or 1)
+    let angleGrid = [];    // Current rotation (Radians)
+
+    // Animation State
+    let animType = 'none';
+    let isAnimating = false;
+    let animProgress = 0; 
+    let animDirection = 1; // 1 = forward, -1 = rewind
+    let animationFrameId;
+    let animSpeedFactor = 0.5;
+
+    // Recording State
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recStartTime;
+    let isRecording = false;
 
     // DOM Elements
     const matrixCanvas = document.getElementById('matrixCanvas');
@@ -322,10 +341,20 @@
         runBtn: document.getElementById('run-btn'),
         savePresetBtn: document.getElementById('save-preset-btn'),
         saveImgBtn: document.getElementById('save-img-btn'),
+        saveSvgBtn: document.getElementById('save-svg-btn'),
         errorMsg: document.getElementById('code-error'),
         info: document.getElementById('info-modal'),
         infoBtn: document.getElementById('info-btn'),
-        closeInfo: document.getElementById('close-info')
+        closeInfo: document.getElementById('close-info'),
+        
+        animType: document.getElementById('anim-type'),
+        animSpeed: document.getElementById('anim-speed'),
+        speedVal: document.getElementById('speed-val'),
+        playBtn: document.getElementById('anim-play-btn'),
+        
+        recBtn: document.getElementById('rec-btn'),
+        recInd: document.getElementById('rec-indicator'),
+        recTimer: document.getElementById('rec-timer')
     };
 
     /**
@@ -359,18 +388,27 @@ return rP ^ cP;`,
     }
 
     function init() {
-        grid = Array(N).fill().map(() => Array(N).fill(0));
+        targetGrid = Array(N).fill().map(() => Array(N).fill(0));
+        angleGrid = Array(N).fill().map(() => Array(N).fill(0));
         ui.editor.value = presets.xor;
 
-        // Listeners
+        // Event Listeners
         window.addEventListener('resize', resize);
         
-        ui.n.addEventListener('input', (e) => { N = parseInt(e.target.value); ui.nVal.textContent = N; runCode(); });
-        ui.w.addEventListener('input', (e) => { lineWidth = parseFloat(e.target.value); ui.wVal.textContent = lineWidth.toFixed(1); draw(); });
+        ui.n.addEventListener('input', (e) => { 
+            N = parseInt(e.target.value); 
+            ui.nVal.textContent = N; 
+            runCode(); 
+        });
+        ui.w.addEventListener('input', (e) => { 
+            lineWidth = parseFloat(e.target.value); 
+            ui.wVal.textContent = lineWidth.toFixed(1); 
+            requestDraw(); 
+        });
         
-        ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; draw(); });
-        ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; draw(); });
-        ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; draw(); });
+        ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; requestDraw(); });
+        ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; requestDraw(); });
+        ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; requestDraw(); });
 
         ui.select.addEventListener('change', (e) => {
             const val = e.target.value;
@@ -403,20 +441,55 @@ return rP ^ cP;`,
             link.click();
         });
 
-        matrixCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e, matrixCanvas));
-        tileCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e, tileCanvas));
+        ui.saveSvgBtn.addEventListener('click', exportSVG);
+
+        matrixCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e));
+        tileCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e));
 
         ui.infoBtn.onclick = () => ui.info.style.display = (ui.info.style.display === 'block') ? 'none' : 'block';
         ui.closeInfo.onclick = () => ui.info.style.display = 'none';
 
+        // Animation controls
+        ui.animType.addEventListener('change', (e) => {
+            animType = e.target.value;
+            // Reset state on change
+            animProgress = -0.1; 
+            animDirection = 1;
+            
+            if (animType === 'none') {
+                stopAnimation();
+                snapToTarget();
+                requestDraw();
+            } else {
+                if(!isAnimating && ui.playBtn.textContent === "⏸") startAnimation(); // Auto-restart if already playing?
+                // Or just ensure angles are reset
+                for(let r=0; r<N; r++) for(let c=0; c<N; c++) angleGrid[r][c] = 0;
+                requestDraw();
+            }
+        });
+
+        ui.animSpeed.addEventListener('input', (e) => {
+            animSpeedFactor = parseInt(e.target.value) / 100;
+            ui.speedVal.textContent = e.target.value + '%';
+        });
+
+        ui.playBtn.addEventListener('click', toggleAnimation);
+        ui.recBtn.addEventListener('click', toggleRecording);
+
         updatePresetDropdown();
-        resize();
-        runCode();
+        runCode(); 
     }
 
     function invertGrid() {
-        for(let r=0; r<N; r++) for(let c=0; c<N; c++) grid[r][c] = 1 - grid[r][c];
-        draw();
+        for(let r=0; r<N; r++) for(let c=0; c<N; c++) targetGrid[r][c] = 1 - targetGrid[r][c];
+        if (animType === 'none') snapToTarget();
+        requestDraw();
+    }
+
+    function snapToTarget() {
+        for(let r=0; r<N; r++) for(let c=0; c<N; c++) {
+            angleGrid[r][c] = targetGrid[r][c] * (Math.PI/2);
+        }
     }
 
     function runCode() {
@@ -436,7 +509,14 @@ return rP ^ cP;`,
                 }
                 newGrid.push(rowArr);
             }
-            grid = newGrid;
+            targetGrid = newGrid;
+            
+            if (animType === 'none' || !isAnimating) {
+                if(angleGrid.length !== N) angleGrid = Array(N).fill().map(() => Array(N).fill(0));
+                snapToTarget();
+            } else {
+                 if(angleGrid.length !== N) angleGrid = Array(N).fill().map(() => Array(N).fill(0));
+            }
             resize(); 
         } catch (err) {
             ui.errorMsg.textContent = "Error: " + err.message;
@@ -457,11 +537,276 @@ return rP ^ cP;`,
         tileCanvas.style.width = `${tSize}px`; tileCanvas.style.height = `${tSize}px`;
         tCtx.setTransform(2,0,0,2,0,0);
 
+        requestDraw();
+    }
+
+    /* --- ANIMATION LOGIC --- */
+    
+    function toggleAnimation() {
+        if (isAnimating) stopAnimation(); else startAnimation();
+    }
+
+    function startAnimation() {
+        if (animType === 'none') return;
+        isAnimating = true;
+        ui.playBtn.textContent = "⏸";
+        animDirection = 1;
+        animProgress = -0.2; // Start with a brief pause at 0
+        lastTime = performance.now();
+        
+        // Reset angles to 0 for start of animation
+        for(let r=0; r<N; r++) for(let c=0; c<N; c++) angleGrid[r][c] = 0;
+        
+        animationLoop();
+    }
+
+    function stopAnimation() {
+        isAnimating = false;
+        ui.playBtn.textContent = "▶";
+        cancelAnimationFrame(animationFrameId);
+    }
+
+    let lastTime = 0;
+    function animationLoop() {
+        if (!isAnimating) return;
+        
+        const now = performance.now();
+        const dt = (now - lastTime) / 1000;
+        lastTime = now;
+
+        // Logic Speed 
+        let logicSpeed = (animSpeedFactor * 1.5); 
+        
+        if (animDirection === -1) animProgress -= dt * logicSpeed;
+        else animProgress += dt * logicSpeed;
+
+        // "Ping-Pong" Rewind Logic for ALL modes
+        // 1.2 gives a small pause at full state before rewinding
+        // -0.2 gives a small pause at empty state before restarting
+        if (animProgress >= 1.2) { 
+            animDirection = -1; 
+            animProgress = 1.2; 
+        } else if (animProgress <= -0.2) {
+            animDirection = 1; 
+            animProgress = -0.2;
+        }
+
+        updateGridAngles(dt);
         draw();
+        
+        if (isRecording) updateRecTimer();
+        animationFrameId = requestAnimationFrame(animationLoop);
+    }
+
+    function updateGridAngles(dt) {
+        // Rotational Speed - faster than logic wave
+        const rotSpeed = 5 * animSpeedFactor + 1; 
+
+        // Use strict progress
+        const t = animProgress;
+
+        for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+                
+                let shouldBeActive = false;
+                
+                if (animType === 'all') {
+                    shouldBeActive = t > 0.1;
+                } else if (animType === 'row') {
+                    // Start rows slightly apart
+                    const rowProg = r / N;
+                    shouldBeActive = t > rowProg; // Strict inequality to help Reset
+                } else if (animType === 'cell') {
+                    const cellIdx = r * N + c;
+                    const totalCells = N * N;
+                    const cellProg = cellIdx / totalCells;
+                    shouldBeActive = t > cellProg;
+                } else if (animType === 'rings') {
+                    const cx = (N - 1) / 2;
+                    const cy = (N - 1) / 2;
+                    const dist = Math.max(Math.abs(r - cy), Math.abs(c - cx));
+                    const maxDist = (N / 2);
+                    const ringProg = dist / maxDist;
+                    shouldBeActive = t > ringProg;
+                }
+
+                // If t is negative (Rewind phase finished), force everyone inactive
+                if (t < 0) shouldBeActive = false;
+
+                let targetAngle = 0;
+                if (shouldBeActive && targetGrid[r][c] === 1) {
+                    targetAngle = Math.PI / 2;
+                }
+
+                const diff = targetAngle - angleGrid[r][c];
+                if (Math.abs(diff) > 0.01) {
+                    const move = Math.sign(diff) * rotSpeed * dt;
+                    if (Math.abs(move) > Math.abs(diff)) angleGrid[r][c] = targetAngle;
+                    else angleGrid[r][c] += move;
+                } else {
+                    angleGrid[r][c] = targetAngle;
+                }
+            }
+        }
+    }
+
+    /* --- RECORDING --- */
+    function toggleRecording() {
+        if (isRecording) stopRecording(); else startRecording();
+    }
+
+    function startRecording() {
+        recordedChunks = [];
+        const stream = tileCanvas.captureStream(60); 
+        try { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' }); } 
+        catch (e) { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); }
+
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = exportVideo;
+
+        mediaRecorder.start();
+        isRecording = true;
+        recStartTime = performance.now();
+        ui.recBtn.textContent = "⏹ STOP";
+        ui.recInd.style.display = 'flex';
+    }
+
+    function stopRecording() {
+        if (!mediaRecorder) return;
+        mediaRecorder.stop();
+        isRecording = false;
+        ui.recBtn.textContent = "⏺ REC";
+        ui.recInd.style.display = 'none';
+    }
+
+    function updateRecTimer() {
+        if (!isRecording) return;
+        const elapsed = Math.floor((performance.now() - recStartTime) / 1000);
+        const mm = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const ss = (elapsed % 60).toString().padStart(2, '0');
+        ui.recTimer.textContent = `${mm}:${ss}`;
+    }
+
+    function exportVideo() {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `truchet-anim-${Date.now()}.webm`;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
+    }
+
+    /* --- SVG EXPORT --- */
+    function exportSVG() {
+        const size = 1000;
+        const cellSize = size / N;
+        const half = cellSize / 2;
+        
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background-color:black">`;
+        
+        // Use High Contrast Colors
+        const colMain = "#00d2ff"; 
+        const colBg = "#111111"; 
+        const lineWidthSVG = (lineWidth / (tileCanvas.width/2/N)) * cellSize;
+
+        // Determine Filled Connectivity Logic for current frame
+        let fillColors = null;
+        if (isFilled) {
+             fillColors = computeDynamicFill();
+        }
+
+        for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+                const x = c * cellSize;
+                const y = r * cellSize;
+                const angDeg = (angleGrid[r][c] * 180 / Math.PI); 
+                
+                svg += `<g transform="translate(${x + half}, ${y + half}) rotate(${angDeg}) translate(${-half}, ${-half})">`;
+                
+                if (isFilled) {
+                    // Logic: We always draw the "0" state geometry (which is rotated by group)
+                    // The color parity depends on fillColors[r][c]
+                    
+                    const cVal = fillColors[r][c];
+                    // High Contrast:
+                    const c1 = cVal === 0 ? colMain : colBg; // Corridor
+                    const c2 = cVal === 0 ? colBg : colMain; // Background
+                    
+                    if (drawMode === 'straight') {
+                        // Backgrounds (Triangles)
+                        svg += `<path d="M0 0 L${half} 0 L0 ${half} Z" fill="${c2}" />`;
+                        svg += `<path d="M${cellSize} ${cellSize} L${cellSize} ${half} L${half} ${cellSize} Z" fill="${c2}" />`;
+                        // Corridor (Hexagonish)
+                        svg += `<path d="M${half} 0 L${cellSize} 0 L${cellSize} ${half} L${half} ${cellSize} L0 ${cellSize} L0 ${half} Z" fill="${c1}" />`;
+                    } else {
+                        // Backgrounds (Corners)
+                        svg += `<path d="M0 0 L0 ${half} A ${half} ${half} 0 0 1 ${half} 0 Z" fill="${c2}" />`;
+                        svg += `<path d="M${cellSize} ${cellSize} L${cellSize} ${half} A ${half} ${half} 0 0 1 ${half} ${cellSize} Z" fill="${c2}" />`;
+                        // Corridor (Middle)
+                        // Use path diff strategy manually constructed
+                        svg += `<path d="M0 ${half} A ${half} ${half} 0 0 1 ${half} 0 L${cellSize} 0 L${cellSize} ${half} A ${half} ${half} 0 0 1 ${half} ${cellSize} L0 ${cellSize} Z" fill="${c1}" />`;
+                    }
+                    
+                } else {
+                    if (drawMode === 'straight') {
+                        svg += `<line x1="0" y1="${half}" x2="${half}" y2="0" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
+                        svg += `<line x1="${half}" y1="${cellSize}" x2="${cellSize}" y2="${half}" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
+                    } else {
+                        svg += `<path d="M0 ${half} A ${half} ${half} 0 0 1 ${half} 0" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
+                        svg += `<path d="M${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
+                    }
+                }
+                
+                svg += `</g>`;
+            }
+        }
+        svg += `</svg>`;
+
+        const blob = new Blob([svg], {type: "image/svg+xml"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `truchet-snapshot-${Date.now()}.svg`;
+        link.click();
+    }
+
+    /* --- RENDERING --- */
+
+    function requestDraw() {
+        if (!isAnimating) draw();
+    }
+
+    // New Helper: Compute flood fill based on CURRENT VISUAL ANGLES
+    function computeDynamicFill() {
+        let fColors = Array(N).fill().map(() => Array(N).fill(0));
+        
+        // 1. Create a Discrete Grid Snapshot based on angles
+        // If angle > 45deg, it behaves like '1', else '0'
+        let currentLogicGrid = [];
+        for(let r=0; r<N; r++) {
+            let rowArr = [];
+            for(let c=0; c<N; c++) {
+                rowArr.push(angleGrid[r][c] > Math.PI/4 ? 1 : 0);
+            }
+            currentLogicGrid.push(rowArr);
+        }
+
+        // 2. Propagate colors
+        for(let r=0; r<N; r++) {
+            for(let c=0; c<N; c++) {
+                if(r===0 && c===0) { fColors[r][c] = isInvertedFill ? 1 : 0; continue; }
+                
+                let pr, pc;
+                if (c > 0) { pr = r; pc = c-1; }
+                else { pr = r-1; pc = 0; }
+                
+                let same = (currentLogicGrid[r][c] === currentLogicGrid[pr][pc]);
+                fColors[r][c] = same ? (1 - fColors[pr][pc]) : fColors[pr][pc];
+            }
+        }
+        return fColors;
     }
 
     function draw() {
-        // Draw Matrix
+        // Draw Matrix (Left Side)
         const mSz = matrixCanvas.width/2;
         const mc = mSz/N;
         mCtx.fillStyle = '#050505'; mCtx.fillRect(0,0,mSz,mSz);
@@ -470,7 +815,8 @@ return rP ^ cP;`,
             for(let c=0; c<N; c++) {
                 const px = c*mc, py = r*mc;
                 mCtx.strokeStyle = '#222'; mCtx.strokeRect(px, py, mc, mc);
-                if(grid[r][c]) {
+                // Matrix visualizes TARGET logic
+                if(targetGrid[r][c]) {
                     mCtx.fillStyle = '#111'; mCtx.fillRect(px, py, mc, mc);
                     mCtx.fillStyle = varColor(1);
                     if(mc > 12) mCtx.fillText("1", px+mc/2-3, py+mc/2+3);
@@ -482,145 +828,107 @@ return rP ^ cP;`,
             }
         }
 
-        // Draw Tiling
+        // Draw Tiling (Right Side)
         const tSz = tileCanvas.width/2;
         const tc = tSz/N;
         tCtx.fillStyle = '#000'; tCtx.fillRect(0,0,tSz,tSz);
 
+        let fillColors = null;
         if (isFilled) {
-            drawFilledTiling(tc);
-        } else {
-            drawStrokeTiling(tc);
+            fillColors = computeDynamicFill();
         }
-    }
 
-    function drawStrokeTiling(tc) {
-        tCtx.lineWidth = lineWidth;
-        tCtx.lineCap = drawMode === 'curved' ? 'butt' : 'round';
-        
         for(let r=0; r<N; r++) {
             for(let c=0; c<N; c++) {
                 const x = c*tc, y = r*tc, m = tc/2;
-                // Visual Bugfix: Use the lighter color for all curved tiles, 
-                // but keep orientation-dependent colors for straight mode.
-                tCtx.strokeStyle = (drawMode === 'curved') ? varColor(1) : varColor(grid[r][c]);
-                tCtx.beginPath();
-                
-                if (drawMode === 'straight') {
-                    if(grid[r][c] === 0) { // /
-                        tCtx.moveTo(x, y+m); tCtx.lineTo(x+m, y);
-                        tCtx.moveTo(x+m, y+tc); tCtx.lineTo(x+tc, y+m);
-                    } else { // \
-                        tCtx.moveTo(x+m, y); tCtx.lineTo(x+tc, y+m);
-                        tCtx.moveTo(x, y+m); tCtx.lineTo(x+m, y+tc);
-                    }
-                } else { // Curved
-                    if (grid[r][c] === 0) {
-                        tCtx.arc(x, y, m, 0, Math.PI/2); // Top-Left corner
-                        tCtx.stroke(); tCtx.beginPath();
-                        tCtx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); // Btm-Right corner
-                    } else {
-                        tCtx.arc(x, y+tc, m, 1.5*Math.PI, 0); // Btm-Left corner
-                        tCtx.stroke(); tCtx.beginPath();
-                        tCtx.arc(x+tc, y, m, Math.PI/2, Math.PI); // Top-Right corner
-                    }
-                }
-                tCtx.stroke();
-            }
-        }
-    }
+                const cx = x + m, cy = y + m;
+                const ang = angleGrid[r][c];
 
-    function drawFilledTiling(tc) {
-        // 1. Color Propagation
-        let colors = Array(N).fill().map(() => Array(N).fill(0));
-        
-        for(let r=0; r<N; r++) {
-            for(let c=0; c<N; c++) {
-                if(r===0 && c===0) { colors[r][c] = isInvertedFill ? 1 : 0; continue; }
-                
-                let prevR, prevC;
-                if (c > 0) { prevR = r; prevC = c-1; }
-                else { prevR = r-1; prevC = 0; }
-                
-                let sameRotation = (grid[r][c] === grid[prevR][prevC]);
-                colors[r][c] = sameRotation ? (1 - colors[prevR][prevC]) : colors[prevR][prevC];
-            }
-        }
+                tCtx.save();
+                tCtx.translate(cx, cy);
+                tCtx.rotate(ang); // ROTATE CANVAS
+                tCtx.translate(-cx, -cy);
 
-        // 2. Render
-        for(let r=0; r<N; r++) {
-            for(let c=0; c<N; c++) {
-                const x = c*tc, y = r*tc, m = tc/2;
-                const rot = grid[r][c];
-                const col = colors[r][c];
-                
-                tCtx.fillStyle = varColor(1);
-                tCtx.beginPath();
-                
-                if (col === 0) {
-                    // COLOR 0: The "Corridor" (Connects regions between lines)
-                    if (drawMode === 'straight') {
-                        if (rot === 0) { // Connects Left-Bottom to Right-Top
-                            tCtx.moveTo(x, y+m); tCtx.lineTo(x, y+tc); tCtx.lineTo(x+m, y+tc); 
-                            tCtx.lineTo(x+tc, y+m); tCtx.lineTo(x+tc, y); tCtx.lineTo(x+m, y);
-                        } else { // Connects Left-Top to Right-Bottom
-                            tCtx.moveTo(x, y+m); tCtx.lineTo(x, y); tCtx.lineTo(x+m, y);
-                            tCtx.lineTo(x+tc, y+m); tCtx.lineTo(x+tc, y+tc); tCtx.lineTo(x+m, y+tc);
-                        }
-                    } else { // Curved Corridor
-                        if (rot === 0) { // Fills between TL and BR arcs
-                            tCtx.moveTo(x+m, y); 
-                            tCtx.arc(x, y, m, 0, Math.PI/2); // Inner Arc TL
-                            tCtx.lineTo(x, y+tc); // Fill Corner BL
-                            tCtx.lineTo(x+m, y+tc);
-                            tCtx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); // Inner Arc BR
-                            tCtx.lineTo(x+tc, y); // Fill Corner TR
-                            tCtx.lineTo(x+m, y);
-                        } else { // Fills between BL and TR arcs
-                            tCtx.moveTo(x, y+m);
-                            tCtx.arc(x, y+tc, m, 1.5*Math.PI, 0); // Inner Arc BL
-                            tCtx.lineTo(x+tc, y+tc); // Fill Corner BR
-                            tCtx.lineTo(x+tc, y+m);
-                            tCtx.arc(x+tc, y, m, Math.PI/2, Math.PI); // Inner Arc TR
-                            tCtx.lineTo(x, y); // Fill Corner TL
-                            tCtx.lineTo(x, y+m);
-                        }
-                    }
+                if (isFilled) {
+                    drawOneFilledTile(tCtx, x, y, tc, fillColors[r][c]);
                 } else {
-                    // COLOR 1: The "Corners" (Behind the lines)
-                    if (drawMode === 'straight') {
-                        if (rot === 0) {
-                            tCtx.moveTo(x, y); tCtx.lineTo(x+m, y); tCtx.lineTo(x, y+m); 
-                            tCtx.moveTo(x+tc, y+tc); tCtx.lineTo(x+m, y+tc); tCtx.lineTo(x+tc, y+m);
-                        } else {
-                            tCtx.moveTo(x, y+tc); tCtx.lineTo(x+m, y+tc); tCtx.lineTo(x, y+m);
-                            tCtx.moveTo(x+tc, y); tCtx.lineTo(x+m, y); tCtx.lineTo(x+tc, y+m);
-                        }
-                    } else { // Curved Corners (Fans)
-                        if (rot === 0) {
-                            tCtx.moveTo(x, y); tCtx.arc(x, y, m, 0, Math.PI/2); 
-                            tCtx.moveTo(x+tc, y+tc); tCtx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI);
-                        } else {
-                            tCtx.moveTo(x, y+tc); tCtx.arc(x, y+tc, m, 1.5*Math.PI, 0);
-                            tCtx.moveTo(x+tc, y); tCtx.arc(x+tc, y, m, Math.PI/2, Math.PI);
-                        }
-                    }
+                    drawOneStrokeTile(tCtx, x, y, tc);
                 }
-                tCtx.fill();
+                
+                tCtx.restore();
             }
         }
+    }
+
+    function drawOneStrokeTile(ctx, x, y, tc) {
+        const m = tc/2;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = drawMode === 'curved' ? 'butt' : 'round';
+        ctx.strokeStyle = varColor(1); 
+        ctx.beginPath();
+        
+        if (drawMode === 'straight') {
+            ctx.moveTo(x, y+m); ctx.lineTo(x+m, y);
+            ctx.moveTo(x+m, y+tc); ctx.lineTo(x+tc, y+m);
+        } else {
+            ctx.arc(x, y, m, 0, Math.PI/2);
+            ctx.stroke(); ctx.beginPath();
+            ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI);
+        }
+        ctx.stroke();
+    }
+
+    function drawOneFilledTile(ctx, x, y, tc, colorVal) {
+        const m = tc/2;
+        // High Contrast Colors
+        const colMain = varColor(1); // Blue
+        const colBg = '#111';        // Black/Dark Grey
+        
+        const c1 = colorVal === 0 ? colMain : colBg; // Corridor
+        const c2 = colorVal === 0 ? colBg : colMain; // Background
+        
+        // 1. Draw Backgrounds (Corners)
+        ctx.fillStyle = c2;
+        ctx.beginPath();
+        if (drawMode === 'straight') {
+            ctx.moveTo(x, y); ctx.lineTo(x+m, y); ctx.lineTo(x, y+m);
+            ctx.moveTo(x+tc, y+tc); ctx.lineTo(x+m, y+tc); ctx.lineTo(x+tc, y+m);
+        } else {
+            ctx.moveTo(x, y); ctx.arc(x, y, m, 0, Math.PI/2);
+            ctx.moveTo(x+tc, y+tc); ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI);
+        }
+        ctx.fill();
+
+        // 2. Draw Corridor (Foreground)
+        ctx.fillStyle = c1;
+        ctx.beginPath();
+        if (drawMode === 'straight') {
+            ctx.moveTo(x, y+m); ctx.lineTo(x, y+tc); ctx.lineTo(x+m, y+tc); 
+            ctx.lineTo(x+tc, y+m); ctx.lineTo(x+tc, y); ctx.lineTo(x+m, y);
+        } else {
+            ctx.moveTo(x+m, y); 
+            ctx.arc(x, y, m, 0, Math.PI/2); 
+            ctx.lineTo(x, y+tc); 
+            ctx.lineTo(x+m, y+tc);
+            ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); 
+            ctx.lineTo(x+tc, y); 
+            ctx.lineTo(x+m, y);
+        }
+        ctx.fill();
     }
 
     function varColor(v) { return v === 1 ? '#00d2ff' : '#007799'; }
 
-    function handleCanvasClick(e, canvas) {
-        const rect = canvas.getBoundingClientRect();
+    function handleCanvasClick(e) {
+        const rect = e.target.getBoundingClientRect();
         const x = (e.clientX - rect.left) / rect.width;
         const y = (e.clientY - rect.top) / rect.height;
         const r = Math.floor(y * N), c = Math.floor(x * N);
+        
         if(r >=0 && r < N && c >= 0 && c < N) {
-            grid[r][c] = 1 - grid[r][c];
-            draw();
+            targetGrid[r][c] = 1 - targetGrid[r][c];
+            if (!isAnimating) snapToTarget();
+            requestDraw();
         }
     }
 
