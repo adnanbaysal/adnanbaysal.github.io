@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truchet-Smith Tiling v3.0</title>
+    <title>Truchet-Smith Tiling</title>
     <style>
         :root { 
             --accent: #00d2ff; 
@@ -697,65 +697,79 @@ return rP ^ cP;`,
 
     /* --- SVG EXPORT --- */
     function exportSVG() {
-        const size = 1000;
+        const size = 1000; // Resolution for high-quality vector output
         const cellSize = size / N;
         const half = cellSize / 2;
         
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background-color:black">`;
         
-        // Use High Contrast Colors
         const colMain = "#00d2ff"; 
         const colBg = "#111111"; 
-        const lineWidthSVG = (lineWidth / (tileCanvas.width/2/N)) * cellSize;
+        const lineWidthSVG = (lineWidth / (tileCanvas.width / 2 / N)) * cellSize;
 
-        // Determine Filled Connectivity Logic for current frame
-        let fillColors = null;
-        if (isFilled) {
-             fillColors = computeDynamicFill();
+        // 1. Calculate the fill parity for the logical targetGrid
+        let fillColors = Array(N).fill().map(() => Array(N).fill(0));
+        for(let r = 0; r < N; r++) {
+            for(let c = 0; c < N; c++) {
+                if(r === 0 && c === 0) { 
+                    fillColors[r][c] = isInvertedFill ? 1 : 0; 
+                    continue; 
+                }
+                // Trace parity from the previous tile (top or left)
+                let pr = (c > 0) ? r : r - 1;
+                let pc = (c > 0) ? c - 1 : 0;
+                let same = (targetGrid[r][c] === targetGrid[pr][pc]);
+                fillColors[r][c] = same ? (1 - fillColors[pr][pc]) : fillColors[pr][pc];
+            }
         }
 
+        // 2. Generate Tile Geometry
         for (let r = 0; r < N; r++) {
             for (let c = 0; c < N; c++) {
                 const x = c * cellSize;
                 const y = r * cellSize;
-                const angDeg = (angleGrid[r][c] * 180 / Math.PI); 
+                const angDeg = targetGrid[r][c] * 90;
                 
-                svg += `<g transform="translate(${x + half}, ${y + half}) rotate(${angDeg}) translate(${-half}, ${-half})">`;
+                // Group handles position and orientation
+                svg += `<g transform="translate(${x}, ${y}) rotate(${angDeg}, ${half}, ${half})">`;
                 
                 if (isFilled) {
-                    // Logic: We always draw the "0" state geometry (which is rotated by group)
-                    // The color parity depends on fillColors[r][c]
-                    
-                    const cVal = fillColors[r][c];
-                    // High Contrast:
-                    const c1 = cVal === 0 ? colMain : colBg; // Corridor
-                    const c2 = cVal === 0 ? colBg : colMain; // Background
+                    const c1 = (fillColors[r][c] === 0) ? colMain : colBg; 
+                    const c2 = (fillColors[r][c] === 0) ? colBg : colMain; 
                     
                     if (drawMode === 'straight') {
-                        // Backgrounds (Triangles)
+                        // Background
                         svg += `<path d="M0 0 L${half} 0 L0 ${half} Z" fill="${c2}" />`;
                         svg += `<path d="M${cellSize} ${cellSize} L${cellSize} ${half} L${half} ${cellSize} Z" fill="${c2}" />`;
-                        // Corridor (Hexagonish)
+                        // Corridor
                         svg += `<path d="M${half} 0 L${cellSize} 0 L${cellSize} ${half} L${half} ${cellSize} L0 ${cellSize} L0 ${half} Z" fill="${c1}" />`;
                     } else {
-                        // Backgrounds (Corners)
-                        svg += `<path d="M0 0 L0 ${half} A ${half} ${half} 0 0 1 ${half} 0 Z" fill="${c2}" />`;
-                        svg += `<path d="M${cellSize} ${cellSize} L${cellSize} ${half} A ${half} ${half} 0 0 1 ${half} ${cellSize} Z" fill="${c2}" />`;
-                        // Corridor (Middle)
-                        // Use path diff strategy manually constructed
-                        svg += `<path d="M0 ${half} A ${half} ${half} 0 0 1 ${half} 0 L${cellSize} 0 L${cellSize} ${half} A ${half} ${half} 0 0 1 ${half} ${cellSize} L0 ${cellSize} Z" fill="${c1}" />`;
+                        // Curved Background (Sweep flag 1 = Clockwise)
+                        // Top-Left corner wedge
+                        svg += `<path d="M0 0 L${half} 0 A ${half} ${half} 0 0 1 0 ${half} Z" fill="${c2}" />`;
+                        // Bottom-Right corner wedge
+                        svg += `<path d="M${cellSize} ${cellSize} L${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half} Z" fill="${c2}" />`;
+                        
+                        // Curved Corridor (Using Sweep flag 1 for both arcs to match wedges)
+                        svg += `<path d="
+                            M ${half} 0 
+                            A ${half} ${half} 0 0 1 0 ${half} 
+                            L 0 ${cellSize} 
+                            L ${half} ${cellSize} 
+                            A ${half} ${half} 0 0 1 ${cellSize} ${half} 
+                            L ${cellSize} 0 
+                            Z" fill="${c1}" />`;
                     }
-                    
                 } else {
+                    // Stroke Mode
                     if (drawMode === 'straight') {
                         svg += `<line x1="0" y1="${half}" x2="${half}" y2="0" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
                         svg += `<line x1="${half}" y1="${cellSize}" x2="${cellSize}" y2="${half}" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
                     } else {
-                        svg += `<path d="M0 ${half} A ${half} ${half} 0 0 1 ${half} 0" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
+                        svg += `<path d="M${half} 0 A ${half} ${half} 0 0 1 0 ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
                         svg += `<path d="M${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
                     }
                 }
-                
                 svg += `</g>`;
             }
         }
@@ -764,10 +778,9 @@ return rP ^ cP;`,
         const blob = new Blob([svg], {type: "image/svg+xml"});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `truchet-snapshot-${Date.now()}.svg`;
+        link.download = `truchet-static-${Date.now()}.svg`;
         link.click();
     }
-
     /* --- RENDERING --- */
 
     function requestDraw() {
