@@ -207,8 +207,8 @@
         <div style="flex-grow:1"></div>
         
         <div class="control-group" style="border-right: 1px solid #333; padding-right: 10px;">
-            <div class="label-row"><span>Speed Lvl</span> <span id="speed-val" class="value">5</span></div>
-            <input type="range" id="anim-speed" min="1" max="10" step="1" value="5">
+            <div class="label-row"><span>Speed</span> <span id="speed-val" class="value">6</span></div>
+            <input type="range" id="anim-speed" min="1" max="10" step="1" value="6">
         </div>
         
         <select id="anim-type" class="mode-select" style="width: 100px;">
@@ -282,7 +282,7 @@
             <h2>About this Tool</h2>
             
             <h3>Animation Modes</h3>
-            <p><strong>Cell-by-Cell:</strong> Scans grid left-to-right, top-to-bottom.</p>
+            <p><strong>Cell-by-Cell:</strong> Scans grid for active cells and rotates them one-by-one.</p>
             <p><strong>Row-wise:</strong> Activates one full row at a time.</p>
             <p><strong>Rings:</strong> Concentric waves starting from center.</p>
             <p><strong>All-at-Once:</strong> Global transition.</p>
@@ -309,11 +309,9 @@
     let targetGrid = [];   // The final state (0 or 1)
     let angleGrid = [];    // Current rotation (Radians)
 
-    // --- CHANGED: Speed Configuration Array ---
-    // Maps Level 1-10 to seconds per step
+    // Animation Speed Array: Level 1 (Slowest: 2.0s) to Level 10 (Fastest: 0.1s)
     const STEP_DURATION_LEVELS = [
-        0.1, 0.2, 0.3, 0.4, 0.5, 
-        0.8, 1.1, 1.4, 1.7, 2.0
+        2.0, 1.7, 1.4, 1.1, 0.8, 0.5, 0.4, 0.3, 0.2, 0.1
     ];
 
     // Animation State
@@ -322,7 +320,7 @@
     let animProgress = 0; 
     let animDirection = 1; // 1 = forward, -1 = rewind
     let animationFrameId;
-    let currentStepDuration = STEP_DURATION_LEVELS[4]; // Default Level 5
+    let currentStepDuration = STEP_DURATION_LEVELS[5]; // Default Level 6 (~0.5s)
 
     // Recording State
     let mediaRecorder;
@@ -399,7 +397,6 @@ return rP ^ cP;`,
         angleGrid = Array(N).fill().map(() => Array(N).fill(0));
         ui.editor.value = presets.xor;
 
-        // Event Listeners
         window.addEventListener('resize', resize);
         
         ui.n.addEventListener('input', (e) => { 
@@ -474,7 +471,6 @@ return rP ^ cP;`,
             }
         });
 
-        // --- CHANGED: Speed Listener ---
         ui.animSpeed.addEventListener('input', (e) => {
             const level = parseInt(e.target.value);
             ui.speedVal.textContent = level;
@@ -581,17 +577,17 @@ return rP ^ cP;`,
         const dt = (now - lastTime) / 1000;
         lastTime = now;
 
-        // --- CHANGED: Strict Timing Logic ---
         let totalDuration = 1.0;
 
         if (animType === 'cell') {
-            totalDuration = (N * N) * currentStepDuration;
+            // Count ONLY cells that actually need to rotate
+            const activeCellCount = targetGrid.flat().filter(v => v === 1).length;
+            totalDuration = activeCellCount * currentStepDuration;
         } else if (animType === 'row') {
             totalDuration = N * currentStepDuration;
         } else if (animType === 'rings') {
             totalDuration = (N / 2) * currentStepDuration;
         } else {
-            // 'all' mode
             totalDuration = currentStepDuration;
         }
 
@@ -600,7 +596,6 @@ return rP ^ cP;`,
         if (animDirection === -1) animProgress -= dt * logicSpeed;
         else animProgress += dt * logicSpeed;
 
-        // "Ping-Pong" Buffer (Time based, using small percentage buffer)
         if (animProgress >= 1.05) { 
             animDirection = -1; 
             animProgress = 1.05; 
@@ -617,59 +612,60 @@ return rP ^ cP;`,
     }
 
     function updateGridAngles(dt) {
-        // --- CHANGED: Strict sequencing for cell/row modes ---
         if (animType === 'cell' || animType === 'row') {
-            const totalSteps = (animType === 'cell') ? N*N : N;
             const p = Math.max(0, Math.min(1, animProgress));
-            const currentStep = p * totalSteps;
+            
+            if (animType === 'cell') {
+                // Map active cells (1s) to their sequence order
+                let activeIndex = 0;
+                const activeTotal = targetGrid.flat().filter(v => v === 1).length;
+                const currentStep = p * activeTotal;
 
-            for (let r = 0; r < N; r++) {
-                for (let c = 0; c < N; c++) {
-                    const stepIndex = (animType === 'cell') ? (r * N + c) : r;
-                    
-                    let localProgress = currentStep - stepIndex;
-                    localProgress = Math.max(0, Math.min(1, localProgress));
-
-                    const targetAngle = targetGrid[r][c] ? (Math.PI / 2) : 0;
-                    angleGrid[r][c] = localProgress * targetAngle;
+                for (let r = 0; r < N; r++) {
+                    for (let c = 0; c < N; c++) {
+                        if (targetGrid[r][c] === 1) {
+                            let localProgress = Math.max(0, Math.min(1, currentStep - activeIndex));
+                            angleGrid[r][c] = localProgress * (Math.PI / 2);
+                            activeIndex++;
+                        } else {
+                            angleGrid[r][c] = 0;
+                        }
+                    }
+                }
+            } else {
+                // Row-wise timing remains based on grid height
+                const currentStep = p * N;
+                for (let r = 0; r < N; r++) {
+                    let localProgress = Math.max(0, Math.min(1, currentStep - r));
+                    for (let c = 0; c < N; c++) {
+                        angleGrid[r][c] = targetGrid[r][c] ? localProgress * (Math.PI / 2) : 0;
+                    }
                 }
             }
             return;
         }
         
-        // --- Default Physics Logic for All/Rings ---
-        const rotSpeed = (5 / currentStepDuration) + 1; // Faster visual rotation if step duration is low
-
+        const rotSpeed = (0.5 / currentStepDuration) + 1; 
         const t = animProgress;
 
         for (let r = 0; r < N; r++) {
             for (let c = 0; c < N; c++) {
-                
                 let shouldBeActive = false;
-                
                 if (animType === 'all') {
                     shouldBeActive = t > 0.05;
                 } else if (animType === 'rings') {
-                    const cx = (N - 1) / 2;
-                    const cy = (N - 1) / 2;
+                    const cx = (N - 1) / 2, cy = (N - 1) / 2;
                     const dist = Math.max(Math.abs(r - cy), Math.abs(c - cx));
-                    const maxDist = (N / 2);
-                    const ringProg = dist / maxDist;
-                    shouldBeActive = t > ringProg;
+                    shouldBeActive = t > (dist / (N / 2));
                 }
 
                 if (t < 0) shouldBeActive = false;
-
-                let targetAngle = 0;
-                if (shouldBeActive && targetGrid[r][c] === 1) {
-                    targetAngle = Math.PI / 2;
-                }
+                let targetAngle = (shouldBeActive && targetGrid[r][c] === 1) ? Math.PI / 2 : 0;
 
                 const diff = targetAngle - angleGrid[r][c];
                 if (Math.abs(diff) > 0.01) {
                     const move = Math.sign(diff) * rotSpeed * dt;
-                    if (Math.abs(move) > Math.abs(diff)) angleGrid[r][c] = targetAngle;
-                    else angleGrid[r][c] += move;
+                    angleGrid[r][c] = (Math.abs(move) > Math.abs(diff)) ? targetAngle : angleGrid[r][c] + move;
                 } else {
                     angleGrid[r][c] = targetAngle;
                 }
@@ -690,7 +686,6 @@ return rP ^ cP;`,
 
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
         mediaRecorder.onstop = exportVideo;
-
         mediaRecorder.start();
         isRecording = true;
         recStartTime = performance.now();
@@ -727,39 +722,24 @@ return rP ^ cP;`,
         const size = 1000; 
         const cellSize = size / N;
         const half = cellSize / 2;
-        
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background-color:black">`;
-        
-        const colMain = "#00d2ff"; 
-        const colBg = "#111111"; 
+        const colMain = "#00d2ff", colBg = "#111111"; 
         const lineWidthSVG = (lineWidth / (tileCanvas.width / 2 / N)) * cellSize;
 
         let fillColors = Array(N).fill().map(() => Array(N).fill(0));
         for(let r = 0; r < N; r++) {
             for(let c = 0; c < N; c++) {
-                if(r === 0 && c === 0) { 
-                    fillColors[r][c] = isInvertedFill ? 1 : 0; 
-                    continue; 
-                }
-                let pr = (c > 0) ? r : r - 1;
-                let pc = (c > 0) ? c - 1 : 0;
-                let same = (targetGrid[r][c] === targetGrid[pr][pc]);
-                fillColors[r][c] = same ? (1 - fillColors[pr][pc]) : fillColors[pr][pc];
+                if(r === 0 && c === 0) { fillColors[r][c] = isInvertedFill ? 1 : 0; continue; }
+                let pr = (c > 0) ? r : r - 1, pc = (c > 0) ? c - 1 : 0;
+                fillColors[r][c] = (targetGrid[r][c] === targetGrid[pr][pc]) ? (1 - fillColors[pr][pc]) : fillColors[pr][pc];
             }
         }
 
         for (let r = 0; r < N; r++) {
             for (let c = 0; c < N; c++) {
-                const x = c * cellSize;
-                const y = r * cellSize;
-                const angDeg = targetGrid[r][c] * 90;
-                
-                svg += `<g transform="translate(${x}, ${y}) rotate(${angDeg}, ${half}, ${half})">`;
-                
+                svg += `<g transform="translate(${c * cellSize}, ${r * cellSize}) rotate(${targetGrid[r][c] * 90}, ${half}, ${half})">`;
                 if (isFilled) {
-                    const c1 = (fillColors[r][c] === 0) ? colMain : colBg; 
-                    const c2 = (fillColors[r][c] === 0) ? colBg : colMain; 
-                    
+                    const c1 = (fillColors[r][c] === 0) ? colMain : colBg, c2 = (fillColors[r][c] === 0) ? colBg : colMain; 
                     if (drawMode === 'straight') {
                         svg += `<path d="M0 0 L${half} 0 L0 ${half} Z" fill="${c2}" />`;
                         svg += `<path d="M${cellSize} ${cellSize} L${cellSize} ${half} L${half} ${cellSize} Z" fill="${c2}" />`;
@@ -767,19 +747,12 @@ return rP ^ cP;`,
                     } else {
                         svg += `<path d="M0 0 L${half} 0 A ${half} ${half} 0 0 1 0 ${half} Z" fill="${c2}" />`;
                         svg += `<path d="M${cellSize} ${cellSize} L${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half} Z" fill="${c2}" />`;
-                        svg += `<path d="
-                            M ${half} 0 
-                            A ${half} ${half} 0 0 1 0 ${half} 
-                            L 0 ${cellSize} 
-                            L ${half} ${cellSize} 
-                            A ${half} ${half} 0 0 1 ${cellSize} ${half} 
-                            L ${cellSize} 0 
-                            Z" fill="${c1}" />`;
+                        svg += `<path d="M ${half} 0 A ${half} ${half} 0 0 1 0 ${half} L 0 ${cellSize} L ${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half} L ${cellSize} 0 Z" fill="${c1}" />`;
                     }
                 } else {
                     if (drawMode === 'straight') {
-                        svg += `<line x1="0" y1="${half}" x2="${half}" y2="0" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
-                        svg += `<line x1="${half}" y1="${cellSize}" x2="${cellSize}" y2="${half}" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" />`;
+                        svg += `<line x1="0" y1="${half}" x2="${half}" y2="0" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
+                        svg += `<line x1="${half}" y1="${cellSize}" x2="${cellSize}" y2="${half}" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
                     } else {
                         svg += `<path d="M${half} 0 A ${half} ${half} 0 0 1 0 ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
                         svg += `<path d="M${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
@@ -789,152 +762,77 @@ return rP ^ cP;`,
             }
         }
         svg += `</svg>`;
-
-        const blob = new Blob([svg], {type: "image/svg+xml"});
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `truchet-static-${Date.now()}.svg`;
-        link.click();
+        link.href = URL.createObjectURL(new Blob([svg], {type: "image/svg+xml"}));
+        link.download = `truchet-static-${Date.now()}.svg`; link.click();
     }
 
     /* --- RENDERING --- */
-
-    function requestDraw() {
-        if (!isAnimating) draw();
-    }
+    function requestDraw() { if (!isAnimating) draw(); }
 
     function computeDynamicFill() {
         let fColors = Array(N).fill().map(() => Array(N).fill(0));
-        
-        let currentLogicGrid = [];
-        for(let r=0; r<N; r++) {
-            let rowArr = [];
-            for(let c=0; c<N; c++) {
-                rowArr.push(angleGrid[r][c] > Math.PI/4 ? 1 : 0);
-            }
-            currentLogicGrid.push(rowArr);
-        }
-
+        let cur = angleGrid.map(row => row.map(a => a > Math.PI/4 ? 1 : 0));
         for(let r=0; r<N; r++) {
             for(let c=0; c<N; c++) {
                 if(r===0 && c===0) { fColors[r][c] = isInvertedFill ? 1 : 0; continue; }
-                
-                let pr, pc;
-                if (c > 0) { pr = r; pc = c-1; }
-                else { pr = r-1; pc = 0; }
-                
-                let same = (currentLogicGrid[r][c] === currentLogicGrid[pr][pc]);
-                fColors[r][c] = same ? (1 - fColors[pr][pc]) : fColors[pr][pc];
+                let pr = (c > 0) ? r : r - 1, pc = (c > 0) ? c - 1 : 0;
+                fColors[r][c] = (cur[r][c] === cur[pr][pc]) ? (1 - fColors[pr][pc]) : fColors[pr][pc];
             }
         }
         return fColors;
     }
 
     function draw() {
-        // Draw Matrix (Left Side)
-        const mSz = matrixCanvas.width/2;
-        const mc = mSz/N;
+        const mSz = matrixCanvas.width/2, mc = mSz/N;
         mCtx.fillStyle = '#050505'; mCtx.fillRect(0,0,mSz,mSz);
-        
         for(let r=0; r<N; r++) {
             for(let c=0; c<N; c++) {
-                const px = c*mc, py = r*mc;
-                mCtx.strokeStyle = '#222'; mCtx.strokeRect(px, py, mc, mc);
+                mCtx.strokeStyle = '#222'; mCtx.strokeRect(c*mc, r*mc, mc, mc);
                 if(targetGrid[r][c]) {
-                    mCtx.fillStyle = '#111'; mCtx.fillRect(px, py, mc, mc);
+                    mCtx.fillStyle = '#111'; mCtx.fillRect(c*mc, r*mc, mc, mc);
                     mCtx.fillStyle = varColor(1);
-                    if(mc > 12) mCtx.fillText("1", px+mc/2-3, py+mc/2+3);
-                    else mCtx.fillRect(px+2, py+2, mc-4, mc-4);
+                    if(mc > 12) mCtx.fillText("1", c*mc+mc/2-3, r*mc+mc/2+3);
+                    else mCtx.fillRect(c*mc+2, r*mc+2, mc-4, mc-4);
                 } else {
                     mCtx.fillStyle = '#333';
-                    if(mc > 12) mCtx.fillText("0", px+mc/2-3, py+mc/2+3);
+                    if(mc > 12) mCtx.fillText("0", c*mc+mc/2-3, r*mc+mc/2+3);
                 }
             }
         }
 
-        // Draw Tiling (Right Side)
-        const tSz = tileCanvas.width/2;
-        const tc = tSz/N;
+        const tSz = tileCanvas.width/2, tc = tSz/N;
         tCtx.fillStyle = '#000'; tCtx.fillRect(0,0,tSz,tSz);
-
-        let fillColors = null;
-        if (isFilled) {
-            fillColors = computeDynamicFill();
-        }
+        let fill = isFilled ? computeDynamicFill() : null;
 
         for(let r=0; r<N; r++) {
             for(let c=0; c<N; c++) {
-                const x = c*tc, y = r*tc, m = tc/2;
-                const cx = x + m, cy = y + m;
-                const ang = angleGrid[r][c];
-
+                const cx = c*tc+tc/2, cy = r*tc+tc/2;
                 tCtx.save();
-                tCtx.translate(cx, cy);
-                tCtx.rotate(ang); 
-                tCtx.translate(-cx, -cy);
-
-                if (isFilled) {
-                    drawOneFilledTile(tCtx, x, y, tc, fillColors[r][c]);
-                } else {
-                    drawOneStrokeTile(tCtx, x, y, tc);
-                }
-                
+                tCtx.translate(cx, cy); tCtx.rotate(angleGrid[r][c]); tCtx.translate(-cx, -cy);
+                if (isFilled) drawOneFilledTile(tCtx, c*tc, r*tc, tc, fill[r][c]);
+                else drawOneStrokeTile(tCtx, c*tc, r*tc, tc);
                 tCtx.restore();
             }
         }
     }
 
     function drawOneStrokeTile(ctx, x, y, tc) {
-        const m = tc/2;
-        ctx.lineWidth = lineWidth;
-        ctx.lineCap = drawMode === 'curved' ? 'butt' : 'round';
-        ctx.strokeStyle = varColor(1); 
-        ctx.beginPath();
-        
-        if (drawMode === 'straight') {
-            ctx.moveTo(x, y+m); ctx.lineTo(x+m, y);
-            ctx.moveTo(x+m, y+tc); ctx.lineTo(x+tc, y+m);
-        } else {
-            ctx.arc(x, y, m, 0, Math.PI/2);
-            ctx.stroke(); ctx.beginPath();
-            ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI);
-        }
+        const m = tc/2; ctx.lineWidth = lineWidth; ctx.strokeStyle = varColor(1); ctx.beginPath();
+        if (drawMode === 'straight') { ctx.moveTo(x, y+m); ctx.lineTo(x+m, y); ctx.moveTo(x+m, y+tc); ctx.lineTo(x+tc, y+m); }
+        else { ctx.arc(x, y, m, 0, Math.PI/2); ctx.stroke(); ctx.beginPath(); ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); }
         ctx.stroke();
     }
 
     function drawOneFilledTile(ctx, x, y, tc, colorVal) {
-        const m = tc/2;
-        const colMain = varColor(1);
-        const colBg = '#111';
-        
-        const c1 = colorVal === 0 ? colMain : colBg; 
-        const c2 = colorVal === 0 ? colBg : colMain; 
-        
-        ctx.fillStyle = c2;
-        ctx.beginPath();
-        if (drawMode === 'straight') {
-            ctx.moveTo(x, y); ctx.lineTo(x+m, y); ctx.lineTo(x, y+m);
-            ctx.moveTo(x+tc, y+tc); ctx.lineTo(x+m, y+tc); ctx.lineTo(x+tc, y+m);
-        } else {
-            ctx.moveTo(x, y); ctx.arc(x, y, m, 0, Math.PI/2);
-            ctx.moveTo(x+tc, y+tc); ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI);
-        }
+        const m = tc/2, c1 = colorVal === 0 ? varColor(1) : '#111', c2 = colorVal === 0 ? '#111' : varColor(1);
+        ctx.fillStyle = c2; ctx.beginPath();
+        if (drawMode === 'straight') { ctx.moveTo(x, y); ctx.lineTo(x+m, y); ctx.lineTo(x, y+m); ctx.moveTo(x+tc, y+tc); ctx.lineTo(x+m, y+tc); ctx.lineTo(x+tc, y+m); }
+        else { ctx.moveTo(x, y); ctx.arc(x, y, m, 0, Math.PI/2); ctx.moveTo(x+tc, y+tc); ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); }
         ctx.fill();
-
-        ctx.fillStyle = c1;
-        ctx.beginPath();
-        if (drawMode === 'straight') {
-            ctx.moveTo(x, y+m); ctx.lineTo(x, y+tc); ctx.lineTo(x+m, y+tc); 
-            ctx.lineTo(x+tc, y+m); ctx.lineTo(x+tc, y); ctx.lineTo(x+m, y);
-        } else {
-            ctx.moveTo(x+m, y); 
-            ctx.arc(x, y, m, 0, Math.PI/2); 
-            ctx.lineTo(x, y+tc); 
-            ctx.lineTo(x+m, y+tc);
-            ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); 
-            ctx.lineTo(x+tc, y); 
-            ctx.lineTo(x+m, y);
-        }
+        ctx.fillStyle = c1; ctx.beginPath();
+        if (drawMode === 'straight') { ctx.moveTo(x, y+m); ctx.lineTo(x, y+tc); ctx.lineTo(x+m, y+tc); ctx.lineTo(x+tc, y+m); ctx.lineTo(x+tc, y); ctx.lineTo(x+m, y); }
+        else { ctx.moveTo(x+m, y); ctx.arc(x, y, m, 0, Math.PI/2); ctx.lineTo(x, y+tc); ctx.lineTo(x+m, y+tc); ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); ctx.lineTo(x+tc, y); ctx.lineTo(x+m, y); }
         ctx.fill();
     }
 
@@ -942,15 +840,8 @@ return rP ^ cP;`,
 
     function handleCanvasClick(e) {
         const rect = e.target.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        const r = Math.floor(y * N), c = Math.floor(x * N);
-        
-        if(r >=0 && r < N && c >= 0 && c < N) {
-            targetGrid[r][c] = 1 - targetGrid[r][c];
-            if (!isAnimating) snapToTarget();
-            requestDraw();
-        }
+        const r = Math.floor(((e.clientY - rect.top) / rect.height) * N), c = Math.floor(((e.clientX - rect.left) / rect.width) * N);
+        if(r >=0 && r < N && c >= 0 && c < N) { targetGrid[r][c] = 1 - targetGrid[r][c]; if (!isAnimating) snapToTarget(); draw(); }
     }
 
     init();
