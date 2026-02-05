@@ -12,6 +12,7 @@
             --bg: #050505; 
             --panel: #111; 
             --code-bg: #0d0d0d;
+            --record: #eb4d4b;
         }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; 
@@ -24,8 +25,8 @@
         header { 
             background: var(--panel); padding: 8px 16px; 
             border-bottom: 1px solid #333; 
-            display: flex; flex-wrap: wrap; align-items: center; 
-            gap: 12px; z-index: 10; height: 50px; flex-shrink: 0;
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+            gap: 12px; z-index: 10; height: 60px; flex-shrink: 0;
         }
         
         .control-group { 
@@ -35,7 +36,7 @@
 
         .label-row { 
             display: flex; justify-content: space-between; 
-            color: #888; font-size: 10px; font-weight: bold; text-transform: uppercase; 
+            color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; 
         }
         
         span.value { color: var(--accent); font-family: monospace; }
@@ -81,6 +82,7 @@
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
         }
 
         #matrix-wrapper { height: 280px; flex-shrink: 0; }
@@ -88,6 +90,16 @@
 
         canvas { cursor: crosshair; image-rendering: auto; }
         canvas:active { cursor: grabbing; }
+
+        /* Recording Indicator */
+        #rec-indicator {
+            position: absolute; top: 15px; right: 15px; z-index: 20;
+            background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 6px;
+            display: none; align-items: center; gap: 8px; color: #fff;
+            font-family: monospace; font-size: 12px; border: 1px solid var(--record);
+        }
+        .dot { width: 8px; height: 8px; background: var(--record); border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         /* --- Code Editor --- */
         .editor-container {
@@ -125,6 +137,8 @@
         .btn-run:hover { filter: brightness(1.2); box-shadow: 0 0 8px var(--accent-dim); }
         .btn-sec { background: #333; color: #ccc; }
         .btn-sec:hover { background: #444; color: #fff; }
+        .btn-rec { background: var(--record); color: #fff; }
+        .btn-rec:hover { filter: brightness(1.1); }
         .btn-icon { width: 30px; padding: 0; font-size: 14px; }
         .btn-util { background: #222; color: #888; }
         .btn-util:hover { color: #fff; }
@@ -149,48 +163,16 @@
         #info-modal p { margin: 0 0 10px 0; color: #aaa; }
         .close-info { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #666; font-size: 18px; }
         code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace; }
-        .shortcut { background: #333; color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 
-        /* --- MOBILE RESPONSIVE FIXES --- */
+        /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 900px) {
-            body {
-                height: auto;
-                overflow-y: auto; /* Enable scrolling on mobile */
-            }
-
-            header {
-                height: auto;
-                padding: 10px;
-                justify-content: center;
-                gap: 15px;
-            }
-
-            main {
-                flex-direction: column;
-                height: auto;
-                overflow: visible;
-            }
-
-            .left-col {
-                width: 100%;
-                order: 2; /* Move Controls/Code below the art */
-            }
-
-            .right-col {
-                width: 100%;
-                order: 1; /* Move Tiling to TOP */
-                height: 55vh; /* Give it substantial height */
-                min-height: 350px;
-            }
-
-            #matrix-wrapper {
-                margin: 0 auto;
-                max-width: 300px; /* Keep matrix manageable */
-            }
-
-            .editor-container {
-                min-height: 300px; /* Ensure editor is usable */
-            }
+            body { height: auto; overflow-y: auto; }
+            header { height: auto; padding: 10px; justify-content: center; gap: 15px; }
+            main { flex-direction: column; height: auto; overflow: visible; }
+            .left-col { width: 100%; order: 2; }
+            .right-col { width: 100%; order: 1; height: 55vh; min-height: 350px; }
+            #matrix-wrapper { margin: 0 auto; max-width: 300px; }
+            .editor-container { min-height: 300px; }
         }
 
     </style>
@@ -201,13 +183,13 @@
         <button id="info-btn" class="btn-sec btn-icon">?</button>
         
         <div class="control-group">
-            <div class="label-row"><span>Radius (N)</span> <span id="n-val" class="value">8</span></div>
-            <input type="range" id="param-n" min="1" max="100" step="1" value="8">
+            <div class="label-row"><span>Radius (N)</span> <span id="n-val" class="value">6</span></div>
+            <input type="range" id="param-n" min="1" max="12" step="1" value="6">
         </div>
 
         <div class="control-group">
-            <div class="label-row"><span>Thickness</span> <span id="w-val" class="value">2.5</span></div>
-            <input type="range" id="param-w" min="0.5" max="15" step="0.5" value="2.5">
+            <div class="label-row"><span>Thickness</span> <span id="w-val" class="value">2.0</span></div>
+            <input type="range" id="param-w" min="0.5" max="10" step="0.5" value="2.0">
         </div>
 
         <div class="ui-row">
@@ -225,8 +207,28 @@
         </div>
 
         <div style="flex-grow:1"></div>
-        <button id="save-img-btn" class="btn-sec">📸 PNG</button>
-        <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
+        
+        <div class="control-group" style="border-right: 1px solid #333; padding-right: 10px;">
+            <div class="label-row"><span>Speed</span> <span id="speed-val" class="value">6</span></div>
+            <input type="range" id="anim-speed" min="1" max="10" step="1" value="6">
+        </div>
+        
+        <select id="anim-type" class="mode-select" style="width: 100px;">
+            <option value="none">Static</option>
+            <option value="cell">Cell-by-Cell</option>
+            <option value="rings">Rings</option>
+            <option value="row">Rows</option>
+            <option value="all">All-at-Once</option>
+        </select>
+        
+        <button id="anim-play-btn" class="btn-sec btn-icon" title="Play Animation">▶</button>
+        <button id="rec-btn" class="btn-rec">⏺ REC</button>
+        
+        <div style="width: 1px; height: 30px; background: #333; margin: 0 5px;"></div>
+
+        <button id="save-svg-btn" class="btn-util">SVG</button>
+        <button id="save-img-btn" class="btn-util">PNG</button>
+        <button onclick="window.location.reload()" class="btn-util">↻</button>
     </header>
 
     <main>
@@ -263,7 +265,7 @@
 
                 <div class="editor-actions">
                     <button id="save-preset-btn" class="btn-sec">💾 Save</button>
-                    <button id="run-btn" class="btn-run">▶ Run Code</button>
+                    <button id="run-btn" class="btn-run">▶ Update Grid</button>
                 </div>
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
             </div>
@@ -277,6 +279,7 @@
 
         <div class="right-col">
             <div style="position: absolute; top: 10px; left: 10px; z-index: 5;" class="panel-header">Hexagonal Truchet</div>
+            <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
             <div id="tile-wrapper" class="canvas-wrapper">
                 <canvas id="tileCanvas"></canvas>
             </div>
@@ -287,7 +290,7 @@
             <h2>Hexagonal Truchet</h2>
             
             <h3>How It Works</h3>
-            <p>This tool generates a tiling on a hexagonal grid using Smith tiles (two orientations of 3 paths per hexagon).</p>
+            <p>This tool generates a tiling on a hexagonal grid using Smith tiles (3 paths per hexagon). The animation works by rotating the tile state 60 degrees.</p>
             
             <h3>Modes</h3>
             <ul style="padding-left: 20px; margin: 5px 0;">
@@ -296,10 +299,12 @@
                 <li><strong>Two Lines:</strong> Angled segments creating parallelograms.</li>
             </ul>
 
-            <h3>Functions</h3>
-            <p>Write JavaScript to return <code>0</code> or <code>1</code> for each tile.</p>
-            <p><strong>Variables:</strong> <code>q</code>, <code>r</code>, <code>s</code> (coords), <code>n</code> (radius).</p>
-            <p><strong>Example:</strong> <code>return (Math.abs(q) % 2);</code></p>
+            <h3>Animation</h3>
+            <p>Select a mode (Rings, Cell, etc.) and click Play or Update Grid. The tiles will rotate to their new state, fading colors to match the topology.</p>
+
+            <h3>Export</h3>
+            <p><strong>SVG:</strong> Exports vector paths for use in plotters/design tools.</p>
+            <p><strong>REC:</strong> Records the animation to WebM.</p>
         </div>
     </main>
 
@@ -307,16 +312,35 @@
     /**
      * STATE & CONFIG
      */
-    let N = 8;
+    let N = 6;
     let lineWidth = 2.0;
     let isFilled = false;
     let isInvertedFill = false;
-    let drawMode = 'two-lines'; // 'two-lines', 'straight', 'curved'
+    let drawMode = 'two-lines'; 
     
     // UNIFIED COLOR THEME
-    const THEME_COLOR = '#00d2ff'; // Cyan Blue
+    const THEME_COLOR = '#00d2ff'; 
     
-    let hexData = new Map(); 
+    // Data Storage
+    // Keys are "q,r,s" strings
+    let hexData = new Map();         // Target state (0 or 1)
+    let currentAngles = new Map();   // Current rotation in radians
+
+    // Animation Config
+    const STEP_DURATION_LEVELS = [2.0, 1.7, 1.4, 1.1, 0.8, 0.5, 0.4, 0.3, 0.2, 0.1];
+    let animType = 'none';
+    let isAnimating = false;
+    let animProgress = 0;
+    let animDirection = 1; 
+    let animationFrameId;
+    let currentStepDuration = STEP_DURATION_LEVELS[5];
+    let lastTime = 0;
+
+    // Recording State
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recStartTime;
+    let isRecording = false;
 
     // DOM Elements
     const tileCanvas = document.getElementById('tileCanvas');
@@ -336,23 +360,31 @@
         runBtn: document.getElementById('run-btn'),
         savePresetBtn: document.getElementById('save-preset-btn'),
         saveImgBtn: document.getElementById('save-img-btn'),
+        saveSvgBtn: document.getElementById('save-svg-btn'),
         errorMsg: document.getElementById('code-error'),
         info: document.getElementById('info-modal'),
         infoBtn: document.getElementById('info-btn'),
-        closeInfo: document.getElementById('close-info')
+        closeInfo: document.getElementById('close-info'),
+
+        animType: document.getElementById('anim-type'),
+        animSpeed: document.getElementById('anim-speed'),
+        speedVal: document.getElementById('speed-val'),
+        playBtn: document.getElementById('anim-play-btn'),
+        recBtn: document.getElementById('rec-btn'),
+        recInd: document.getElementById('rec-indicator'),
+        recTimer: document.getElementById('rec-timer')
     };
 
     /**
      * PRESETS
      */
     const presets = {
-        xor: `// Helper: Positive parity, inverted if negative
-const p = (k) => ((Math.abs(k).toString(2).match(/1/g) || []).length % 2) ^ (k < 0 ? 1 : 0);
+        xor: `// Helper: Positive parity
+const p = (k) => ((Math.abs(k).toString(2).match(/1/g) || []).length % 2);
 return p(q) ^ p(r) ^ p(s);`,
         ring: `let dist = (Math.abs(q) + Math.abs(r) + Math.abs(s)) / 2;
 return Math.floor(dist) % 2;`,
-        sectors: `// Based on angle
-let angle = Math.atan2(Math.sqrt(3) * (r + s/2), 3/2 * s);
+        sectors: `let angle = Math.atan2(Math.sqrt(3) * (r + s/2), 3/2 * s);
 return Math.floor(3 * angle / Math.PI) % 2 ? 1 : 0;`,
         flowers: `return (Math.abs(q)%3 === 0 && Math.abs(r)%3 === 0) ? 1 : 0;`,
         spiral: `let dist = (Math.abs(q) + Math.abs(r) + Math.abs(s)) / 2;
@@ -383,11 +415,11 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         window.addEventListener('resize', resize);
         
         ui.n.addEventListener('input', (e) => { N = parseInt(e.target.value); ui.nVal.textContent = N; runCode(); });
-        ui.w.addEventListener('input', (e) => { lineWidth = parseFloat(e.target.value); ui.wVal.textContent = lineWidth.toFixed(1); draw(); });
+        ui.w.addEventListener('input', (e) => { lineWidth = parseFloat(e.target.value); ui.wVal.textContent = lineWidth.toFixed(1); requestDraw(); });
         
-        ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; draw(); });
-        ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; draw(); });
-        ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; draw(); });
+        ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; requestDraw(); });
+        ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; requestDraw(); });
+        ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; requestDraw(); });
 
         ui.select.addEventListener('change', (e) => {
             const val = e.target.value;
@@ -419,20 +451,62 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             link.click();
         });
 
+        ui.saveSvgBtn.addEventListener('click', exportSVG);
+
         tileCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e, tileCanvas));
         matrixCanvas.addEventListener('mousedown', (e) => handleCanvasClick(e, matrixCanvas));
 
         ui.infoBtn.onclick = () => ui.info.style.display = (ui.info.style.display === 'block') ? 'none' : 'block';
         ui.closeInfo.onclick = () => ui.info.style.display = 'none';
 
+        // Animation Controls
+        ui.animType.addEventListener('change', (e) => {
+            animType = e.target.value;
+            animProgress = -0.05;
+            animDirection = 1;
+            if (animType === 'none') {
+                stopAnimation();
+                snapToTarget();
+                requestDraw();
+            } else {
+                if(!isAnimating && ui.playBtn.textContent === "⏸") startAnimation();
+                // Reset rotation to 0 for a fresh animation start
+                resetAnglesToZero();
+                requestDraw();
+            }
+        });
+
+        ui.animSpeed.addEventListener('input', (e) => {
+            const level = parseInt(e.target.value);
+            ui.speedVal.textContent = level;
+            currentStepDuration = STEP_DURATION_LEVELS[level - 1];
+        });
+
+        ui.playBtn.addEventListener('click', toggleAnimation);
+        ui.recBtn.addEventListener('click', toggleRecording);
+
         updatePresetDropdown();
         runCode();
+    }
+
+    function resetAnglesToZero() {
+        hexData.forEach((_, key) => {
+            currentAngles.set(key, 0);
+        });
+    }
+
+    function snapToTarget() {
+        hexData.forEach((val, key) => {
+            currentAngles.set(key, val * (Math.PI / 3)); // 60 degrees
+        });
     }
 
     function runCode() {
         const userCode = ui.editor.value;
         ui.errorMsg.style.display = 'none';
-        hexData.clear();
+        
+        // Preserve current keys if N hasn't changed to avoid flicker, but here we rebuild map
+        let newHexData = new Map();
 
         try {
             const genFunc = new Function('q', 'r', 's', 'n', userCode);
@@ -444,10 +518,28 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                             const result = genFunc(q, r, s, N);
                             if (typeof result === 'boolean') val = result ? 1 : 0;
                             else if (typeof result === 'number') val = Math.abs(Math.round(result)) % 2;
-                            hexData.set(`${q},${r},${s}`, val);
+                            
+                            const key = `${q},${r},${s}`;
+                            newHexData.set(key, val);
+                            
+                            // Initialize angle if new
+                            if (!currentAngles.has(key)) currentAngles.set(key, 0);
                         }
                     }
                 }
+            }
+            hexData = newHexData;
+            
+            // Cleanup unused angles
+            for (let k of currentAngles.keys()) {
+                if (!hexData.has(k)) currentAngles.delete(k);
+            }
+
+            if (animType === 'none' || !isAnimating) {
+                snapToTarget();
+            } else {
+                // If animating, keep angles as is (likely 0 if just started, or partial) 
+                resetAnglesToZero();
             }
             resize(); 
         } catch (err) {
@@ -457,25 +549,273 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
     }
 
     function resize() {
-        // Resize Tile Canvas
         const tWrap = document.getElementById('tile-wrapper');
         const tSize = Math.min(tWrap.clientWidth, tWrap.clientHeight);
         tileCanvas.width = tSize * 2; tileCanvas.height = tSize * 2;
         tileCanvas.style.width = `${tSize}px`; tileCanvas.style.height = `${tSize}px`;
         ctx.setTransform(2,0,0,2,0,0);
 
-        // Resize Matrix Canvas
         const mWrap = document.getElementById('matrix-wrapper');
         const mSize = Math.min(mWrap.clientWidth, mWrap.clientHeight) - 10;
         matrixCanvas.width = mSize * 2; matrixCanvas.height = mSize * 2;
         matrixCanvas.style.width = `${mSize}px`; matrixCanvas.style.height = `${mSize}px`;
         mCtx.setTransform(2,0,0,2,0,0);
 
-        draw();
+        requestDraw();
     }
 
-    /* * HEXAGON MATH & UTILS
-     */
+    /* --- ANIMATION LOGIC --- */
+
+    function toggleAnimation() {
+        if (isAnimating) stopAnimation(); else startAnimation();
+    }
+
+    function startAnimation() {
+        if (animType === 'none') return;
+        isAnimating = true;
+        ui.playBtn.textContent = "⏸";
+        animDirection = 1;
+        animProgress = -0.05; 
+        lastTime = performance.now();
+        resetAnglesToZero();
+        animationLoop();
+    }
+
+    function stopAnimation() {
+        isAnimating = false;
+        ui.playBtn.textContent = "▶";
+        cancelAnimationFrame(animationFrameId);
+    }
+
+    function animationLoop() {
+        if (!isAnimating) return;
+        
+        const now = performance.now();
+        const dt = (now - lastTime) / 1000;
+        lastTime = now;
+
+        let totalDuration = 1.0;
+        const totalHexes = hexData.size;
+
+        if (animType === 'cell') {
+            const activeCount = Array.from(hexData.values()).filter(v => v === 1).length;
+            totalDuration = activeCount * currentStepDuration;
+        } else if (animType === 'rings' || animType === 'row') {
+            totalDuration = N * 2 * currentStepDuration; 
+        } else {
+            totalDuration = currentStepDuration;
+        }
+
+        const logicSpeed = 1 / Math.max(0.001, totalDuration);
+
+        // Calculate pause threshold dynamically so wait time is always ~0.5s
+        const PAUSE_SECONDS = 0.5;
+        const pauseBuffer = PAUSE_SECONDS * logicSpeed;
+        const upperLimit = 1 + pauseBuffer;
+        const lowerLimit = -pauseBuffer;
+
+        if (animDirection === -1) animProgress -= dt * logicSpeed;
+        else animProgress += dt * logicSpeed;
+
+        if (animProgress >= upperLimit) { 
+            animDirection = -1; 
+            animProgress = upperLimit; 
+        } else if (animProgress <= lowerLimit) { 
+            animDirection = 1; 
+            animProgress = lowerLimit; 
+        }
+
+        updateAngles(dt);
+        draw();
+        
+        if (isRecording) updateRecTimer();
+        animationFrameId = requestAnimationFrame(animationLoop);
+    }
+
+    function updateAngles(dt) {
+        const p = Math.max(0, Math.min(1, animProgress));
+
+        // Geometry Constants for Rings
+        const numRings = N;
+
+        let activeIdx = 0;
+        const totalActive = Array.from(hexData.values()).filter(v => v === 1).length;
+
+        hexData.forEach((val, key) => {
+            const [q, r, s] = key.split(',').map(Number);
+            let localP = 0;
+
+            if (val === 0) {
+                currentAngles.set(key, 0);
+                return;
+            }
+
+            if (animType === 'all') {
+                localP = p;
+            } else if (animType === 'rings') {
+                const ringIdx = (Math.abs(q) + Math.abs(r) + Math.abs(s)) / 2;
+                const seqPos = p * (N + 1);
+                localP = Math.max(0, Math.min(1, seqPos - ringIdx));
+            } else if (animType === 'row') {
+                const rowIdx = r + N; // 0 to 2N
+                const seqPos = p * (2 * N + 1);
+                localP = Math.max(0, Math.min(1, seqPos - rowIdx));
+            } else if (animType === 'cell') {
+                const currentStep = p * totalActive;
+                localP = Math.max(0, Math.min(1, currentStep - activeIdx));
+                activeIdx++;
+            }
+
+            // Target is 60 degrees (PI/3)
+            currentAngles.set(key, localP * (Math.PI / 3));
+        });
+    }
+
+    /* --- RECORDING --- */
+    function toggleRecording() {
+        if (isRecording) stopRecording(); else startRecording();
+    }
+
+    function startRecording() {
+        recordedChunks = [];
+        const stream = tileCanvas.captureStream(60); 
+        try { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' }); } 
+        catch (e) { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); }
+
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = exportVideo;
+        mediaRecorder.start();
+        isRecording = true;
+        recStartTime = performance.now();
+        ui.recBtn.textContent = "⏹ STOP";
+        ui.recInd.style.display = 'flex';
+    }
+
+    function stopRecording() {
+        if (!mediaRecorder) return;
+        mediaRecorder.stop();
+        isRecording = false;
+        ui.recBtn.textContent = "⏺ REC";
+        ui.recInd.style.display = 'none';
+    }
+
+    function updateRecTimer() {
+        if (!isRecording) return;
+        const elapsed = Math.floor((performance.now() - recStartTime) / 1000);
+        const mm = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const ss = (elapsed % 60).toString().padStart(2, '0');
+        ui.recTimer.textContent = `${mm}:${ss}`;
+    }
+
+    function exportVideo() {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `hex-truchet-anim-${Date.now()}.webm`;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
+    }
+
+    /* --- SVG EXPORT --- */
+    function exportSVG() {
+        const size = 50; 
+        const pad = size * 2;
+        const width = (N * 2 + 1) * Math.sqrt(3) * size + pad;
+        const height = (N * 2 + 1) * 1.5 * size + pad;
+        const minX = -width/2;
+        const minY = -height/2;
+
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" style="background-color:black">`;
+        const colMain = "#00d2ff"; 
+        
+        hexData.forEach((val, key) => {
+            const [q, r, s] = key.split(',').map(Number);
+            const pos = hexToPixel(q, r, size);
+            
+            const verts = [];
+            for (let i = 0; i < 6; i++) {
+                const deg = 30 + 60 * i;
+                const rad = deg * Math.PI / 180;
+                verts.push({ x: size * Math.cos(rad), y: size * Math.sin(rad) });
+            }
+            const mids = [];
+            for (let i = 0; i < 6; i++) {
+                const next = (i + 1) % 6;
+                mids.push({ x: (verts[i].x + verts[next].x) / 2, y: (verts[i].y + verts[next].y) / 2 });
+            }
+
+            // Connection pairs for State 0 (Standard) vs State 1 (Rotated)
+            const pairs0 = [[0, 1], [2, 3], [4, 5]];
+            const pairs1 = [[1, 2], [3, 4], [5, 0]];
+            const activePairs = (val === 1) ? pairs1 : pairs0;
+
+            svg += `<g transform="translate(${pos.x}, ${pos.y})">`;
+
+            if (isFilled) {
+                // Correct color inversion for state 1 to maintain ribbon topology
+                let drawCorners = (val === 0); 
+                if (isInvertedFill) drawCorners = !drawCorners;
+
+                if (drawCorners) {
+                    activePairs.forEach(pair => {
+                        const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
+                        const vIdx = (pair[0] + 1) % 6;
+                        const v = verts[vIdx];
+                        let d = getSvgPath(drawMode, p1, p2, v);
+                        d += ` L ${v.x} ${v.y} L ${p1.x} ${p1.y} Z`;
+                        svg += `<path d="${d}" fill="${colMain}" />`;
+                    });
+                } else {
+                    let d = `M ${verts[0].x} ${verts[0].y}`;
+                    for(let i=1; i<6; i++) d += ` L ${verts[i].x} ${verts[i].y}`;
+                    d += ` Z`;
+                    svg += `<path d="${d}" fill="${colMain}" />`;
+                    
+                    activePairs.forEach(pair => {
+                        const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
+                        const vIdx = (pair[0] + 1) % 6;
+                        const v = verts[vIdx];
+                        let dC = getSvgPath(drawMode, p1, p2, v);
+                        dC += ` L ${v.x} ${v.y} L ${p1.x} ${p1.y} Z`;
+                        svg += `<path d="${dC}" fill="#000" />`;
+                    });
+                }
+            } else {
+                activePairs.forEach(pair => {
+                    const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
+                    const vIdx = (pair[0] + 1) % 6;
+                    const v = verts[vIdx];
+                    const d = getSvgPath(drawMode, p1, p2, v);
+                    svg += `<path d="${d}" fill="none" stroke="${colMain}" stroke-width="${lineWidth}" stroke-linecap="round" />`;
+                });
+            }
+            svg += `</g>`;
+        });
+        svg += `</svg>`;
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([svg], {type: "image/svg+xml"}));
+        link.download = `hex-truchet-${Date.now()}.svg`; link.click();
+    }
+
+    function getSvgPath(mode, p1, p2, v) {
+        if (mode === 'straight') {
+            return `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+        } else if (mode === 'curved') {
+            const r = Math.hypot(v.x - p1.x, v.y - p1.y);
+            const a1 = Math.atan2(p1.y - v.y, p1.x - v.x);
+            const a2 = Math.atan2(p2.y - v.y, p2.x - v.x);
+            let diff = a2 - a1;
+            while(diff > Math.PI) diff -= 2*Math.PI;
+            while(diff < -Math.PI) diff += 2*Math.PI;
+            const sweep = diff > 0 ? 1 : 0;
+            return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 ${sweep} ${p2.x} ${p2.y}`;
+        } else {
+            const px = p1.x + p2.x - v.x;
+            const py = p1.y + p2.y - v.y;
+            return `M ${p1.x} ${p1.y} L ${px} ${py} L ${p2.x} ${p2.y}`;
+        }
+    }
+
+    /* --- HELPERS --- */
     function hexToPixel(q, r, size) {
         const x = size * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
         const y = size * (3./2 * r);
@@ -493,20 +833,16 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         let rq = Math.round(q);
         let rr = Math.round(r);
         let rs = Math.round(s);
-
-        const q_diff = Math.abs(rq - q);
-        const r_diff = Math.abs(rr - r);
-        const s_diff = Math.abs(rs - s);
-
+        const q_diff = Math.abs(rq - q), r_diff = Math.abs(rr - r), s_diff = Math.abs(rs - s);
         if (q_diff > r_diff && q_diff > s_diff) rq = -rr - rs;
         else if (r_diff > s_diff) rr = -rq - rs;
         else rs = -rq - rr;
-
         return { q: rq, r: rr, s: rs };
     }
 
-    /* * DRAWING 
-     */
+    /* --- RENDERING --- */
+    function requestDraw() { if (!isAnimating) draw(); }
+
     function draw() {
         drawTiles();
         drawMatrix();
@@ -517,14 +853,25 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const h = tileCanvas.height / 2;
         const size = (Math.min(w, h) / (N * 2 + 1)) * 0.9;
 
-        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w*2, h*2);
         ctx.save();
-        ctx.translate(w/2, h/2);
+        
+        // Translate to Center of Scaled Coordinate System
+        // width = clientWidth * 2. w = clientWidth.
+        // ctx is scaled by 2.
+        // We want to translate to clientWidth/2 (logical pixels) which is w/2.
+        ctx.translate(w/2, h/2); 
 
         hexData.forEach((val, key) => {
             const [q, r, s] = key.split(',').map(Number);
             const pos = hexToPixel(q, r, size);
-            drawTile(pos.x, pos.y, size, val);
+            const angle = currentAngles.get(key) || 0;
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate(angle);
+            drawTileContent(0, 0, size, angle); 
+            ctx.restore();
         });
         
         ctx.restore();
@@ -535,203 +882,132 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const h = matrixCanvas.height / 2;
         const size = (Math.min(w, h) / (N * 2 + 1)) * 0.9;
 
-        mCtx.fillStyle = '#050505'; mCtx.fillRect(0, 0, w, h);
+        mCtx.fillStyle = '#050505'; mCtx.fillRect(0, 0, w*2, h*2);
         mCtx.save();
+        // Same centering as TileCanvas
         mCtx.translate(w/2, h/2);
         
         mCtx.font = `${Math.max(8, size/1.5)}px monospace`;
-        mCtx.textAlign = 'center';
-        mCtx.textBaseline = 'middle';
+        mCtx.textAlign = 'center'; mCtx.textBaseline = 'middle';
 
         hexData.forEach((val, key) => {
             const [q, r, s] = key.split(',').map(Number);
             const pos = hexToPixel(q, r, size);
             
-            // Draw Hexagon Outline
-            mCtx.strokeStyle = '#222';
-            mCtx.lineWidth = 1;
-            mCtx.beginPath();
+            mCtx.strokeStyle = '#222'; mCtx.lineWidth = 1; mCtx.beginPath();
             for (let i = 0; i < 6; i++) {
-                const angle_deg = 60 * i + 30;
-                const angle_rad = Math.PI / 180 * angle_deg;
-                const px = pos.x + size * Math.cos(angle_rad);
-                const py = pos.y + size * Math.sin(angle_rad);
-                if (i === 0) mCtx.moveTo(px, py);
-                else mCtx.lineTo(px, py);
+                const r = 30 + 60 * i;
+                const rad = r * Math.PI / 180;
+                mCtx[i===0?'moveTo':'lineTo'](pos.x + size*Math.cos(rad), pos.y + size*Math.sin(rad));
             }
-            mCtx.closePath();
-            mCtx.stroke();
+            mCtx.closePath(); mCtx.stroke();
 
-            // Background for active cell
-            if (val === 1) {
-                mCtx.fillStyle = 'rgba(0, 210, 255, 0.15)';
-                mCtx.fill();
-            }
-
-            // Draw Number
+            if (val === 1) { mCtx.fillStyle = 'rgba(0, 210, 255, 0.15)'; mCtx.fill(); }
             mCtx.fillStyle = val === 1 ? THEME_COLOR : '#444';
             mCtx.fillText(val, pos.x, pos.y);
         });
-
         mCtx.restore();
     }
 
-    // Helper to draw the path segment
     function tracePath(ctx, drawMode, p1, p2, v) {
         ctx.moveTo(p1.x, p1.y);
-        
         if (drawMode === 'straight') {
             ctx.lineTo(p2.x, p2.y);
-        } 
-        else if (drawMode === 'curved') {
-            // Strict Geometry: Center at Vertex V, Radius = dist(V, P1)
+        } else if (drawMode === 'curved') {
             const r = Math.hypot(v.x - p1.x, v.y - p1.y);
-            const startAngle = Math.atan2(p1.y - v.y, p1.x - v.x);
-            const endAngle = Math.atan2(p2.y - v.y, p2.x - v.x);
-            
-            // Determine arc direction (shortest path, roughly 120deg)
-            let diff = endAngle - startAngle;
-            // Normalize to -PI to PI
+            const a1 = Math.atan2(p1.y - v.y, p1.x - v.x);
+            const a2 = Math.atan2(p2.y - v.y, p2.x - v.x);
+            let diff = a2 - a1;
             while (diff > Math.PI) diff -= 2*Math.PI;
             while (diff < -Math.PI) diff += 2*Math.PI;
-            
-            const anticlockwise = diff < 0;
-            ctx.arc(v.x, v.y, r, startAngle, endAngle, anticlockwise);
-        } 
-        else if (drawMode === 'two-lines') {
-            // Parallelogram: P = M1 + M2 - V
+            ctx.arc(v.x, v.y, r, a1, a2, diff < 0);
+        } else {
             const px = p1.x + p2.x - v.x;
             const py = p1.y + p2.y - v.y;
-            ctx.lineTo(px, py);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(px, py); ctx.lineTo(p2.x, p2.y);
         }
     }
 
-    function drawTile(cx, cy, size, val) {
-        // Hex Vertices (Pointy top)
+    function drawTileContent(cx, cy, size, angle) {
+        // Vertices
         const verts = [];
         for (let i = 0; i < 6; i++) {
-            const deg = 30 + 60 * i;
-            const rad = deg * Math.PI / 180;
-            verts.push({
-                x: cx + size * Math.cos(rad),
-                y: cy + size * Math.sin(rad)
-            });
+            const rad = (30 + 60 * i) * Math.PI / 180;
+            verts.push({ x: size * Math.cos(rad), y: size * Math.sin(rad) });
         }
-
-        // Edge Midpoints
+        // Midpoints
         const mids = [];
         for (let i = 0; i < 6; i++) {
             const next = (i + 1) % 6;
-            mids.push({
-                x: (verts[i].x + verts[next].x) / 2,
-                y: (verts[i].y + verts[next].y) / 2
-            });
+            mids.push({ x: (verts[i].x + verts[next].x) / 2, y: (verts[i].y + verts[next].y) / 2 });
         }
 
-        // Connections
-        const shift = val === 0 ? 0 : 1;
-        const pairs = [
-            [0 + shift, 1 + shift],
-            [2 + shift, 3 + shift],
-            [4 + shift, 5 + shift]
-        ].map(p => p.map(idx => idx % 6));
+        const pairs = [[0, 1], [2, 3], [4, 5]];
 
         if (isFilled) {
-            drawFilledTile(cx, cy, size, verts, mids, pairs, val);
-        } else {
-            drawStrokedTile(cx, cy, size, verts, mids, pairs, val);
-        }
-    }
+            // COLOR INTERPOLATION LOGIC
+            // Map angle 0 -> 60 deg (0 -> PI/3) to t (0 -> 1)
+            let t = angle / (Math.PI / 3);
+            if (t < 0) t = 0; if (t > 1) t = 1;
 
-    function drawStrokedTile(cx, cy, size, verts, mids, pairs, val) {
-        ctx.lineWidth = lineWidth;
-        ctx.lineCap = drawMode === 'straight' ? 'round' : 'butt';
-        // Single Color
-        ctx.strokeStyle = THEME_COLOR;
+            const cMain = {r:0, g:210, b:255}; // #00d2ff
+            const cBg   = {r:0, g:0, b:0};     // Black
 
-        ctx.beginPath();
-        pairs.forEach(pair => {
-            const p1 = mids[pair[0]];
-            const p2 = mids[pair[1]];
-            const sharedVertIdx = (pair[0] + 1) % 6; 
-            const v = verts[sharedVertIdx];
+            const lerpColor = (c1, c2, factor) => {
+                const r = Math.round(c1.r + (c2.r - c1.r) * factor);
+                const g = Math.round(c1.g + (c2.g - c1.g) * factor);
+                const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+                return `rgb(${r},${g},${b})`;
+            };
 
-            tracePath(ctx, drawMode, p1, p2, v);
-        });
-        ctx.stroke();
-    }
+            // Define Base States (State 0 vs State 1 Topology Colors)
+            // State 0 (Angle 0): Corners = Main, Center = Bg
+            // State 1 (Angle 60): Corners = Bg, Center = Main
+            // If Inverted, swap everything.
 
-    function drawFilledTile(cx, cy, size, verts, mids, pairs, val) {
-        // REGRESSION FIX:
-        // We must swap the coloring regions (Center vs Corners) based on 'val'
-        // to maintain topological continuity (the ribbon effect).
-        
-        const cPrimary = THEME_COLOR;
-        const cSecondary = 'transparent'; // Background matches canvas
-        
-        let cornerColor, centerColor;
+            let cCornerStart = cMain, cCenterStart = cBg;
+            let cCornerEnd = cBg, cCenterEnd = cMain;
 
-        // 1. Determine base assignment based on val
-        // If val == 0: Corners are Primary, Center is Secondary (creates Ribbon A)
-        // If val == 1: Center is Primary, Corners are Secondary (creates Ribbon B)
-        if (val === 0) {
-            cornerColor = cPrimary;
-            centerColor = cSecondary;
-        } else {
-            cornerColor = cSecondary;
-            centerColor = cPrimary;
-        }
+            if (isInvertedFill) {
+                // Invert Base Logic
+                // State 0: Corners=Bg, Center=Main
+                // State 1: Corners=Main, Center=Bg
+                cCornerStart = cBg; cCenterStart = cMain;
+                cCornerEnd = cMain; cCenterEnd = cBg;
+            }
 
-        // 2. Apply Inversion
-        if (isInvertedFill) {
-            const temp = cornerColor;
-            cornerColor = centerColor;
-            centerColor = temp;
-        }
+            const fillCorners = lerpColor(cCornerStart, cCornerEnd, t);
+            const fillCenter = lerpColor(cCenterStart, cCenterEnd, t);
 
-        // 3. Fill Center (Background)
-        if (centerColor !== 'transparent') {
-            ctx.fillStyle = centerColor;
+            // Draw Center
+            ctx.fillStyle = fillCenter;
             ctx.beginPath();
             ctx.moveTo(verts[0].x, verts[0].y);
             for(let i=1; i<6; i++) ctx.lineTo(verts[i].x, verts[i].y);
-            ctx.closePath();
             ctx.fill();
-        }
+            
+            // Draw Corners
+            ctx.fillStyle = fillCorners;
+            pairs.forEach(pair => {
+                const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
+                const v = verts[(pair[0] + 1) % 6];
+                ctx.beginPath();
+                tracePath(ctx, drawMode, p1, p2, v);
+                ctx.lineTo(v.x, v.y); ctx.lineTo(p1.x, p1.y);
+                ctx.fill();
+            });
 
-        // 4. Fill Corners
-        // If Corners are 'transparent', we need to ERASE the center color to reveal the canvas black.
-        // If Corners are Color, we simply draw them.
-        
-        if (cornerColor !== 'transparent') {
-            // Draw Color on top
-            ctx.fillStyle = cornerColor;
+        } else {
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = drawMode === 'straight' ? 'round' : 'butt';
+            ctx.strokeStyle = THEME_COLOR;
+            ctx.beginPath();
             pairs.forEach(pair => {
-                const p1 = mids[pair[0]];
-                const p2 = mids[pair[1]];
-                const sharedVertIdx = (pair[0] + 1) % 6; 
-                const v = verts[sharedVertIdx];
-                ctx.beginPath();
+                const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
+                const v = verts[(pair[0] + 1) % 6];
                 tracePath(ctx, drawMode, p1, p2, v);
-                ctx.lineTo(v.x, v.y);
-                ctx.lineTo(p1.x, p1.y);
-                ctx.fill();
             });
-        } else if (centerColor !== 'transparent') {
-            // Erase corners (draw black)
-            ctx.fillStyle = '#000'; // Match BG
-            pairs.forEach(pair => {
-                const p1 = mids[pair[0]];
-                const p2 = mids[pair[1]];
-                const sharedVertIdx = (pair[0] + 1) % 6; 
-                const v = verts[sharedVertIdx];
-                ctx.beginPath();
-                tracePath(ctx, drawMode, p1, p2, v);
-                ctx.lineTo(v.x, v.y);
-                ctx.lineTo(p1.x, p1.y);
-                ctx.fill();
-            });
+            ctx.stroke();
         }
     }
 
@@ -748,10 +1024,13 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         if (Math.abs(hex.q) <= N && Math.abs(hex.r) <= N && Math.abs(hex.s) <= N) {
             const key = `${hex.q},${hex.r},${hex.s}`;
             const current = hexData.has(key) ? hexData.get(key) : 0;
-            hexData.set(key, 1 - current);
+            const newVal = 1 - current;
+            hexData.set(key, newVal);
             
-            // Redraw everything so both matrix and tiles update
-            draw(); 
+            if (!isAnimating) {
+                currentAngles.set(key, newVal * (Math.PI / 3)); 
+                draw();
+            }
         }
     }
 
