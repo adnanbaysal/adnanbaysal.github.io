@@ -570,6 +570,8 @@ return rP ^ cP;`,
     }
 
     let lastTime = 0;
+    
+    /* --- Replace animationLoop --- */
     function animationLoop() {
         if (!isAnimating) return;
         
@@ -579,14 +581,17 @@ return rP ^ cP;`,
 
         let totalDuration = 1.0;
 
+        // Calculate duration based on strict sequential steps
         if (animType === 'cell') {
-            // Count ONLY cells that actually need to rotate
             const activeCellCount = targetGrid.flat().filter(v => v === 1).length;
             totalDuration = activeCellCount * currentStepDuration;
         } else if (animType === 'row') {
             totalDuration = N * currentStepDuration;
         } else if (animType === 'rings') {
-            totalDuration = (N / 2) * currentStepDuration;
+            // Total duration is exactly the number of rings * time per ring
+            // This ensures the speed slider directly controls the rotation speed of a SINGLE ring
+            const numRings = Math.ceil(N / 2);
+            totalDuration = numRings * currentStepDuration;
         } else {
             totalDuration = currentStepDuration;
         }
@@ -612,6 +617,7 @@ return rP ^ cP;`,
         animationFrameId = requestAnimationFrame(animationLoop);
     }
 
+    /* --- Replace updateGridAngles --- */
     function updateGridAngles(dt) {
         // Clamp logic progress to 0-1 for rotation calculations
         const p = Math.max(0, Math.min(1, animProgress));
@@ -642,6 +648,15 @@ return rP ^ cP;`,
             return;
         }
         
+        // Pre-calculate ring geometry constants
+        const cx = (N - 1) / 2;
+        const cy = (N - 1) / 2;
+        const numRings = Math.ceil(N / 2);
+        
+        // Scale p from (0 to 1) -> (0 to numRings)
+        // This creates the "counter" that moves from ring 0 to ring N
+        const sequencePos = p * numRings;
+
         for (let r = 0; r < N; r++) {
             for (let c = 0; c < N; c++) {
                 if (targetGrid[r][c] === 0) {
@@ -652,10 +667,16 @@ return rP ^ cP;`,
                 if (animType === 'all') {
                     localP = p;
                 } else if (animType === 'rings') {
-                    const cx = (N - 1) / 2, cy = (N - 1) / 2;
+                    // Determine which ring index (0, 1, 2...) this cell belongs to
+                    // Math.floor ensures discrete steps (integers)
                     const dist = Math.max(Math.abs(r - cy), Math.abs(c - cx));
-                    const maxDist = N / 2;
-                    localP = Math.max(0, Math.min(1, (p * 1.5) - (dist / maxDist)));
+                    const ringIndex = Math.floor(dist); 
+                    
+                    // Strictly sequential logic:
+                    // If sequencePos is 0.5, ring 0 is half done.
+                    // If sequencePos is 1.5, ring 0 is done (1.0), ring 1 is half done (0.5).
+                    // Subtracting ringIndex aligns the wave to this specific ring.
+                    localP = Math.max(0, Math.min(1, sequencePos - ringIndex));
                 }
                 angleGrid[r][c] = localP * (Math.PI / 2);
             }
