@@ -734,6 +734,9 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" style="background-color:black">`;
         const colMain = "#00d2ff"; 
         
+        // Use a fixed small width for SVG grid lines
+        const gridStroke = 1;
+
         hexData.forEach((val, key) => {
             const [q, r, s] = key.split(',').map(Number);
             const pos = hexToPixel(q, r, size);
@@ -795,6 +798,15 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                     svg += `<path d="${d}" fill="none" stroke="${colMain}" stroke-width="${lineWidth}" stroke-linecap="round" />`;
                 });
             }
+            
+            // Draw Grid Outline if enabled
+            if (showGrid) {
+                let d = `M ${verts[0].x} ${verts[0].y}`;
+                for(let i=1; i<6; i++) d += ` L ${verts[i].x} ${verts[i].y}`;
+                d += ` Z`;
+                svg += `<path d="${d}" fill="none" stroke="#222" stroke-width="${gridStroke}" />`;
+            }
+
             svg += `</g>`;
         });
         svg += `</svg>`;

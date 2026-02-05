@@ -742,6 +742,9 @@ return rP ^ cP;`,
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background-color:black">`;
         const colMain = "#00d2ff", colBg = "#111111"; 
         const lineWidthSVG = (lineWidth / (tileCanvas.width / 2 / N)) * cellSize;
+        
+        // Grid line stroke width (approx same visual weight as on canvas)
+        const gridStroke = Math.max(1, (1 / (tileCanvas.width / 2 / N)) * cellSize);
 
         let fillColors = Array(N).fill().map(() => Array(N).fill(0));
         for(let r = 0; r < N; r++) {
@@ -754,7 +757,12 @@ return rP ^ cP;`,
 
         for (let r = 0; r < N; r++) {
             for (let c = 0; c < N; c++) {
-                svg += `<g transform="translate(${c * cellSize}, ${r * cellSize}) rotate(${targetGrid[r][c] * 90}, ${half}, ${half})">`;
+                // Translation Group
+                svg += `<g transform="translate(${c * cellSize}, ${r * cellSize})">`;
+                
+                // Rotated Group for Content
+                svg += `<g transform="rotate(${targetGrid[r][c] * 90}, ${half}, ${half})">`;
+                
                 if (isFilled) {
                     const c1 = (fillColors[r][c] === 0) ? colMain : colBg, c2 = (fillColors[r][c] === 0) ? colBg : colMain; 
                     if (drawMode === 'straight') {
@@ -775,7 +783,15 @@ return rP ^ cP;`,
                         svg += `<path d="M${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
                     }
                 }
-                svg += `</g>`;
+                
+                svg += `</g>`; // End Rotated Group
+
+                // Grid Line (Static, outside rotated group)
+                if (showGrid) {
+                    svg += `<rect x="0" y="0" width="${cellSize}" height="${cellSize}" fill="none" stroke="#222" stroke-width="${gridStroke}" />`;
+                }
+
+                svg += `</g>`; // End Translate Group
             }
         }
         svg += `</svg>`;
