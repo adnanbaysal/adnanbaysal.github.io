@@ -201,6 +201,10 @@
                 <input type="checkbox" id="check-filled"> Filled
             </label>
             
+            <label class="check-group" title="Show Grid Lines">
+                <input type="checkbox" id="check-grid"> Grid
+            </label>
+            
             <button id="invert-fill-btn" class="btn-invert" title="Invert Colors">⇄</button>
         </div>
 
@@ -302,6 +306,7 @@
     let N = 12;
     let lineWidth = 2.5;
     let isFilled = false;
+    let showGrid = false;
     let isInvertedFill = false;
     let drawMode = 'straight'; 
     
@@ -338,6 +343,7 @@
         n: document.getElementById('param-n'), nVal: document.getElementById('n-val'),
         w: document.getElementById('param-w'), wVal: document.getElementById('w-val'),
         filled: document.getElementById('check-filled'),
+        grid: document.getElementById('check-grid'),
         mode: document.getElementById('draw-mode'),
         invertFill: document.getElementById('invert-fill-btn'),
         editor: document.getElementById('code-area'),
@@ -411,6 +417,7 @@ return rP ^ cP;`,
         });
         
         ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; requestDraw(); });
+        ui.grid.addEventListener('change', (e) => { showGrid = e.target.checked; requestDraw(); });
         ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; requestDraw(); });
         ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; requestDraw(); });
 
@@ -839,6 +846,17 @@ return rP ^ cP;`,
                     drawOneStrokeTile(tCtx, c*tc, r*tc, tc);
                 }
                 tCtx.restore();
+            }
+        }
+
+        // Draw Static Grid Overlay
+        if (showGrid) {
+            tCtx.lineWidth = 1;
+            tCtx.strokeStyle = '#222';
+            for(let r=0; r<N; r++) {
+                for(let c=0; c<N; c++) {
+                    tCtx.strokeRect(c*tc, r*tc, tc, tc);
+                }
             }
         }
     }

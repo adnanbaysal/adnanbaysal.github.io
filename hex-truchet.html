@@ -203,6 +203,10 @@
                 <input type="checkbox" id="check-filled"> Filled
             </label>
             
+            <label class="check-group" title="Show Grid Lines">
+                <input type="checkbox" id="check-grid"> Grid
+            </label>
+            
             <button id="invert-fill-btn" class="btn-invert" title="Invert Fill Logic">⇄</button>
         </div>
 
@@ -315,6 +319,7 @@
     let N = 6;
     let lineWidth = 2.0;
     let isFilled = false;
+    let showGrid = false;
     let isInvertedFill = false;
     let drawMode = 'two-lines'; 
     
@@ -352,6 +357,7 @@
         n: document.getElementById('param-n'), nVal: document.getElementById('n-val'),
         w: document.getElementById('param-w'), wVal: document.getElementById('w-val'),
         filled: document.getElementById('check-filled'),
+        grid: document.getElementById('check-grid'),
         mode: document.getElementById('draw-mode'),
         invertFill: document.getElementById('invert-fill-btn'),
         editor: document.getElementById('code-area'),
@@ -418,6 +424,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         ui.w.addEventListener('input', (e) => { lineWidth = parseFloat(e.target.value); ui.wVal.textContent = lineWidth.toFixed(1); requestDraw(); });
         
         ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; requestDraw(); });
+        ui.grid.addEventListener('change', (e) => { showGrid = e.target.checked; requestDraw(); });
         ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; requestDraw(); });
         ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; requestDraw(); });
 
@@ -867,6 +874,25 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             const pos = hexToPixel(q, r, size);
             const angle = currentAngles.get(key) || 0;
             
+            // 1. Draw Static Grid (Non-Rotating)
+            if (showGrid) {
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = '#222';
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const rad = (30 + 60 * i) * Math.PI / 180;
+                    const vx = size * Math.cos(rad);
+                    const vy = size * Math.sin(rad);
+                    if (i === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
+                }
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 2. Draw Rotating Tile
             ctx.save();
             ctx.translate(pos.x, pos.y);
             ctx.rotate(angle);
