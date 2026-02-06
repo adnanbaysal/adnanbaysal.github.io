@@ -822,6 +822,10 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const minX = -width/2;
         const minY = -height/2;
 
+        // Dynamic Grid Color for Export
+        const isDark = theme.bg !== '#ffffff';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" style="background-color:${theme.bg}">`;
         const colMain = theme.line;
         const colBg = theme.bg;
@@ -880,7 +884,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             } else {
                 activePairs.forEach(pair => {
                     const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
-                    const vIdx = (pair[0] + 1) % 6;
+                    const vIdx = (pair[0] + 6) % 6;
                     const v = verts[vIdx];
                     const d = getSvgPath(drawMode, p1, p2, v);
                     svg += `<path d="${d}" fill="none" stroke="${colMain}" stroke-width="${lineWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
@@ -888,7 +892,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             }
             
             if (showGrid) {
-                const gridColor = currentTheme === 'print' ? '#ddd' : '#222';
                 let d = `M ${verts[0].x} ${verts[0].y}`;
                 for(let i=1; i<6; i++) d += ` L ${verts[i].x} ${verts[i].y}`;
                 d += ` Z`;
@@ -1007,7 +1010,11 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                     context.save();
                     context.translate(pos.x, pos.y);
                     context.lineWidth = 1;
-                    context.strokeStyle = (currentTheme === 'print') ? '#ddd' : '#222';
+                    
+                    // Improved Grid Visibility
+                    const isDark = theme.bg !== '#ffffff';
+                    context.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
+                    
                     context.beginPath();
                     for (let i = 0; i < 6; i++) {
                         const rad = (30 + 60 * i) * Math.PI / 180;
