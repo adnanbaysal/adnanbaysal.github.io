@@ -201,8 +201,8 @@
 
             <select id="draw-mode" class="mode-select">
                 <option value="two-lines">Two Lines</option>
-                <option value="curved">Curved</option>
                 <option value="straight">Straight</option>
+                <option value="curved">Curved</option>
             </select>
             
             <label class="check-group" title="Fill regions">
@@ -823,7 +823,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                     const vIdx = (pair[0] + 1) % 6;
                     const v = verts[vIdx];
                     const d = getSvgPath(drawMode, p1, p2, v);
-                    svg += `<path d="${d}" fill="none" stroke="${colMain}" stroke-width="${lineWidth}" stroke-linecap="round" />`;
+                    svg += `<path d="${d}" fill="none" stroke="${colMain}" stroke-width="${lineWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
                 });
             }
             
@@ -1079,7 +1079,8 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
 
         } else {
             ctx.lineWidth = lineWidth;
-            ctx.lineCap = drawMode === 'straight' ? 'round' : 'butt';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
             ctx.strokeStyle = theme.line;
             ctx.beginPath();
             pairs.forEach(pair => {

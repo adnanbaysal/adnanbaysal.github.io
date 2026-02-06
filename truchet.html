@@ -808,11 +808,11 @@ return rP ^ cP;`,
                     }
                 } else {
                     if (drawMode === 'straight') {
-                        svg += `<line x1="0" y1="${half}" x2="${half}" y2="0" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
-                        svg += `<line x1="${half}" y1="${cellSize}" x2="${cellSize}" y2="${half}" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
+                        svg += `<line x1="0" y1="${half}" x2="${half}" y2="0" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" stroke-linejoin="round" />`;
+                        svg += `<line x1="${half}" y1="${cellSize}" x2="${cellSize}" y2="${half}" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" stroke-linejoin="round" />`;
                     } else {
-                        svg += `<path d="M${half} 0 A ${half} ${half} 0 0 1 0 ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
-                        svg += `<path d="M${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" />`;
+                        svg += `<path d="M${half} 0 A ${half} ${half} 0 0 1 0 ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" stroke-linejoin="round" />`;
+                        svg += `<path d="M${half} ${cellSize} A ${half} ${half} 0 0 1 ${cellSize} ${half}" fill="none" stroke="${colMain}" stroke-width="${lineWidthSVG}" stroke-linecap="round" stroke-linejoin="round" />`;
                     }
                 }
                 
@@ -936,6 +936,8 @@ return rP ^ cP;`,
         const theme = themes[currentTheme];
         const m = tc/2; 
         ctx.lineWidth = lineWidth; 
+        ctx.lineCap = 'round'; 
+        ctx.lineJoin = 'round';
         ctx.strokeStyle = theme.line; 
         ctx.beginPath();
         if (drawMode === 'straight') { ctx.moveTo(x, y+m); ctx.lineTo(x+m, y); ctx.moveTo(x+m, y+tc); ctx.lineTo(x+tc, y+m); }
