@@ -193,10 +193,16 @@
         </div>
 
         <div class="ui-row">
+            <div class="control-group" style="min-width: 90px;">
+                <div class="label-row"><span>Theme</span></div>
+                <select id="theme-select" class="mode-select" style="width: 100%;">
+                    </select>
+            </div>
+
             <select id="draw-mode" class="mode-select">
                 <option value="two-lines">Two Lines</option>
-                <option value="straight">Straight</option>
                 <option value="curved">Curved</option>
+                <option value="straight">Straight</option>
             </select>
             
             <label class="check-group" title="Fill regions">
@@ -322,9 +328,18 @@
     let showGrid = false;
     let isInvertedFill = false;
     let drawMode = 'two-lines'; 
-    
-    // UNIFIED COLOR THEME
-    const THEME_COLOR = '#00d2ff'; 
+    let currentTheme = 'neon';
+
+    // Theme Config
+    const themes = {
+        neon: { name: "Neon Blue", bg: "#000000", line: "#00d2ff", alt: "#007799" },
+        crimson: { name: "Crimson", bg: "#000000", line: "#ff4757", alt: "#8b2530" },
+        emerald: { name: "Emerald", bg: "#000000", line: "#2ecc71", alt: "#166336" },
+        golden: { name: "Golden", bg: "#1e272e", line: "#ffa502", alt: "#9c6501" },
+        mono: { name: "Monochrome", bg: "#000000", line: "#ffffff", alt: "#666666" },
+        print: { name: "Print (B/W)", bg: "#ffffff", line: "#000000", alt: "#888888" },
+        purple: { name: "Cyber Purple", bg: "#0c0515", line: "#d630ff", alt: "#6a1b9a" }
+    };
     
     // Data Storage
     // Keys are "q,r,s" strings
@@ -359,6 +374,7 @@
         filled: document.getElementById('check-filled'),
         grid: document.getElementById('check-grid'),
         mode: document.getElementById('draw-mode'),
+        theme: document.getElementById('theme-select'),
         invertFill: document.getElementById('invert-fill-btn'),
         editor: document.getElementById('code-area'),
         select: document.getElementById('preset-select'),
@@ -415,6 +431,14 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
     }
 
     function init() {
+        // Populate Themes
+        Object.keys(themes).forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k;
+            opt.textContent = themes[k].name;
+            ui.theme.appendChild(opt);
+        });
+
         ui.editor.value = presets.xor;
 
         // Listeners
@@ -426,6 +450,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; requestDraw(); });
         ui.grid.addEventListener('change', (e) => { showGrid = e.target.checked; requestDraw(); });
         ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; requestDraw(); });
+        ui.theme.addEventListener('change', (e) => { currentTheme = e.target.value; requestDraw(); });
         ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; requestDraw(); });
 
         ui.select.addEventListener('change', (e) => {
@@ -724,6 +749,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
 
     /* --- SVG EXPORT --- */
     function exportSVG() {
+        const theme = themes[currentTheme];
         const size = 50; 
         const pad = size * 2;
         const width = (N * 2 + 1) * Math.sqrt(3) * size + pad;
@@ -731,8 +757,10 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const minX = -width/2;
         const minY = -height/2;
 
-        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" style="background-color:black">`;
-        const colMain = "#00d2ff"; 
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" style="background-color:${theme.bg}">`;
+        
+        const colMain = theme.line;
+        const colBg = theme.bg;
         
         // Use a fixed small width for SVG grid lines
         const gridStroke = 1;
@@ -786,7 +814,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                         const v = verts[vIdx];
                         let dC = getSvgPath(drawMode, p1, p2, v);
                         dC += ` L ${v.x} ${v.y} L ${p1.x} ${p1.y} Z`;
-                        svg += `<path d="${dC}" fill="#000" />`;
+                        svg += `<path d="${dC}" fill="${colBg}" />`;
                     });
                 }
             } else {
@@ -801,10 +829,11 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             
             // Draw Grid Outline if enabled
             if (showGrid) {
+                const gridColor = currentTheme === 'print' ? '#ddd' : '#222';
                 let d = `M ${verts[0].x} ${verts[0].y}`;
                 for(let i=1; i<6; i++) d += ` L ${verts[i].x} ${verts[i].y}`;
                 d += ` Z`;
-                svg += `<path d="${d}" fill="none" stroke="#222" stroke-width="${gridStroke}" />`;
+                svg += `<path d="${d}" fill="none" stroke="${gridColor}" stroke-width="${gridStroke}" />`;
             }
 
             svg += `</g>`;
@@ -859,6 +888,19 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         return { q: rq, r: rr, s: rs };
     }
 
+    function hexToRgb(hex) {
+        var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 0, g: 0, b: 0 };
+    }
+
     /* --- RENDERING --- */
     function requestDraw() { if (!isAnimating) draw(); }
 
@@ -868,17 +910,16 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
     }
 
     function drawTiles() {
+        const theme = themes[currentTheme];
         const w = tileCanvas.width / 2;
         const h = tileCanvas.height / 2;
         const size = (Math.min(w, h) / (N * 2 + 1)) * 0.9;
 
-        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w*2, h*2);
-        ctx.save();
+        // Use Theme Background
+        ctx.fillStyle = theme.bg; 
+        ctx.fillRect(0, 0, w*2, h*2);
         
-        // Translate to Center of Scaled Coordinate System
-        // width = clientWidth * 2. w = clientWidth.
-        // ctx is scaled by 2.
-        // We want to translate to clientWidth/2 (logical pixels) which is w/2.
+        ctx.save();
         ctx.translate(w/2, h/2); 
 
         hexData.forEach((val, key) => {
@@ -891,7 +932,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                 ctx.save();
                 ctx.translate(pos.x, pos.y);
                 ctx.lineWidth = 1;
-                ctx.strokeStyle = '#222';
+                ctx.strokeStyle = (currentTheme === 'print') ? '#ddd' : '#222';
                 ctx.beginPath();
                 for (let i = 0; i < 6; i++) {
                     const rad = (30 + 60 * i) * Math.PI / 180;
@@ -920,9 +961,9 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const h = matrixCanvas.height / 2;
         const size = (Math.min(w, h) / (N * 2 + 1)) * 0.9;
 
+        // Debug View Always Dark
         mCtx.fillStyle = '#050505'; mCtx.fillRect(0, 0, w*2, h*2);
         mCtx.save();
-        // Same centering as TileCanvas
         mCtx.translate(w/2, h/2);
         
         mCtx.font = `${Math.max(8, size/1.5)}px monospace`;
@@ -941,7 +982,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             mCtx.closePath(); mCtx.stroke();
 
             if (val === 1) { mCtx.fillStyle = 'rgba(0, 210, 255, 0.15)'; mCtx.fill(); }
-            mCtx.fillStyle = val === 1 ? THEME_COLOR : '#444';
+            mCtx.fillStyle = val === 1 ? '#00d2ff' : '#444';
             mCtx.fillText(val, pos.x, pos.y);
         });
         mCtx.restore();
@@ -967,6 +1008,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
     }
 
     function drawTileContent(cx, cy, size, angle) {
+        const theme = themes[currentTheme];
         // Vertices
         const verts = [];
         for (let i = 0; i < 6; i++) {
@@ -988,8 +1030,8 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             let t = angle / (Math.PI / 3);
             if (t < 0) t = 0; if (t > 1) t = 1;
 
-            const cMain = {r:0, g:210, b:255}; // #00d2ff
-            const cBg   = {r:0, g:0, b:0};     // Black
+            const cMain = hexToRgb(theme.line);
+            const cBg   = hexToRgb(theme.bg);
 
             const lerpColor = (c1, c2, factor) => {
                 const r = Math.round(c1.r + (c2.r - c1.r) * factor);
@@ -1038,7 +1080,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         } else {
             ctx.lineWidth = lineWidth;
             ctx.lineCap = drawMode === 'straight' ? 'round' : 'butt';
-            ctx.strokeStyle = THEME_COLOR;
+            ctx.strokeStyle = theme.line;
             ctx.beginPath();
             pairs.forEach(pair => {
                 const p1 = mids[pair[0]]; const p2 = mids[pair[1]];

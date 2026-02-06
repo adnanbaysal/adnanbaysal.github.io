@@ -192,6 +192,12 @@
         </div>
 
         <div class="ui-row">
+            <div class="control-group" style="min-width: 90px;">
+                <div class="label-row"><span>Theme</span></div>
+                <select id="theme-select" class="mode-select" style="width: 100%;">
+                    </select>
+            </div>
+
             <select id="draw-mode" class="mode-select">
                 <option value="straight">Straight</option>
                 <option value="curved">Curved</option>
@@ -309,6 +315,18 @@
     let showGrid = false;
     let isInvertedFill = false;
     let drawMode = 'straight'; 
+    let currentTheme = 'neon';
+
+    // Theme Config
+    const themes = {
+        neon: { name: "Neon Blue", bg: "#000000", line: "#00d2ff", alt: "#007799" },
+        crimson: { name: "Crimson", bg: "#000000", line: "#ff4757", alt: "#8b2530" },
+        emerald: { name: "Emerald", bg: "#000000", line: "#2ecc71", alt: "#166336" },
+        golden: { name: "Golden", bg: "#1e272e", line: "#ffa502", alt: "#9c6501" },
+        mono: { name: "Monochrome", bg: "#000000", line: "#ffffff", alt: "#666666" },
+        print: { name: "Print (B/W)", bg: "#ffffff", line: "#000000", alt: "#888888" },
+        purple: { name: "Cyber Purple", bg: "#0c0515", line: "#d630ff", alt: "#6a1b9a" }
+    };
     
     // Grids
     let targetGrid = [];   // The final state (0 or 1)
@@ -345,6 +363,7 @@
         filled: document.getElementById('check-filled'),
         grid: document.getElementById('check-grid'),
         mode: document.getElementById('draw-mode'),
+        theme: document.getElementById('theme-select'),
         invertFill: document.getElementById('invert-fill-btn'),
         editor: document.getElementById('code-area'),
         select: document.getElementById('preset-select'),
@@ -399,6 +418,14 @@ return rP ^ cP;`,
     }
 
     function init() {
+        // Populate Themes
+        Object.keys(themes).forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k;
+            opt.textContent = themes[k].name;
+            ui.theme.appendChild(opt);
+        });
+
         targetGrid = Array(N).fill().map(() => Array(N).fill(0));
         angleGrid = Array(N).fill().map(() => Array(N).fill(0));
         ui.editor.value = presets.xor;
@@ -419,6 +446,7 @@ return rP ^ cP;`,
         ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; requestDraw(); });
         ui.grid.addEventListener('change', (e) => { showGrid = e.target.checked; requestDraw(); });
         ui.mode.addEventListener('change', (e) => { drawMode = e.target.value; requestDraw(); });
+        ui.theme.addEventListener('change', (e) => { currentTheme = e.target.value; requestDraw(); });
         ui.invertFill.addEventListener('click', () => { isInvertedFill = !isInvertedFill; requestDraw(); });
 
         ui.select.addEventListener('change', (e) => {
@@ -736,11 +764,15 @@ return rP ^ cP;`,
 
     /* --- SVG EXPORT --- */
     function exportSVG() {
+        const theme = themes[currentTheme];
         const size = 1000; 
         const cellSize = size / N;
         const half = cellSize / 2;
-        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background-color:black">`;
-        const colMain = "#00d2ff", colBg = "#111111"; 
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background-color:${theme.bg}">`;
+        
+        const colMain = theme.line;
+        const colBg = theme.bg;
+        
         const lineWidthSVG = (lineWidth / (tileCanvas.width / 2 / N)) * cellSize;
         
         // Grid line stroke width (approx same visual weight as on canvas)
@@ -788,7 +820,8 @@ return rP ^ cP;`,
 
                 // Grid Line (Static, outside rotated group)
                 if (showGrid) {
-                    svg += `<rect x="0" y="0" width="${cellSize}" height="${cellSize}" fill="none" stroke="#222" stroke-width="${gridStroke}" />`;
+                    const gridColor = currentTheme === 'print' ? '#ddd' : '#222';
+                    svg += `<rect x="0" y="0" width="${cellSize}" height="${cellSize}" fill="none" stroke="${gridColor}" stroke-width="${gridStroke}" />`;
                 }
 
                 svg += `</g>`; // End Translate Group
@@ -815,15 +848,33 @@ return rP ^ cP;`,
         return fColors;
     }
 
+    // Helper to hex to rgb
+    function hexToRgb(hex) {
+        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 0, g: 0, b: 0 };
+    }
+
     function draw() {
         const mSz = matrixCanvas.width/2, mc = mSz/N;
+        // Matrix Debug View (Always Dark)
         mCtx.fillStyle = '#050505'; mCtx.fillRect(0,0,mSz,mSz);
+        const theme = themes[currentTheme];
+        
         for(let r=0; r<N; r++) {
             for(let c=0; c<N; c++) {
                 mCtx.strokeStyle = '#222'; mCtx.strokeRect(c*mc, r*mc, mc, mc);
                 if(targetGrid[r][c]) {
                     mCtx.fillStyle = '#111'; mCtx.fillRect(c*mc, r*mc, mc, mc);
-                    mCtx.fillStyle = varColor(1);
+                    mCtx.fillStyle = '#00d2ff'; // Keep matrix debug always blue/standard
                     if(mc > 12) mCtx.fillText("1", c*mc+mc/2-3, r*mc+mc/2+3);
                     else mCtx.fillRect(c*mc+2, r*mc+2, mc-4, mc-4);
                 } else {
@@ -834,7 +885,10 @@ return rP ^ cP;`,
         }
 
         const tSz = tileCanvas.width/2, tc = tSz/N;
-        tCtx.fillStyle = '#000'; tCtx.fillRect(0,0,tSz,tSz);
+        
+        // Use Theme Background
+        tCtx.fillStyle = theme.bg; 
+        tCtx.fillRect(0,0,tSz,tSz);
         
         // Pre-calculate fill maps for start (all zeros) and end (target)
         let startFill = null, endFill = null;
@@ -868,7 +922,8 @@ return rP ^ cP;`,
         // Draw Static Grid Overlay
         if (showGrid) {
             tCtx.lineWidth = 1;
-            tCtx.strokeStyle = '#222';
+            // Adaptive grid color for light themes
+            tCtx.strokeStyle = (currentTheme === 'print') ? '#ddd' : '#222';
             for(let r=0; r<N; r++) {
                 for(let c=0; c<N; c++) {
                     tCtx.strokeRect(c*tc, r*tc, tc, tc);
@@ -878,7 +933,11 @@ return rP ^ cP;`,
     }
 
     function drawOneStrokeTile(ctx, x, y, tc) {
-        const m = tc/2; ctx.lineWidth = lineWidth; ctx.strokeStyle = varColor(1); ctx.beginPath();
+        const theme = themes[currentTheme];
+        const m = tc/2; 
+        ctx.lineWidth = lineWidth; 
+        ctx.strokeStyle = theme.line; 
+        ctx.beginPath();
         if (drawMode === 'straight') { ctx.moveTo(x, y+m); ctx.lineTo(x+m, y); ctx.moveTo(x+m, y+tc); ctx.lineTo(x+tc, y+m); }
         else { ctx.arc(x, y, m, 0, Math.PI/2); ctx.stroke(); ctx.beginPath(); ctx.arc(x+tc, y+tc, m, Math.PI, 1.5*Math.PI); }
         ctx.stroke();
@@ -886,10 +945,11 @@ return rP ^ cP;`,
 
     function drawOneFilledTileInterp(ctx, x, y, tc, pStart, pEnd, t) {
         const m = tc/2;
+        const theme = themes[currentTheme];
         
-        // Colors from CSS
-        const colAccent = {r:0, g:210, b:255}; // #00d2ff
-        const colDark = {r:17, g:17, b:17};    // #111111
+        // Parse Theme Colors
+        const cMain = hexToRgb(theme.line);
+        const cBg = hexToRgb(theme.bg);
 
         const lerpColor = (c1, c2, factor) => {
             const r = Math.round(c1.r + (c2.r - c1.r) * factor);
@@ -899,11 +959,11 @@ return rP ^ cP;`,
         };
 
         // Determine colors for the two regions (A and B) based on parity 0 or 1
-        const c1Start = pStart === 0 ? colDark : colAccent;
-        const c1End   = pEnd === 0 ? colDark : colAccent;
+        const c1Start = pStart === 0 ? cBg : cMain;
+        const c1End   = pEnd === 0 ? cBg : cMain;
         
-        const c2Start = pStart === 0 ? colAccent : colDark;
-        const c2End   = pEnd === 0 ? colAccent : colDark;
+        const c2Start = pStart === 0 ? cMain : cBg;
+        const c2End   = pEnd === 0 ? cMain : cBg;
 
         const fill1 = lerpColor(c1Start, c1End, t);
         const fill2 = lerpColor(c2Start, c2End, t);
