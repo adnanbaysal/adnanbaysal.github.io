@@ -78,17 +78,20 @@
         }
 
         .canvas-wrapper {
-            background: transparent; /* Changed from #000 to transparent so clipped areas show background */
-            /* border: 1px solid #222; Removed border from wrapper as it remains square */
+            background: transparent;
             display: flex; align-items: center; justify-content: center;
-            overflow: visible; /* Allow clip path to define shape */
+            overflow: visible; 
             position: relative;
         }
 
-        #matrix-wrapper { height: 280px; flex-shrink: 0; }
+        #matrix-wrapper { height: 280px; flex-shrink: 0; width: 100%; }
         #tile-wrapper { height: 100%; width: 100%; }
 
-        canvas { cursor: crosshair; image-rendering: auto; }
+        /* Canvas fills the wrapper, JS controls drawing scale */
+        canvas { 
+            cursor: crosshair; image-rendering: auto; 
+            width: 100%; height: 100%;
+        }
         canvas:active { cursor: grabbing; }
 
         /* Recording Indicator */
@@ -171,7 +174,7 @@
             main { flex-direction: column; height: auto; overflow: visible; }
             .left-col { width: 100%; order: 2; }
             .right-col { width: 100%; order: 1; height: 55vh; min-height: 350px; }
-            #matrix-wrapper { margin: 0 auto; max-width: 300px; }
+            #matrix-wrapper { margin: 0 auto; max-width: 100%; }
             .editor-container { min-height: 300px; }
         }
 
@@ -183,8 +186,8 @@
         <button id="info-btn" class="btn-sec btn-icon">?</button>
         
         <div class="control-group">
-            <div class="label-row"><span>Radius (N)</span> <span id="n-val" class="value">6</span></div>
-            <input type="range" id="param-n" min="1" max="12" step="1" value="6">
+            <div class="label-row"><span>Radius (N)</span> <span id="n-val" class="value">7</span></div>
+            <input type="range" id="param-n" min="1" max="64" step="1" value="6">
         </div>
 
         <div class="control-group">
@@ -201,8 +204,8 @@
 
             <select id="draw-mode" class="mode-select">
                 <option value="two-lines">Two Lines</option>
-                <option value="straight">Straight</option>
                 <option value="curved">Curved</option>
+                <option value="straight">Straight</option>
             </select>
             
             <label class="check-group" title="Fill regions">
@@ -322,13 +325,17 @@
     /**
      * STATE & CONFIG
      */
-    let N = 6;
+    // N = Internal Radius (0-indexed). 
+    // Slider shows N + 1. 
+    // Default 7 on slider => N = 6.
+    let N = 6; 
     let lineWidth = 2.0;
     let isFilled = false;
     let showGrid = false;
     let isInvertedFill = false;
     let drawMode = 'two-lines'; 
     let currentTheme = 'neon';
+    let hexSize = 20; // Will be calculated dynamically
 
     // Theme Config
     const themes = {
@@ -440,11 +447,21 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         });
 
         ui.editor.value = presets.xor;
+        
+        // Sync initial UI state
+        ui.n.value = N + 1;
+        ui.nVal.textContent = N + 1;
 
         // Listeners
         window.addEventListener('resize', resize);
         
-        ui.n.addEventListener('input', (e) => { N = parseInt(e.target.value); ui.nVal.textContent = N; runCode(); });
+        ui.n.addEventListener('input', (e) => { 
+            const val = parseInt(e.target.value);
+            N = val - 1; // Internal N is 0-indexed (Radius)
+            ui.nVal.textContent = val; 
+            runCode(); 
+        });
+        
         ui.w.addEventListener('input', (e) => { lineWidth = parseFloat(e.target.value); ui.wVal.textContent = lineWidth.toFixed(1); requestDraw(); });
         
         ui.filled.addEventListener('change', (e) => { isFilled = e.target.checked; requestDraw(); });
@@ -537,7 +554,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const userCode = ui.editor.value;
         ui.errorMsg.style.display = 'none';
         
-        // Preserve current keys if N hasn't changed to avoid flicker, but here we rebuild map
         let newHexData = new Map();
 
         try {
@@ -581,56 +597,76 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
     }
 
     function resize() {
-        // Calculate Dimensions
-        const tWrap = document.getElementById('tile-wrapper');
-        const tSize = Math.min(tWrap.clientWidth, tWrap.clientHeight);
-        tileCanvas.width = tSize * 2; tileCanvas.height = tSize * 2;
-        tileCanvas.style.width = `${tSize}px`; tileCanvas.style.height = `${tSize}px`;
-        ctx.setTransform(2,0,0,2,0,0);
-
-        const mWrap = document.getElementById('matrix-wrapper');
-        const mSize = Math.min(mWrap.clientWidth, mWrap.clientHeight) - 10;
-        matrixCanvas.width = mSize * 2; matrixCanvas.height = mSize * 2;
-        matrixCanvas.style.width = `${mSize}px`; matrixCanvas.style.height = `${mSize}px`;
-        mCtx.setTransform(2,0,0,2,0,0);
-
-        // --- Apply Hexagonal Clip Path ---
-        // Helper to update clip path for a canvas based on grid N
-        function updateClip(canvas, pxWidth) {
-            const r = pxWidth / 2;
-            const center = { x: r, y: r };
-            // Using same sizing logic as drawTiles to match grid exactly
-            const hexRadius = (r / (N * 2 + 1)) * 0.9;
-            
-            // Define the 6 corners of the grid hull (Clockwise starting from Top)
-            // Angles correspond to the outer tips of the corner tiles.
-            const corners = [
-                {q: 0,  r: -N, angleDeg: 270}, // Top
-                {q: N,  r: -N, angleDeg: 330}, // Top Right
-                {q: N,  r: 0,  angleDeg: 30},  // Bottom Right
-                {q: 0,  r: N,  angleDeg: 90},  // Bottom
-                {q: -N, r: N,  angleDeg: 150}, // Bottom Left
-                {q: -N, r: 0,  angleDeg: 210}  // Top Left
-            ];
-
-            const points = corners.map(c => {
-                // Get center of the corner tile
-                const tc = hexToPixel(c.q, c.r, hexRadius);
-                // Get the outer tip vertex of that tile
-                const rad = c.angleDeg * Math.PI / 180;
-                const vx = tc.x + hexRadius * Math.cos(rad);
-                const vy = tc.y + hexRadius * Math.sin(rad);
-                
-                return `${(center.x + vx).toFixed(2)}px ${(center.y + vy).toFixed(2)}px`;
-            });
-
-            canvas.style.clipPath = `polygon(${points.join(', ')})`;
-        }
-
-        updateClip(tileCanvas, tSize);
-        updateClip(matrixCanvas, mSize);
-
+        resizeCanvas(tileCanvas, document.getElementById('tile-wrapper'), ctx);
+        resizeCanvas(matrixCanvas, document.getElementById('matrix-wrapper'), mCtx);
         requestDraw();
+    }
+
+    function resizeCanvas(canvas, wrapper, context) {
+        const w = wrapper.clientWidth;
+        const h = wrapper.clientHeight;
+        
+        canvas.width = w * 2;
+        canvas.height = h * 2;
+        // Reset scale first
+        context.setTransform(1,0,0,1,0,0);
+        
+        // Calculate Size to Fit
+        // Grid Width in hexes approx: 2*N + 1
+        // Grid Height in hexes approx: (3*N + 2) / 1.732 ??
+        // Let's use exact bounds relative to 'size' (radius of circumcircle)
+        
+        // Width: (2*N + 1) * sqrt(3) * size
+        // Height: (3*N + 2) * size
+        
+        const gridW_units = Math.sqrt(3) * (2 * N + 1);
+        const gridH_units = (3 * N + 2);
+        
+        // Calculate max possible size for width and height constraints
+        const sizeW = (canvas.width * 0.96) / gridW_units; // 0.96 for minimal padding (2%)
+        const sizeH = (canvas.height * 0.96) / gridH_units;
+        
+        const size = Math.min(sizeW, sizeH);
+        
+        // Store size on canvas for click handlers to use
+        canvas.hexSize = size; 
+
+        // Update Clip Path
+        updateClip(canvas, size, w, h);
+    }
+
+    function updateClip(canvas, hexRadius, cssW, cssH) {
+        // Center in CSS pixels
+        const cx = cssW / 2;
+        const cy = cssH / 2;
+        // radius in CSS pixels
+        const r = hexRadius / 2; // dividing by 2 because hexRadius calculated above is for canvas pixel density 2
+
+        // Define the 6 corners of the grid hull
+        const corners = [
+            {q: 0,  r: -N, angleDeg: 270}, // Top
+            {q: N,  r: -N, angleDeg: 330}, // Top Right
+            {q: N,  r: 0,  angleDeg: 30},  // Bottom Right
+            {q: 0,  r: N,  angleDeg: 90},  // Bottom
+            {q: -N, r: N,  angleDeg: 150}, // Bottom Left
+            {q: -N, r: 0,  angleDeg: 210}  // Top Left
+        ];
+
+        const points = corners.map(c => {
+            // Get center of the corner tile relative to 0,0 center
+            // We use the helper logic but adapted for simple math here
+            const x = r * (Math.sqrt(3) * c.q + Math.sqrt(3)/2 * c.r);
+            const y = r * (3./2 * c.r);
+
+            // Get the outer tip vertex of that tile
+            const rad = c.angleDeg * Math.PI / 180;
+            const vx = x + r * Math.cos(rad);
+            const vy = y + r * Math.sin(rad);
+            
+            return `${(cx + vx).toFixed(2)}px ${(cy + vy).toFixed(2)}px`;
+        });
+
+        canvas.style.clipPath = `polygon(${points.join(', ')})`;
     }
 
     /* --- ANIMATION LOGIC --- */
@@ -664,8 +700,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         lastTime = now;
 
         let totalDuration = 1.0;
-        const totalHexes = hexData.size;
-
+        
         if (animType === 'cell') {
             const activeCount = Array.from(hexData.values()).filter(v => v === 1).length;
             totalDuration = activeCount * currentStepDuration;
@@ -676,8 +711,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         }
 
         const logicSpeed = 1 / Math.max(0.001, totalDuration);
-
-        // Calculate pause threshold dynamically so wait time is always ~0.5s
         const PAUSE_SECONDS = 0.5;
         const pauseBuffer = PAUSE_SECONDS * logicSpeed;
         const upperLimit = 1 + pauseBuffer;
@@ -703,10 +736,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
 
     function updateAngles(dt) {
         const p = Math.max(0, Math.min(1, animProgress));
-
-        // Geometry Constants for Rings
-        const numRings = N;
-
         let activeIdx = 0;
         const totalActive = Array.from(hexData.values()).filter(v => v === 1).length;
 
@@ -726,7 +755,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                 const seqPos = p * (N + 1);
                 localP = Math.max(0, Math.min(1, seqPos - ringIdx));
             } else if (animType === 'row') {
-                const rowIdx = r + N; // 0 to 2N
+                const rowIdx = r + N; 
                 const seqPos = p * (2 * N + 1);
                 localP = Math.max(0, Math.min(1, seqPos - rowIdx));
             } else if (animType === 'cell') {
@@ -735,7 +764,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                 activeIdx++;
             }
 
-            // Target is 60 degrees (PI/3)
             currentAngles.set(key, localP * (Math.PI / 3));
         });
     }
@@ -790,16 +818,13 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const size = 50; 
         const pad = size * 2;
         const width = (N * 2 + 1) * Math.sqrt(3) * size + pad;
-        const height = (N * 2 + 1) * 1.5 * size + pad;
+        const height = (N * 2 + 1) * 1.5 * size + pad; // Rough box
         const minX = -width/2;
         const minY = -height/2;
 
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" style="background-color:${theme.bg}">`;
-        
         const colMain = theme.line;
         const colBg = theme.bg;
-        
-        // Use a fixed small width for SVG grid lines
         const gridStroke = 1;
 
         hexData.forEach((val, key) => {
@@ -818,7 +843,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                 mids.push({ x: (verts[i].x + verts[next].x) / 2, y: (verts[i].y + verts[next].y) / 2 });
             }
 
-            // Connection pairs for State 0 (Standard) vs State 1 (Rotated)
             const pairs0 = [[0, 1], [2, 3], [4, 5]];
             const pairs1 = [[1, 2], [3, 4], [5, 0]];
             const activePairs = (val === 1) ? pairs1 : pairs0;
@@ -826,7 +850,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             svg += `<g transform="translate(${pos.x}, ${pos.y})">`;
 
             if (isFilled) {
-                // Correct color inversion for state 1 to maintain ribbon topology
                 let drawCorners = (val === 0); 
                 if (isInvertedFill) drawCorners = !drawCorners;
 
@@ -864,7 +887,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                 });
             }
             
-            // Draw Grid Outline if enabled
             if (showGrid) {
                 const gridColor = currentTheme === 'print' ? '#ddd' : '#222';
                 let d = `M ${verts[0].x} ${verts[0].y}`;
@@ -942,87 +964,86 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
     function requestDraw() { if (!isAnimating) draw(); }
 
     function draw() {
-        drawTiles();
-        drawMatrix();
+        // Tile Canvas
+        drawGeneric(tileCanvas, ctx, true);
+        // Matrix Canvas
+        drawGeneric(matrixCanvas, mCtx, false);
     }
 
-    function drawTiles() {
+    function drawGeneric(canvas, context, isArt) {
         const theme = themes[currentTheme];
-        const w = tileCanvas.width / 2;
-        const h = tileCanvas.height / 2;
-        const size = (Math.min(w, h) / (N * 2 + 1)) * 0.9;
+        // Note: canvas.width/height are already set to full pixel density
+        const w = canvas.width;
+        const h = canvas.height;
+        const size = canvas.hexSize || 20;
 
-        // Use Theme Background
-        ctx.fillStyle = theme.bg; 
-        ctx.fillRect(0, 0, w*2, h*2);
+        if (isArt) {
+            context.fillStyle = theme.bg;
+            context.fillRect(0, 0, w, h);
+        } else {
+            // Matrix view always dark
+            context.fillStyle = '#050505';
+            context.fillRect(0, 0, w, h);
+        }
         
-        ctx.save();
-        ctx.translate(w/2, h/2); 
+        context.save();
+        // Translate to center of canvas
+        context.translate(w/2, h/2); 
+
+        if (!isArt) {
+            context.font = `${Math.max(8, size/1.5)}px monospace`;
+            context.textAlign = 'center'; context.textBaseline = 'middle';
+        }
 
         hexData.forEach((val, key) => {
             const [q, r, s] = key.split(',').map(Number);
             const pos = hexToPixel(q, r, size);
-            const angle = currentAngles.get(key) || 0;
             
-            // 1. Draw Static Grid (Non-Rotating)
-            if (showGrid) {
-                ctx.save();
-                ctx.translate(pos.x, pos.y);
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = (currentTheme === 'print') ? '#ddd' : '#222';
-                ctx.beginPath();
-                for (let i = 0; i < 6; i++) {
-                    const rad = (30 + 60 * i) * Math.PI / 180;
-                    const vx = size * Math.cos(rad);
-                    const vy = size * Math.sin(rad);
-                    if (i === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
+            if (isArt) {
+                const angle = currentAngles.get(key) || 0;
+                
+                // Static Grid
+                if (showGrid) {
+                    context.save();
+                    context.translate(pos.x, pos.y);
+                    context.lineWidth = 1;
+                    context.strokeStyle = (currentTheme === 'print') ? '#ddd' : '#222';
+                    context.beginPath();
+                    for (let i = 0; i < 6; i++) {
+                        const rad = (30 + 60 * i) * Math.PI / 180;
+                        const vx = size * Math.cos(rad);
+                        const vy = size * Math.sin(rad);
+                        if (i === 0) context.moveTo(vx, vy); else context.lineTo(vx, vy);
+                    }
+                    context.closePath();
+                    context.stroke();
+                    context.restore();
                 }
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
-            }
 
-            // 2. Draw Rotating Tile
-            ctx.save();
-            ctx.translate(pos.x, pos.y);
-            ctx.rotate(angle);
-            drawTileContent(0, 0, size, angle); 
-            ctx.restore();
+                // Tile
+                context.save();
+                context.translate(pos.x, pos.y);
+                context.rotate(angle);
+                drawTileContent(context, size, angle); 
+                context.restore();
+
+            } else {
+                // Matrix View
+                context.strokeStyle = '#222'; context.lineWidth = 1; context.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const r = 30 + 60 * i;
+                    const rad = r * Math.PI / 180;
+                    context[i===0?'moveTo':'lineTo'](pos.x + size*Math.cos(rad), pos.y + size*Math.sin(rad));
+                }
+                context.closePath(); context.stroke();
+
+                if (val === 1) { context.fillStyle = 'rgba(0, 210, 255, 0.15)'; context.fill(); }
+                context.fillStyle = val === 1 ? '#00d2ff' : '#444';
+                context.fillText(val, pos.x, pos.y);
+            }
         });
         
-        ctx.restore();
-    }
-
-    function drawMatrix() {
-        const w = matrixCanvas.width / 2;
-        const h = matrixCanvas.height / 2;
-        const size = (Math.min(w, h) / (N * 2 + 1)) * 0.9;
-
-        // Debug View Always Dark
-        mCtx.fillStyle = '#050505'; mCtx.fillRect(0, 0, w*2, h*2);
-        mCtx.save();
-        mCtx.translate(w/2, h/2);
-        
-        mCtx.font = `${Math.max(8, size/1.5)}px monospace`;
-        mCtx.textAlign = 'center'; mCtx.textBaseline = 'middle';
-
-        hexData.forEach((val, key) => {
-            const [q, r, s] = key.split(',').map(Number);
-            const pos = hexToPixel(q, r, size);
-            
-            mCtx.strokeStyle = '#222'; mCtx.lineWidth = 1; mCtx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const r = 30 + 60 * i;
-                const rad = r * Math.PI / 180;
-                mCtx[i===0?'moveTo':'lineTo'](pos.x + size*Math.cos(rad), pos.y + size*Math.sin(rad));
-            }
-            mCtx.closePath(); mCtx.stroke();
-
-            if (val === 1) { mCtx.fillStyle = 'rgba(0, 210, 255, 0.15)'; mCtx.fill(); }
-            mCtx.fillStyle = val === 1 ? '#00d2ff' : '#444';
-            mCtx.fillText(val, pos.x, pos.y);
-        });
-        mCtx.restore();
+        context.restore();
     }
 
     function tracePath(ctx, drawMode, p1, p2, v) {
@@ -1044,15 +1065,13 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         }
     }
 
-    function drawTileContent(cx, cy, size, angle) {
+    function drawTileContent(ctx, size, angle) {
         const theme = themes[currentTheme];
-        // Vertices
         const verts = [];
         for (let i = 0; i < 6; i++) {
             const rad = (30 + 60 * i) * Math.PI / 180;
             verts.push({ x: size * Math.cos(rad), y: size * Math.sin(rad) });
         }
-        // Midpoints
         const mids = [];
         for (let i = 0; i < 6; i++) {
             const next = (i + 1) % 6;
@@ -1062,8 +1081,6 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const pairs = [[0, 1], [2, 3], [4, 5]];
 
         if (isFilled) {
-            // COLOR INTERPOLATION LOGIC
-            // Map angle 0 -> 60 deg (0 -> PI/3) to t (0 -> 1)
             let t = angle / (Math.PI / 3);
             if (t < 0) t = 0; if (t > 1) t = 1;
 
@@ -1077,18 +1094,10 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
                 return `rgb(${r},${g},${b})`;
             };
 
-            // Define Base States (State 0 vs State 1 Topology Colors)
-            // State 0 (Angle 0): Corners = Main, Center = Bg
-            // State 1 (Angle 60): Corners = Bg, Center = Main
-            // If Inverted, swap everything.
-
             let cCornerStart = cMain, cCenterStart = cBg;
             let cCornerEnd = cBg, cCenterEnd = cMain;
 
             if (isInvertedFill) {
-                // Invert Base Logic
-                // State 0: Corners=Bg, Center=Main
-                // State 1: Corners=Main, Center=Bg
                 cCornerStart = cBg; cCenterStart = cMain;
                 cCornerEnd = cMain; cCenterEnd = cBg;
             }
@@ -1096,14 +1105,12 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             const fillCorners = lerpColor(cCornerStart, cCornerEnd, t);
             const fillCenter = lerpColor(cCenterStart, cCenterEnd, t);
 
-            // Draw Center
             ctx.fillStyle = fillCenter;
             ctx.beginPath();
             ctx.moveTo(verts[0].x, verts[0].y);
             for(let i=1; i<6; i++) ctx.lineTo(verts[i].x, verts[i].y);
             ctx.fill();
             
-            // Draw Corners
             ctx.fillStyle = fillCorners;
             pairs.forEach(pair => {
                 const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
@@ -1133,9 +1140,9 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         const rect = canvas.getBoundingClientRect();
         const mx = (e.clientX - rect.left) - rect.width/2;
         const my = (e.clientY - rect.top) - rect.height/2;
-        const w = canvas.width / 2;
-        const h = canvas.height / 2;
-        const size = (Math.min(w, h) / (N * 2 + 1)) * 0.9;
+        // Use the size stored on the canvas object which accounts for the pixel density
+        // But mx/my are in CSS pixels, so we need CSS size (which is hexSize / 2)
+        const size = (canvas.hexSize || 40) / 2;
 
         const hex = pixelToHex(mx, my, size);
         
