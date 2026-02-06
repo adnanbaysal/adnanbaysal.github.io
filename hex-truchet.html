@@ -78,10 +78,10 @@
         }
 
         .canvas-wrapper {
-            background: #000; border: 1px solid #222; border-radius: 4px;
+            background: transparent; /* Changed from #000 to transparent so clipped areas show background */
+            /* border: 1px solid #222; Removed border from wrapper as it remains square */
             display: flex; align-items: center; justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            overflow: visible; /* Allow clip path to define shape */
             position: relative;
         }
 
@@ -581,6 +581,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
     }
 
     function resize() {
+        // Calculate Dimensions
         const tWrap = document.getElementById('tile-wrapper');
         const tSize = Math.min(tWrap.clientWidth, tWrap.clientHeight);
         tileCanvas.width = tSize * 2; tileCanvas.height = tSize * 2;
@@ -592,6 +593,42 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
         matrixCanvas.width = mSize * 2; matrixCanvas.height = mSize * 2;
         matrixCanvas.style.width = `${mSize}px`; matrixCanvas.style.height = `${mSize}px`;
         mCtx.setTransform(2,0,0,2,0,0);
+
+        // --- Apply Hexagonal Clip Path ---
+        // Helper to update clip path for a canvas based on grid N
+        function updateClip(canvas, pxWidth) {
+            const r = pxWidth / 2;
+            const center = { x: r, y: r };
+            // Using same sizing logic as drawTiles to match grid exactly
+            const hexRadius = (r / (N * 2 + 1)) * 0.9;
+            
+            // Define the 6 corners of the grid hull (Clockwise starting from Top)
+            // Angles correspond to the outer tips of the corner tiles.
+            const corners = [
+                {q: 0,  r: -N, angleDeg: 270}, // Top
+                {q: N,  r: -N, angleDeg: 330}, // Top Right
+                {q: N,  r: 0,  angleDeg: 30},  // Bottom Right
+                {q: 0,  r: N,  angleDeg: 90},  // Bottom
+                {q: -N, r: N,  angleDeg: 150}, // Bottom Left
+                {q: -N, r: 0,  angleDeg: 210}  // Top Left
+            ];
+
+            const points = corners.map(c => {
+                // Get center of the corner tile
+                const tc = hexToPixel(c.q, c.r, hexRadius);
+                // Get the outer tip vertex of that tile
+                const rad = c.angleDeg * Math.PI / 180;
+                const vx = tc.x + hexRadius * Math.cos(rad);
+                const vy = tc.y + hexRadius * Math.sin(rad);
+                
+                return `${(center.x + vx).toFixed(2)}px ${(center.y + vy).toFixed(2)}px`;
+            });
+
+            canvas.style.clipPath = `polygon(${points.join(', ')})`;
+        }
+
+        updateClip(tileCanvas, tSize);
+        updateClip(matrixCanvas, mSize);
 
         requestDraw();
     }
