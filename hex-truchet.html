@@ -260,6 +260,8 @@
                     <optgroup label="Number Triangles">
                         <option value="pascal-xor">XOR of Pascal Triangle</option>
                         <option value="pascal-mod2">Mod 2 of Pascal Triangle</option>
+                        <option value="hosoya-xor">XOR of Hosoya Triangle</option>
+                        <option value="hosoya-mod2">Mod 2 of Hosoya Triangle</option>
                     </optgroup>
                     <optgroup label="Patterns">
                         <option value="xor">XOR Parity (Hex)</option>
@@ -412,7 +414,7 @@
      * PRESETS
      */
     const presets = {
-        // --- NEW TRIANGLE FUNCTIONS ---
+        // --- NUMBER TRIANGLE FUNCTIONS ---
         'pascal-xor': `// 1. Generic Hex-to-Triangle Coordinate Mapping
 // Maps (q,r,s) to symmetric 'row' and 'col'
 // row = Distance from center (ring index)
@@ -454,6 +456,47 @@ const col = abs[0];
 // binom(row, col) is odd if and only if (row & col) == col
 // This is equivalent to "Mod 2 of Pascal Triangle"
 return (row & col) === col ? 1 : 0;`,
+
+        'hosoya-xor': `// 1. Map hex coordinates to symmetric triangle indices
+const abs = [Math.abs(q), Math.abs(r), Math.abs(s)].sort((a,b) => a-b);
+const row = abs[2]; 
+const col = abs[0];
+
+// 2. Fibonacci function (BigInt)
+function fib(m) {
+    if (m <= 0) return 0n;
+    if (m === 1 || m === 2) return 1n;
+    let a = 1n, b = 1n;
+    for (let i = 3; i <= m; i++) {
+        let temp = a + b;
+        a = b;
+        b = temp;
+    }
+    return b;
+}
+
+// 3. Hosoya Value: H(n, k) = F(k+1) * F(n-k+1)
+const val = fib(col + 1) * fib(row - col + 1);
+
+// 4. Return XOR Parity (popcount % 2)
+let count = 0;
+let v = val;
+while (v > 0n) {
+    if (v & 1n) count++;
+    v >>= 1n;
+}
+return count % 2;`,
+        'hosoya-mod2': `// 1. Map hex coordinates to symmetric triangle indices
+const abs = [Math.abs(q), Math.abs(r), Math.abs(s)].sort((a,b) => a-b);
+const row = abs[2]; 
+const col = abs[0];
+
+// 2. Fibonacci property: F(m) % 2 == 0 if m % 3 == 0.
+// H(n, k) is odd if both F(k+1) and F(n-k+1) are odd.
+const f1_is_odd = (col + 1) % 3 !== 0;
+const f2_is_odd = (row - col + 1) % 3 !== 0;
+
+return (f1_is_odd && f2_is_odd) ? 1 : 0;`,
 
         xor: `// Helper: Positive parity
 const p = (k) => ((Math.abs(k).toString(2).match(/1/g) || []).length % 2);
