@@ -884,7 +884,7 @@ return (Math.floor(dist) + Math.floor(3 * angle)) % 2 ? 1 : 0;`,
             } else {
                 activePairs.forEach(pair => {
                     const p1 = mids[pair[0]]; const p2 = mids[pair[1]];
-                    const vIdx = (pair[0] + 6) % 6;
+                    const vIdx = (pair[0] + 1) % 6;
                     const v = verts[vIdx];
                     const d = getSvgPath(drawMode, p1, p2, v);
                     svg += `<path d="${d}" fill="none" stroke="${colMain}" stroke-width="${lineWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
