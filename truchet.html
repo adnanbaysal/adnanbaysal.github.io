@@ -331,6 +331,7 @@
     // Grids
     let targetGrid = [];   // The final state (0 or 1)
     let angleGrid = [];    // Current rotation (Radians)
+    let progressGrid = []; // Current animation progress (0.0 to 1.0) for Color Interpolation
 
     // Animation Speed Array: Level 1 (Slowest: 2.0s) to Level 10 (Fastest: 0.1s)
     const STEP_DURATION_LEVELS = [
@@ -428,6 +429,7 @@ return rP ^ cP;`,
 
         targetGrid = Array(N).fill().map(() => Array(N).fill(0));
         angleGrid = Array(N).fill().map(() => Array(N).fill(0));
+        progressGrid = Array(N).fill().map(() => Array(N).fill(0));
         ui.editor.value = presets.xor;
 
         window.addEventListener('resize', resize);
@@ -501,7 +503,11 @@ return rP ^ cP;`,
                 requestDraw();
             } else {
                 if(!isAnimating && ui.playBtn.textContent === "⏸") startAnimation(); 
-                for(let r=0; r<N; r++) for(let c=0; c<N; c++) angleGrid[r][c] = 0;
+                // Reset all grids for animation start
+                for(let r=0; r<N; r++) for(let c=0; c<N; c++) {
+                    angleGrid[r][c] = 0;
+                    progressGrid[r][c] = 0;
+                }
                 requestDraw();
             }
         });
@@ -528,6 +534,7 @@ return rP ^ cP;`,
     function snapToTarget() {
         for(let r=0; r<N; r++) for(let c=0; c<N; c++) {
             angleGrid[r][c] = targetGrid[r][c] * (Math.PI/2);
+            progressGrid[r][c] = 1; // Fully transitioned color
         }
     }
 
@@ -550,12 +557,15 @@ return rP ^ cP;`,
             }
             targetGrid = newGrid;
             
-            if (animType === 'none' || !isAnimating) {
-                if(angleGrid.length !== N) angleGrid = Array(N).fill().map(() => Array(N).fill(0));
-                snapToTarget();
-            } else {
-                 if(angleGrid.length !== N) angleGrid = Array(N).fill().map(() => Array(N).fill(0));
+            // Re-initialize all grids
+            if (angleGrid.length !== N) {
+                angleGrid = Array(N).fill().map(() => Array(N).fill(0));
+                progressGrid = Array(N).fill().map(() => Array(N).fill(0));
             }
+
+            if (animType === 'none' || !isAnimating) {
+                snapToTarget();
+            } 
             resize(); 
         } catch (err) {
             ui.errorMsg.textContent = "Error: " + err.message;
@@ -593,7 +603,10 @@ return rP ^ cP;`,
         animProgress = -0.05; 
         lastTime = performance.now();
         
-        for(let r=0; r<N; r++) for(let c=0; c<N; c++) angleGrid[r][c] = 0;
+        for(let r=0; r<N; r++) for(let c=0; c<N; c++) {
+            angleGrid[r][c] = 0;
+            progressGrid[r][c] = 0;
+        }
         
         animationLoop();
     }
@@ -606,7 +619,6 @@ return rP ^ cP;`,
 
     let lastTime = 0;
     
-    /* --- Replace animationLoop --- */
     function animationLoop() {
         if (!isAnimating) return;
         
@@ -618,13 +630,11 @@ return rP ^ cP;`,
 
         // Calculate duration based on strict sequential steps
         if (animType === 'cell') {
-            const activeCellCount = targetGrid.flat().filter(v => v === 1).length;
-            totalDuration = activeCellCount * currentStepDuration;
+            // For correct color transitions, we must scan ALL cells, not just active ones
+            totalDuration = (N * N) * currentStepDuration;
         } else if (animType === 'row') {
             totalDuration = N * currentStepDuration;
         } else if (animType === 'rings') {
-            // Total duration is exactly the number of rings * time per ring
-            // This ensures the speed slider directly controls the rotation speed of a SINGLE ring
             const numRings = Math.ceil(N / 2);
             totalDuration = numRings * currentStepDuration;
         } else {
@@ -652,23 +662,21 @@ return rP ^ cP;`,
         animationFrameId = requestAnimationFrame(animationLoop);
     }
 
-    /* --- Replace updateGridAngles --- */
     function updateGridAngles(dt) {
         // Clamp logic progress to 0-1 for rotation calculations
         const p = Math.max(0, Math.min(1, animProgress));
         
         if (animType === 'cell' || animType === 'row') {
             if (animType === 'cell') {
-                let activeIndex = 0;
-                const activeTotal = targetGrid.flat().filter(v => v === 1).length;
-                const currentStep = p * activeTotal;
+                const totalCells = N * N;
+                const currentStep = p * totalCells;
+                let idx = 0;
                 for (let r = 0; r < N; r++) {
                     for (let c = 0; c < N; c++) {
-                        if (targetGrid[r][c] === 1) {
-                            let localProgress = Math.max(0, Math.min(1, currentStep - activeIndex));
-                            angleGrid[r][c] = localProgress * (Math.PI / 2);
-                            activeIndex++;
-                        } else { angleGrid[r][c] = 0; }
+                        let localProgress = Math.max(0, Math.min(1, currentStep - idx));
+                        progressGrid[r][c] = localProgress;
+                        angleGrid[r][c] = targetGrid[r][c] ? localProgress * (Math.PI / 2) : 0;
+                        idx++;
                     }
                 }
             } else {
@@ -676,6 +684,7 @@ return rP ^ cP;`,
                 for (let r = 0; r < N; r++) {
                     let localProgress = Math.max(0, Math.min(1, currentStep - r));
                     for (let c = 0; c < N; c++) {
+                        progressGrid[r][c] = localProgress;
                         angleGrid[r][c] = targetGrid[r][c] ? localProgress * (Math.PI / 2) : 0;
                     }
                 }
@@ -683,37 +692,25 @@ return rP ^ cP;`,
             return;
         }
         
-        // Pre-calculate ring geometry constants
+        // Ring geometry logic
         const cx = (N - 1) / 2;
         const cy = (N - 1) / 2;
         const numRings = Math.ceil(N / 2);
-        
-        // Scale p from (0 to 1) -> (0 to numRings)
-        // This creates the "counter" that moves from ring 0 to ring N
         const sequencePos = p * numRings;
 
         for (let r = 0; r < N; r++) {
             for (let c = 0; c < N; c++) {
-                if (targetGrid[r][c] === 0) {
-                    angleGrid[r][c] = 0;
-                    continue;
-                }
                 let localP = 0;
                 if (animType === 'all') {
                     localP = p;
                 } else if (animType === 'rings') {
-                    // Determine which ring index (0, 1, 2...) this cell belongs to
-                    // Math.floor ensures discrete steps (integers)
                     const dist = Math.max(Math.abs(r - cy), Math.abs(c - cx));
                     const ringIndex = Math.floor(dist); 
-                    
-                    // Strictly sequential logic:
-                    // If sequencePos is 0.5, ring 0 is half done.
-                    // If sequencePos is 1.5, ring 0 is done (1.0), ring 1 is half done (0.5).
-                    // Subtracting ringIndex aligns the wave to this specific ring.
                     localP = Math.max(0, Math.min(1, sequencePos - ringIndex));
                 }
-                angleGrid[r][c] = localP * (Math.PI / 2);
+                
+                progressGrid[r][c] = localP;
+                angleGrid[r][c] = targetGrid[r][c] ? localP * (Math.PI / 2) : 0;
             }
         }
     }
@@ -902,8 +899,8 @@ return rP ^ cP;`,
             for(let c=0; c<N; c++) {
                 const cx = c*tc+tc/2, cy = r*tc+tc/2;
                 
-                // Calculate animation progress 0.0 to 1.0 based on rotation
-                let progress = Math.max(0, Math.min(1, angleGrid[r][c] / (Math.PI/2)));
+                // Use explicit progressGrid for color interpolation logic
+                let progress = progressGrid[r][c];
 
                 tCtx.save();
                 tCtx.translate(cx, cy); 
