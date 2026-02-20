@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle Path Generator</title>
+    <style>
+        :root { --accent: #00d2ff; --bg: #050505; --panel: #111; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; 
+            display: flex; flex-direction: column; 
+            background: var(--bg); color: #fff; 
+            margin: 0; height: 100vh; overflow: hidden; 
+        }
+        
+        /* --- Header UI --- */
+        header { 
+            background: var(--panel); padding: 8px 12px; 
+            border-bottom: 1px solid #333; 
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            gap: 8px; z-index: 10;
+        }
+        
+        .control-group { 
+            background: #1a1a1a; padding: 6px 10px; border-radius: 6px; 
+            display: flex; flex-direction: column; gap: 4px; border: 1px solid #222;
+            min-width: 100px;
+        }
+
+        .label-row { display: flex; justify-content: space-between; color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+        .input-row { display: flex; align-items: center; gap: 8px; }
+        .anim-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; }
+
+        /* --- Canvas Area --- */
+        main { 
+            flex-grow: 1; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+            position: relative; padding: 10px; min-height: 0;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+        
+        #canvas-container { position: relative; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; }
+        canvas { 
+            background: transparent; border-radius: 4px; cursor: pointer;
+            max-height: 100%; max-width: 100%; object-fit: contain;
+        }
+
+        /* --- Overlays --- */
+        #pause-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7); color: var(--accent); padding: 15px 30px;
+            border-radius: 8px; font-weight: bold; pointer-events: none;
+            display: none; border: 1px solid var(--accent); text-transform: uppercase;
+            z-index: 5; letter-spacing: 2px;
+        }
+
+        #rec-indicator {
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 6px;
+            display: none; align-items: center; gap: 10px; color: #fff;
+            font-family: monospace; font-size: 14px; border: 1px solid #eb4d4b;
+        }
+        .dot { width: 10px; height: 10px; background: #eb4d4b; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* --- Info Modal --- */
+        #info-modal {
+            position: absolute; top: 10px; left: 10px; z-index: 20;
+            background: rgba(17, 17, 17, 0.96); backdrop-filter: blur(12px);
+            border: 1px solid #333; border-radius: 8px;
+            width: 320px; max-height: 85vh; overflow-y: auto;
+            display: none; padding: 20px; font-size: 13px; line-height: 1.6;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 8px;}
+        #info-modal h3 { margin: 18px 0 6px 0; color: #fff; font-size: 12px; text-transform: uppercase; }
+        #info-modal p { color: #bbb; margin: 0 0 12px 0; }
+        #info-modal code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace;}
+        .close-info { position: absolute; top: 10px; right: 10px; cursor: pointer; color: #666; font-size: 20px; }
+        .close-info:hover { color: #fff; }
+
+        /* --- Buttons --- */
+        button { 
+            border: none; padding: 0 12px; border-radius: 4px; 
+            font-weight: bold; cursor: pointer; transition: 0.2s; 
+            text-transform: uppercase; font-size: 10px; height: 34px; align-self: center;
+        }
+        .btn-rand { background: #a55eea; color: #fff; }
+        .btn-rec { background: #eb4d4b; color: #fff; }
+        .btn-util { background: #333; color: #ccc; }
+        .btn-util:hover { background: #444; color: #fff; }
+        .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
+        .btn-info:hover { color: #fff; border-color: #fff; }
+
+        span.value { color: #fff; font-size: 12px; font-family: monospace; }
+        input[type="range"] { width: 75px; accent-color: var(--accent); cursor: pointer; }
+        select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; padding: 4px; border-radius: 4px; outline: none; cursor: pointer;}
+        select:hover { border-color: #666; }
+        
+        #k-group { transition: opacity 0.3s; }
+    </style>
+</head>
+<body>
+
+    <header id="ui-panel">
+        <button id="info-btn" class="btn-info" title="Information">?</button>
+
+        <div class="control-group">
+            <div class="label-row"><span>Steps (N)</span> <span id="n-val" class="value">90000</span></div>
+            <div class="input-row">
+                <input type="range" id="n-input" min="1000" max="150000" step="1000" value="90000">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="n-anim"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Multiplier (c)</span> <span id="c-val" class="value">0.024</span></div>
+            <div class="input-row">
+                <input type="range" id="c-input" min="0.001" max="2.000" step="0.001" value="0.024">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="c-anim"></div>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <div class="label-row"><span>Function f(n)</span></div>
+            <select id="func-select">
+                <option value="n2">c * n²</option>
+                <option value="n">c * n</option>
+                <option value="n3">c * n³</option>
+                <option value="nk">c * n^k</option>
+                <option value="nlog">c * n * log(n)</option>
+                <option value="nsin">c * n * sin(n)</option>
+                <option value="sqrt">c * √n</option>
+            </select>
+        </div>
+
+        <div class="control-group" id="k-group" style="opacity: 0.4; pointer-events: none;">
+            <div class="label-row"><span>Power (k)</span> <span id="k-val" class="value">2.5</span></div>
+            <div class="input-row">
+                <input type="range" id="k-input" min="0.1" max="5.0" step="0.1" value="2.5">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="k-anim"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Speed</span> <span id="spd-val" class="value">3</span></div>
+            <div class="input-row"><input type="range" id="speed-input" min="1" max="10" value="3"></div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Style</span></div>
+            <select id="style-select">
+                <option value="neon">Neon Glow</option>
+                <option value="sketch">Ink Sketch</option>
+                <option value="rainbow">Spectrum</option>
+                <option value="solid">Solid White</option>
+            </select>
+        </div>
+
+        <button id="random-btn" class="btn-rand">🎲 Rand</button>
+        <button id="save-btn" class="btn-util">📸 Save</button>
+        <button id="rec-btn" class="btn-rec">⏺ Record</button>
+        <button id="fs-btn" class="btn-util">⛶ Full</button>
+        <button onclick="window.location.href='index.html'" class="btn-util" style="background:#222">🏠</button>
+    </header>
+
+    <main>
+        <div id="info-modal">
+            <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
+            <h2>Angle Path Generator</h2>
+            <p>This generator draws a sequence of lines based on a simple mathematical rule, commonly known in turtle graphics.</p>
+            
+            <h3>The Algorithm</h3>
+            <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
+            <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
+            
+            <h3>Centering & Scaling</h3>
+            <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
+
+            <h3>Usage Guide</h3>
+            <p><strong>ANIM:</strong> Activates a Ping-Pong oscillator for the parameter. The value will smoothly transition back and forth based on the Speed setting.</p>
+            <p><strong>Multiplier (c):</strong> Represents the base angle multiplier. Even tiny changes (like 0.001) can drastically alter the macro-structure of the generated fractal.</p>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="mainCanvas" width="1600" height="1600"></canvas>
+            <div id="pause-overlay">Paused</div>
+            <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
+        </div>
+        <div id="status" style="font-size: 10px; color: #555; margin-top: 5px; font-family: monospace; z-index: 2;">LIVE MODE | CLICK CANVAS TO PAUSE</div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        const ui = {
+            n: document.getElementById('n-input'), c: document.getElementById('c-input'), k: document.getElementById('k-input'),
+            nAnim: document.getElementById('n-anim'), cAnim: document.getElementById('c-anim'), kAnim: document.getElementById('k-anim'),
+            speed: document.getElementById('speed-input'), style: document.getElementById('style-select'), func: document.getElementById('func-select'),
+            nLabel: document.getElementById('n-val'), cLabel: document.getElementById('c-val'), kLabel: document.getElementById('k-val'),
+            spdLabel: document.getElementById('spd-val'), status: document.getElementById('status'),
+            pauseOverlay: document.getElementById('pause-overlay'), recBtn: document.getElementById('rec-btn'),
+            recInd: document.getElementById('rec-indicator'), recTimer: document.getElementById('rec-timer'),
+            infoBtn: document.getElementById('info-btn'), infoModal: document.getElementById('info-modal'),
+            kGroup: document.getElementById('k-group')
+        };
+
+        let isPaused = false;
+        let animationFrameId;
+        // userBase tracks the manual slider value to use as an anchor for animations
+        let userBase = { n: 90000, c: 0.024, k: 2.5 };
+        let virtualTime = 0, lastRealTime = performance.now();
+        let mediaRecorder, recordedChunks = [], recStartTime;
+
+        // Float32Array for maximum performance allocating points
+        let points = new Float32Array((parseInt(ui.n.max) + 1) * 2);
+
+        // --- Core Algorithm ---
+        function calculatePath(N, c_val, k_val, funcType) {
+            let x = 0, y = 0, angle = 0;
+            // Convert multiplier to radians assuming 'c' represents a degree-like scalar
+            const c = c_val * (Math.PI / 180); 
+            
+            let minX = 0, maxX = 0, minY = 0, maxY = 0;
+            
+            points[0] = 0; 
+            points[1] = 0;
+
+            for (let n = 1; n <= N; n++) {
+                let stepAngle = 0;
+                
+                switch(funcType) {
+                    case 'n2': stepAngle = n * n; break;
+                    case 'n': stepAngle = n; break;
+                    case 'n3': stepAngle = n * n * n; break;
+                    case 'nk': stepAngle = Math.pow(n, k_val); break;
+                    case 'nlog': stepAngle = n * Math.log(n); break;
+                    case 'nsin': stepAngle = n * Math.sin(n); break;
+                    case 'sqrt': stepAngle = Math.sqrt(n); break;
+                }
+                
+                angle += stepAngle * c;
+                x += Math.cos(angle);
+                y += Math.sin(angle);
+
+                // Track Bounding Box
+                if (x < minX) minX = x; else if (x > maxX) maxX = x;
+                if (y < minY) minY = y; else if (y > maxY) maxY = y;
+
+                points[n * 2] = x;
+                points[n * 2 + 1] = y;
+            }
+            
+            return { minX, maxX, minY, maxY };
+        }
+
+        // --- Drawing Routine ---
+        function performRender(N, c_val, k_val, time) {
+            const funcType = ui.func.value;
+            const style = ui.style.value;
+            
+            // 1. Calculate geometry and bounding box
+            const bounds = calculatePath(N, c_val, k_val, funcType);
+            
+            // 2. Clear background
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 3. Dynamic Scaling and Centering
+            const bbWidth = bounds.maxX - bounds.minX;
+            const bbHeight = bounds.maxY - bounds.minY;
+            
+            // Protect against 0 width/height
+            const w = bbWidth || 1; 
+            const h = bbHeight || 1;
+
+            // Target 90% of canvas to leave a margin
+            const scale = Math.min(canvas.width / w, canvas.height / h) * 0.90;
+            
+            const bbCenterX = (bounds.maxX + bounds.minX) / 2;
+            const bbCenterY = (bounds.maxY + bounds.minY) / 2;
+
+            ctx.save();
+            // Move origin to canvas center
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            // Apply scale
+            ctx.scale(scale, scale);
+            // Shift back by the center of the bounding box
+            ctx.translate(-bbCenterX, -bbCenterY);
+
+            // 4. Style Setup
+            ctx.globalCompositeOperation = style === 'neon' ? 'lighter' : 'source-over';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            
+            // Line width decreases as N increases to prevent the canvas from turning completely solid
+            let baseLineWidth = Math.max(0.1, 80000 / N) / scale; 
+
+            // 5. Trace and Stroke
+            if (style === 'rainbow') {
+                ctx.lineWidth = baseLineWidth * 1.5;
+                const chunks = 100;
+                const chunkSize = Math.floor(N / chunks);
+                
+                for (let i = 0; i < chunks; i++) {
+                    ctx.beginPath();
+                    let start = i * chunkSize;
+                    let end = (i === chunks - 1) ? N : (i + 1) * chunkSize + 1; // Overlap by 1
+                    
+                    ctx.moveTo(points[start * 2], points[start * 2 + 1]);
+                    for (let j = start + 1; j <= end; j++) {
+                        ctx.lineTo(points[j * 2], points[j * 2 + 1]);
+                    }
+                    ctx.strokeStyle = `hsl(${(i / chunks) * 360 + (time * 50)}, 90%, 60%)`;
+                    ctx.stroke();
+                }
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(points[0], points[1]);
+                for (let n = 1; n <= N; n++) {
+                    ctx.lineTo(points[n * 2], points[n * 2 + 1]);
+                }
+
+                if (style === 'neon') {
+                    ctx.lineWidth = baseLineWidth;
+                    ctx.strokeStyle = `rgba(0, 210, 255, 0.4)`;
+                    ctx.stroke();
+                    // Inner core for neon glow
+                    ctx.lineWidth = baseLineWidth * 0.3;
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
+                    ctx.stroke();
+                } else if (style === 'sketch') {
+                    ctx.lineWidth = baseLineWidth * 0.8;
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.25)`;
+                    ctx.stroke();
+                } else if (style === 'solid') {
+                    ctx.lineWidth = baseLineWidth * 0.5;
+                    ctx.strokeStyle = `#ffffff`;
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.restore();
+        }
+
+        // --- Main Loop ---
+        function liveLoop() {
+            const now = performance.now();
+            const delta = (now - lastRealTime) / 1000;
+            lastRealTime = now;
+
+            if (!isPaused) {
+                // Time progression relies on speed setting
+                virtualTime += delta * (parseInt(ui.speed.value) * 0.2);
+                const cycle = (virtualTime % 4) / 4;
+                const pingPong = 1 - Math.abs(2 * cycle - 1);
+
+                let aN = userBase.n, aC = userBase.c, aK = userBase.k;
+                
+                if (ui.nAnim.checked) {
+                    aN = Math.round(1000 + (parseInt(ui.n.max) - 1000) * pingPong);
+                    ui.n.value = aN;
+                }
+                if (ui.cAnim.checked) {
+                    // Oscillate from 0.001 up to the user's selected base value
+                    aC = 0.001 + (userBase.c - 0.001) * pingPong;
+                    ui.c.value = aC;
+                }
+                if (ui.kAnim.checked) {
+                    aK = 0.1 + (parseInt(ui.k.max) - 0.1) * pingPong;
+                    ui.k.value = aK;
+                }
+
+                ui.nLabel.textContent = aN; 
+                ui.cLabel.textContent = aC.toFixed(3); 
+                ui.kLabel.textContent = aK.toFixed(2);
+                
+                performRender(aN, aC, aK, virtualTime);
+            }
+            
+            updateRecTimer();
+            animationFrameId = requestAnimationFrame(liveLoop);
+        }
+
+        // --- Recording & Saving ---
+        function updateRecTimer() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                const elapsed = Math.floor((performance.now() - recStartTime) / 1000);
+                ui.recTimer.textContent = `${Math.floor(elapsed/60).toString().padStart(2,'0')}:${(elapsed%60).toString().padStart(2,'0')}`;
+            }
+        }
+        
+        const toggleRec = () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                ui.recBtn.textContent = "⏺ Record"; ui.recInd.style.display = 'none';
+            } else {
+                recordedChunks = [];
+                const stream = canvas.captureStream(60);
+                try {
+                    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+                } catch (e) {
+                    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                }
+                mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    const b = new Blob(recordedChunks, { type: 'video/webm' });
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `anglepath-${Date.now()}.webm`; a.click();
+                };
+                recStartTime = performance.now();
+                mediaRecorder.start();
+                ui.recBtn.textContent = "⏹ Stop"; ui.recInd.style.display = 'flex';
+            }
+        };
+
+        const saveImage = () => {
+            const link = document.createElement('a');
+            link.download = `anglepath-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        const generateRandom = () => {
+            userBase.n = 10000 + Math.floor(Math.random() * 90000);
+            userBase.c = Number((Math.random() * 0.5).toFixed(3));
+            if(userBase.c < 0.001) userBase.c = 0.024;
+            userBase.k = Number((1.1 + Math.random() * 3).toFixed(1));
+
+            ui.n.value = userBase.n;
+            ui.c.value = userBase.c;
+            ui.k.value = userBase.k;
+
+            const funcs = ['n2', 'n', 'n3', 'nk', 'nlog', 'nsin', 'sqrt'];
+            ui.func.value = funcs[Math.floor(Math.random() * funcs.length)];
+            
+            const styles = ['neon', 'sketch', 'rainbow', 'solid'];
+            ui.style.value = styles[Math.floor(Math.random() * styles.length)];
+
+            [ui.nAnim, ui.cAnim, ui.kAnim].forEach(cb => cb.checked = false);
+            
+            handleFuncChange();
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+        };
+
+        const handleFuncChange = () => {
+            if (ui.func.value === 'nk') {
+                ui.kGroup.style.opacity = '1';
+                ui.kGroup.style.pointerEvents = 'auto';
+            } else {
+                ui.kGroup.style.opacity = '0.4';
+                ui.kGroup.style.pointerEvents = 'none';
+                ui.kAnim.checked = false;
+            }
+        };
+
+        // --- Event Listeners ---
+        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
+        canvas.onclick = () => { 
+            isPaused = !isPaused; 
+            ui.pauseOverlay.textContent = "PAUSED"; 
+            ui.pauseOverlay.style.display = isPaused ? 'block' : 'none'; 
+        };
+        document.getElementById('fs-btn').onclick = () => canvas.requestFullscreen();
+        document.getElementById('save-btn').onclick = saveImage;
+        document.getElementById('rec-btn').onclick = toggleRec;
+        document.getElementById('random-btn').onclick = generateRandom;
+
+        // Manual updates alter the base used for Ping-Pong animation
+        [ui.n, ui.c, ui.k].forEach(el => el.oninput = () => {
+            if(el.id === 'n-input') userBase.n = parseInt(el.value);
+            if(el.id === 'c-input') userBase.c = parseFloat(el.value);
+            if(el.id === 'k-input') userBase.k = parseFloat(el.value);
+            
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+        });
+
+        ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
+        ui.func.onchange = handleFuncChange;
+
+        // Init
+        handleFuncChange();
+        liveLoop();
+    </script>
+</body>
+</html>
