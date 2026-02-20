@@ -134,8 +134,6 @@
         input[type="number"].num-input:focus { border-color: var(--accent); }
         select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; padding: 4px; border-radius: 4px; outline: none; cursor: pointer;}
         select:hover { border-color: #666; }
-        
-        #k-group { transition: opacity 0.3s; }
     </style>
 </head>
 <body>
@@ -156,14 +154,6 @@
             <div class="input-row">
                 <input type="range" id="c-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000" style="width: 150px;">
                 <input type="number" id="c-number" class="num-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000">
-            </div>
-        </div>
-        
-        <div class="control-group" id="k-group" style="opacity: 0.4; pointer-events: none;">
-            <div class="label-row"><span>Power (k)</span></div>
-            <div class="input-row">
-                <input type="range" id="k-input" min="0.1" max="5.0" step="0.001" value="2.500" style="width: 150px;">
-                <input type="number" id="k-number" class="num-input" min="0.1" max="5.0" step="0.001" value="2.500">
             </div>
         </div>
 
@@ -197,7 +187,6 @@
                         <option value="n2">Square (n²)</option>
                         <option value="n">Linear (n)</option>
                         <option value="n3">Cube (n³)</option>
-                        <option value="nk">Power (n^k)</option>
                         <option value="nlog">n * log(n)</option>
                         <option value="nsin">n * sin(n)</option>
                         <option value="sqrt">Square Root (√n)</option>
@@ -217,8 +206,7 @@
             
             <div style="padding: 10px; background: var(--panel); border: 1px solid #222; border-radius: 6px; font-size: 11px; color: #888;">
                 <div class="panel-header" style="margin-bottom: 4px;">Context Variables</div>
-                <p style="margin: 0 0 6px 0;"><strong>n</strong>: The current iteration step (Integer)</p>
-                <p style="margin: 0;"><strong>k</strong>: The Power multiplier from UI (Float)</p>
+                <p style="margin: 0;"><strong>n</strong>: The current iteration step (Integer)</p>
             </div>
         </div>
 
@@ -233,7 +221,7 @@
                 <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
                 
                 <h3>Custom Function Engine</h3>
-                <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 1.5 million times per frame. If your custom equation utilizes the variable <code>k</code>, the interface will automatically illuminate the Power slider.</p>
+                <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 1.5 million times per frame.</p>
                 
                 <h3>Centering & Scaling</h3>
                 <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
@@ -255,7 +243,6 @@
         const ui = {
             n: document.getElementById('n-input'), nAnim: document.getElementById('n-anim'), nLabel: document.getElementById('n-val'),
             cSlider: document.getElementById('c-input'), cNumber: document.getElementById('c-number'),
-            kSlider: document.getElementById('k-input'), kNumber: document.getElementById('k-number'), kGroup: document.getElementById('k-group'),
             speed: document.getElementById('speed-input'), spdLabel: document.getElementById('spd-val'),
             style: document.getElementById('style-select'), pauseOverlay: document.getElementById('pause-overlay'),
             recBtn: document.getElementById('rec-btn'), recInd: document.getElementById('rec-indicator'), recTimer: document.getElementById('rec-timer'),
@@ -270,18 +257,17 @@
             'n2': 'return n * n;',
             'n': 'return n;',
             'n3': 'return n * n * n;',
-            'nk': 'return Math.pow(n, k);',
             'nlog': 'return n * Math.log(n);',
             'nsin': 'return n * Math.sin(n);',
             'sqrt': 'return Math.sqrt(n);'
         };
 
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
-        let activeFunc = (n, k) => n * n;
+        let activeFunc = (n) => n * n;
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { n: 90000, c: 0.024000, k: 2.500 };
+        let userBase = { n: 90000, c: 0.024000 };
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
@@ -302,19 +288,11 @@
         function compileFunction() {
             try {
                 const code = ui.editor.value;
-                const testFunc = new Function('n', 'k', code);
-                testFunc(1, 1); // Test execution
+                const testFunc = new Function('n', code);
+                testFunc(1); // Test execution
                 activeFunc = testFunc;
                 
                 ui.errorMsg.style.display = 'none';
-                
-                if (code.includes('k')) {
-                    ui.kGroup.style.opacity = '1';
-                    ui.kGroup.style.pointerEvents = 'auto';
-                } else {
-                    ui.kGroup.style.opacity = '0.4';
-                    ui.kGroup.style.pointerEvents = 'none';
-                }
                 
                 if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
             } catch (err) {
@@ -324,7 +302,7 @@
         }
 
         // --- Core Algorithm ---
-        function calculatePath(N, c_val, k_val) {
+        function calculatePath(N, c_val) {
             let x = 0, y = 0, angle = 0;
             const c = c_val * (Math.PI / 180); 
             let minX = 0, maxX = 0, minY = 0, maxY = 0;
@@ -333,7 +311,7 @@
             points[1] = 0;
 
             for (let n = 1; n <= N; n++) {
-                let stepAngle = activeFunc(n, k_val);
+                let stepAngle = activeFunc(n);
                 angle += stepAngle * c;
                 x += Math.cos(angle);
                 y += Math.sin(angle);
@@ -349,9 +327,9 @@
         }
 
         // --- Drawing Routine ---
-        function performRender(N, c_val, k_val, time) {
+        function performRender(N, c_val, time) {
             const style = ui.style.value;
-            const bounds = calculatePath(N, c_val, k_val);
+            const bounds = calculatePath(N, c_val);
             
             ctx.fillStyle = '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -440,7 +418,7 @@
                     ui.nLabel.textContent = aN;
                 }
                 
-                performRender(aN, userBase.c, userBase.k, virtualTime);
+                performRender(aN, userBase.c, virtualTime);
             }
             
             updateRecTimer();
@@ -456,18 +434,8 @@
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
-        const updateK = (val) => {
-            const v = parseFloat(val);
-            userBase.k = v;
-            ui.kSlider.value = v;
-            ui.kNumber.value = v.toFixed(3);
-            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
-        };
-
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
-        ui.kSlider.oninput = (e) => updateK(e.target.value);
-        ui.kNumber.onchange = (e) => updateK(e.target.value);
 
         ui.n.oninput = (e) => {
             userBase.n = parseInt(e.target.value);
@@ -502,11 +470,9 @@
             userBase.n = 10000 + Math.floor(Math.random() * 1490000);
             userBase.c = Number((Math.random() * 0.5).toFixed(6));
             if(userBase.c < 0.000001) userBase.c = 0.024000;
-            userBase.k = Number((1.1 + Math.random() * 3).toFixed(3));
 
             ui.n.value = userBase.n; ui.nLabel.textContent = userBase.n;
             ui.cSlider.value = userBase.c; ui.cNumber.value = userBase.c.toFixed(6);
-            ui.kSlider.value = userBase.k; ui.kNumber.value = userBase.k.toFixed(3);
 
             const funcs = Object.keys(presets);
             const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
