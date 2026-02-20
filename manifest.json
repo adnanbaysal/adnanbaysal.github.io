@@ -46,5 +46,18 @@
             "Fractal"
         ],
         "date": "2026-02-02"
+    },
+    {
+        "id": "angle-path",
+        "title": "Chaos with Angle Paths",
+        "description": "Drawing angle paths with function based angle rotation that produce chaotic but beautiful patterns.",
+        "url": "./angle-path.html",
+        "tags": [
+            "Canvas API",
+            "Angle Path",
+            "Symmetry",
+            "Chaos"
+        ],
+        "date": "2026-02-20"
     }
 ]

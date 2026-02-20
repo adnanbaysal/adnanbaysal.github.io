@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle Path Generator</title>
+    <style>
+        :root { --accent: #00d2ff; --bg: #050505; --panel: #111; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; 
+            display: flex; flex-direction: column; 
+            background: var(--bg); color: #fff; 
+            margin: 0; height: 100vh; overflow: hidden; 
+        }
+        
+        /* --- Header UI --- */
+        header { 
+            background: var(--panel); padding: 8px 12px; 
+            border-bottom: 1px solid #333; 
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            gap: 8px; z-index: 10;
+        }
+        
+        .control-group { 
+            background: #1a1a1a; padding: 6px 10px; border-radius: 6px; 
+            display: flex; flex-direction: column; gap: 4px; border: 1px solid #222;
+        }
+
+        .label-row { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+        .input-row { display: flex; align-items: center; gap: 8px; }
+        .anim-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; }
+
+        /* --- Main Layout --- */
+        main { 
+            flex-grow: 1; display: flex; flex-direction: row; 
+            padding: 10px; gap: 10px; min-height: 0;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        .left-col { display: flex; flex-direction: column; width: 320px; gap: 10px; flex-shrink: 0; }
+        .right-col { flex-grow: 1; display: flex; flex-direction: column; position: relative; border-radius: 6px; overflow: hidden; }
+
+        /* --- Canvas Area --- */
+        #canvas-container { position: relative; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; }
+        canvas { 
+            background: transparent; border-radius: 4px; cursor: pointer;
+            max-height: 100%; max-width: 100%; object-fit: contain;
+        }
+
+        /* --- Code Editor --- */
+        .editor-container {
+            flex-grow: 1; display: flex; flex-direction: column;
+            background: var(--panel); border: 1px solid #333; border-radius: 6px;
+            padding: 10px; min-height: 0;
+        }
+        .panel-header {
+            font-size: 11px; letter-spacing: 1px; color: var(--accent);
+            text-transform: uppercase; font-weight: bold; opacity: 0.8;
+            margin-bottom: 8px; display: flex; justify-content: space-between;
+        }
+        select.preset-select {
+            background: #222; color: #fff; border: 1px solid #444; 
+            font-family: monospace; font-size: 11px; padding: 4px; 
+            border-radius: 3px; width: 100%; cursor: pointer; margin-bottom: 8px;
+        }
+        textarea {
+            flex-grow: 1; background: #0d0d0d; color: #ccc;
+            border: 1px solid #333; border-radius: 4px;
+            padding: 10px; font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px; line-height: 1.4; resize: none;
+            outline: none; white-space: pre; margin-bottom: 8px;
+        }
+        textarea:focus { border-color: var(--accent); color: #fff; }
+        .editor-actions { display: flex; gap: 8px; }
+
+        /* --- Overlays --- */
+        #pause-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7); color: var(--accent); padding: 15px 30px;
+            border-radius: 8px; font-weight: bold; pointer-events: none;
+            display: none; border: 1px solid var(--accent); text-transform: uppercase;
+            z-index: 5; letter-spacing: 2px;
+        }
+
+        #rec-indicator {
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 6px;
+            display: none; align-items: center; gap: 10px; color: #fff;
+            font-family: monospace; font-size: 14px; border: 1px solid #eb4d4b;
+        }
+        .dot { width: 10px; height: 10px; background: #eb4d4b; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* --- Info Modal --- */
+        #info-modal {
+            position: absolute; top: 60px; left: 20px; z-index: 20;
+            background: rgba(17, 17, 17, 0.96); backdrop-filter: blur(12px);
+            border: 1px solid #333; border-radius: 8px;
+            width: 350px; max-height: 80vh; overflow-y: auto;
+            display: none; padding: 25px; font-size: 13px; line-height: 1.6;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;}
+        #info-modal h3 { margin: 15px 0 5px 0; font-size: 12px; color: #fff; text-transform: uppercase; }
+        #info-modal p { color: #aaa; margin: 0 0 10px 0; }
+        #info-modal code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace;}
+        .close-info { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #666; font-size: 18px; }
+        .close-info:hover { color: #fff; }
+
+        /* --- Buttons & Inputs --- */
+        button { 
+            border: none; padding: 0 12px; border-radius: 4px; 
+            font-weight: bold; cursor: pointer; transition: 0.2s; 
+            text-transform: uppercase; font-size: 10px; height: 34px; align-self: center;
+        }
+        .btn-run { background: var(--accent); color: #000; flex-grow: 1; }
+        .btn-run:hover { filter: brightness(1.2); }
+        .btn-rand { background: #a55eea; color: #fff; }
+        .btn-rec { background: #eb4d4b; color: #fff; }
+        .btn-util { background: #333; color: #ccc; }
+        .btn-util:hover { background: #444; color: #fff; }
+        .btn-sec { background: #333; color: #ccc; }
+        .btn-sec:hover { background: #444; color: #fff; }
+        .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
+        .btn-info:hover { color: #fff; border-color: #fff; }
+
+        span.value { color: #fff; font-size: 12px; font-family: monospace; }
+        input[type="range"] { accent-color: var(--accent); cursor: pointer; }
+        input[type="number"].num-input { 
+            width: 75px; background: #222; color: #fff; border: 1px solid #444; 
+            font-size: 11px; padding: 4px; border-radius: 4px; font-family: monospace; outline: none;
+        }
+        input[type="number"].num-input:focus { border-color: var(--accent); }
+        select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; padding: 4px; border-radius: 4px; outline: none; cursor: pointer;}
+        select:hover { border-color: #666; }
+    </style>
+</head>
+<body>
+
+    <header id="ui-panel">
+        <button id="info-btn" class="btn-info" title="Information">?</button>
+
+        <div class="control-group">
+            <div class="label-row">
+                <span>Steps (N)</span>
+                <input type="number" id="n-number" class="num-input" min="1000" max="5000000" step="1000" value="90000">
+            </div>
+            <div class="input-row">
+                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" style="width: 130px;">
+                
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="n-anim"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row">
+                <span>C Multiplier</span>
+                <input type="number" id="c-number" class="num-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000">
+            </div>
+            <div class="input-row">
+                <input type="range" id="c-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000" style="width: 130px;">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="c-anim"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Speed</span> <span id="spd-val" class="value">5</span></div>
+            <div class="input-row"><input type="range" id="speed-input" min="1" max="10" value="5" style="width: 70px;"></div>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>Style</span></div>
+            <select id="style-select">
+                <option value="neon">Neon Glow</option>
+                <option value="sketch">Ink Sketch</option>
+                <option value="rainbow">Spectrum</option>
+                <option value="solid">Solid White</option>
+            </select>
+        </div>
+
+        <button id="random-btn" class="btn-rand">🎲 Rand</button>
+        <button id="save-btn" class="btn-util">📸 Save</button>
+        <button id="rec-btn" class="btn-rec">⏺ Record</button>
+        <button id="fs-btn" class="btn-util">⛶ Full</button>
+    </header>
+
+    <main>
+        <div class="left-col">
+            <div class="editor-container">
+                <div class="panel-header">Function f(n)</div>
+                <select id="preset-select" class="preset-select">
+                    <optgroup label="Standard Math">
+                        <option value="n2">Square (n²)</option>
+                        <option value="n">Linear (n)</option>
+                        <option value="n3">Cube (n³)</option>
+                        <option value="nlog">n * log(n)</option>
+                        <option value="nsin">n * sin(n)</option>
+                        <option value="sqrt">Square Root (√n)</option>
+                    </optgroup>
+                    <optgroup label="User Saved" id="user-presets-group">
+                    </optgroup>
+                </select>
+
+                <textarea id="code-area" spellcheck="false">return n * n;</textarea>
+
+                <div class="editor-actions">
+                    <button id="save-preset-btn" class="btn-sec">💾 Save</button>
+                    <button id="run-btn" class="btn-run">▶ Update</button>
+                </div>
+                <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
+            </div>
+            
+            <div style="padding: 10px; background: var(--panel); border: 1px solid #222; border-radius: 6px; font-size: 11px; color: #888;">
+                <div class="panel-header" style="margin-bottom: 4px;">Context Variables</div>
+                <p style="margin: 0;"><strong>n</strong>: The current iteration step (Integer)</p>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div id="info-modal">
+                <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
+                <h2>Angle Path Generator</h2>
+                <p>This generator draws a sequence of lines based on a simple mathematical rule, commonly known in turtle graphics.</p>
+                
+                <h3>The Algorithm</h3>
+                <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
+                <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
+                
+                <h3>Custom Function Engine</h3>
+                <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 15 million times per frame.</p>
+                
+                <h3>Centering & Scaling</h3>
+                <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
+            </div>
+
+            <div id="canvas-container">
+                <canvas id="mainCanvas" width="1600" height="1600"></canvas>
+                <div id="pause-overlay">Paused</div>
+                <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
+            </div>
+            <div id="status" style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-family: monospace; z-index: 2; pointer-events: none;">LIVE MODE | CLICK CANVAS TO PAUSE</div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        const ui = {
+            nSlider: document.getElementById('n-input'),
+            nNumber: document.getElementById('n-number'), 
+            nAnim: document.getElementById('n-anim'),
+            cSlider: document.getElementById('c-input'),
+            cNumber: document.getElementById('c-number'), 
+            cAnim: document.getElementById('c-anim'),
+            speed: document.getElementById('speed-input'), 
+            spdLabel: document.getElementById('spd-val'),
+            style: document.getElementById('style-select'), 
+            pauseOverlay: document.getElementById('pause-overlay'),
+            recBtn: document.getElementById('rec-btn'), 
+            recInd: document.getElementById('rec-indicator'), 
+            recTimer: document.getElementById('rec-timer'),
+            infoBtn: document.getElementById('info-btn'), 
+            infoModal: document.getElementById('info-modal'),
+            
+            editor: document.getElementById('code-area'), 
+            presetSelect: document.getElementById('preset-select'),
+            userGroup: document.getElementById('user-presets-group'), 
+            runBtn: document.getElementById('run-btn'),
+            savePresetBtn: document.getElementById('save-preset-btn'), 
+            errorMsg: document.getElementById('code-error')
+        };
+
+        // Mutual Exclusivity Logic
+        ui.nAnim.addEventListener('change', () => {
+            if (ui.nAnim.checked) {
+                ui.cAnim.checked = false;
+            } else {
+                // When unchecking, ensure userBase.n reflects the last animated value
+                userBase.n = parseInt(ui.nNumber.value);
+            }
+        });
+
+        ui.cAnim.addEventListener('change', () => {
+            if (ui.cAnim.checked) {
+                ui.nAnim.checked = false;
+            } else {
+                // When unchecking, ensure userBase.c reflects the last animated value
+                userBase.c = parseFloat(ui.cSlider.value);
+            }
+        });
+
+        const presets = {
+            'n2': 'return n * n;',
+            'n': 'return n;',
+            'n3': 'return n * n * n;',
+            'nlog': 'return n * Math.log(n);',
+            'nsin': 'return n * Math.sin(n);',
+            'sqrt': 'return Math.sqrt(n);'
+        };
+
+        let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
+        let activeFunc = (n) => n * n;
+
+        let isPaused = false;
+        let animationFrameId;
+        let userBase = { n: 90000, c: 0.024000 };
+        let virtualTime = 0, lastRealTime = performance.now();
+        let mediaRecorder, recordedChunks = [], recStartTime;
+
+        // Up to 5 million steps * 2 (x,y points)
+        let points = new Float32Array((5000000 + 1) * 2);
+
+        // --- Editor & Function Logic ---
+        function updatePresetDropdown() {
+            ui.userGroup.innerHTML = '';
+            Object.keys(userPresets).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = `user:${name}`;
+                opt.textContent = name;
+                ui.userGroup.appendChild(opt);
+            });
+        }
+
+        function compileFunction() {
+            try {
+                const code = ui.editor.value;
+                const testFunc = new Function('n', code);
+                testFunc(1); // Test execution
+                activeFunc = testFunc;
+                
+                ui.errorMsg.style.display = 'none';
+                
+                if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+            } catch (err) {
+                ui.errorMsg.textContent = "Error: " + err.message;
+                ui.errorMsg.style.display = 'block';
+            }
+        }
+
+        // --- Core Algorithm ---
+        function calculatePath(N, c_val) {
+            let x = 0, y = 0, angle = 0;
+            const c = c_val * (Math.PI / 180); 
+            let minX = 0, maxX = 0, minY = 0, maxY = 0;
+            
+            points[0] = 0; 
+            points[1] = 0;
+
+            for (let n = 1; n <= N; n++) {
+                let stepAngle = activeFunc(n);
+                angle += stepAngle * c;
+                x += Math.cos(angle);
+                y += Math.sin(angle);
+
+                if (x < minX) minX = x; else if (x > maxX) maxX = x;
+                if (y < minY) minY = y; else if (y > maxY) maxY = y;
+
+                points[n * 2] = x;
+                points[n * 2 + 1] = y;
+            }
+            
+            return { minX, maxX, minY, maxY };
+        }
+
+        // --- Drawing Routine ---
+        function performRender(N, c_val, time) {
+            const style = ui.style.value;
+            const bounds = calculatePath(N, c_val);
+            
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const bbWidth = bounds.maxX - bounds.minX;
+            const bbHeight = bounds.maxY - bounds.minY;
+            const scale = Math.min(canvas.width / (bbWidth || 1), canvas.height / (bbHeight || 1)) * 0.90;
+            const bbCenterX = (bounds.maxX + bounds.minX) / 2;
+            const bbCenterY = (bounds.maxY + bounds.minY) / 2;
+
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.scale(scale, scale);
+            ctx.translate(-bbCenterX, -bbCenterY);
+
+            ctx.globalCompositeOperation = style === 'neon' ? 'lighter' : 'source-over';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            
+            let baseLineWidth = Math.max(0.1, 80000 / N) / scale;
+
+            // --- CHUNKED RENDERING LOGIC ---
+            // We break the path into segments of 500k to avoid GPU buffer limits
+            const MAX_PATH_SIZE = 500000; 
+            const numChunks = Math.ceil(N / MAX_PATH_SIZE);
+
+            for (let i = 0; i < numChunks; i++) {
+                const start = i * MAX_PATH_SIZE;
+                const end = Math.min((i + 1) * MAX_PATH_SIZE, N);
+
+                ctx.beginPath();
+                ctx.moveTo(points[start * 2], points[start * 2 + 1]);
+                
+                for (let j = start + 1; j <= end; j++) {
+                    ctx.lineTo(points[j * 2], points[j * 2 + 1]);
+                }
+
+                // Apply style to this specific chunk
+                if (style === 'rainbow') {
+                    ctx.lineWidth = baseLineWidth * 1.5;
+                    ctx.strokeStyle = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
+                    ctx.stroke();
+                } else if (style === 'neon') {
+                    ctx.lineWidth = baseLineWidth;
+                    ctx.strokeStyle = `rgba(0, 210, 255, 0.4)`;
+                    ctx.stroke();
+                    ctx.lineWidth = baseLineWidth * 0.3;
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
+                    ctx.stroke();
+                } else if (style === 'sketch') {
+                    ctx.lineWidth = baseLineWidth * 0.8;
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.25)`;
+                    ctx.stroke();
+                } else {
+                    ctx.lineWidth = baseLineWidth * 0.5;
+                    ctx.strokeStyle = `#ffffff`;
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.restore();
+        }
+
+        // --- Main Loop ---
+        function liveLoop() {
+            const now = performance.now();
+            const delta = (now - lastRealTime) / 1000;
+            lastRealTime = now;
+
+            if (!isPaused) {
+                virtualTime += delta * Math.pow(2.0, parseInt(ui.speed.value) - 1) * 0.0025; 
+                const cycle = (virtualTime % 4) / 4;
+                const pingPong = 1 - Math.abs(2 * cycle - 1);
+
+                let aN = userBase.n;
+                let aC = userBase.c;
+                
+                // N Animation (Log-mapped for UI, Ease-in for movement)
+                if (ui.nAnim.checked) {
+                    // 1. USE POWER EASING (pingPong^2)
+                    // This slows down the animation at the low end (start/end of cycle)
+                    const easedProgress = Math.pow(pingPong, 2); 
+                    aN = Math.floor(1000 + (4999000) * easedProgress);
+                    ui.nNumber.value = aN;
+                    ui.nSlider.value = Math.log10(aN);
+                } 
+                // C Animation (Linear)
+                else if (ui.cAnim.checked) {
+                    aC = 0 + (2.000000 * pingPong);
+                    ui.cSlider.value = aC.toFixed(6);
+                    ui.cNumber.value = aC.toFixed(6);
+                }
+                
+                performRender(aN, aC, virtualTime);
+            }
+            
+            updateRecTimer();
+            animationFrameId = requestAnimationFrame(liveLoop);
+        }
+
+        // --- Interaction & UI Sync ---
+        const updateN = (val, fromSlider = false) => {
+            let v;
+            if (fromSlider) {
+                // Map log slider value (3 to 6.698) back to 1,000 to 5,000,000
+                v = Math.round(Math.pow(10, parseFloat(val)));
+            } else {
+                v = parseInt(val);
+            }
+
+            if (isNaN(v)) v = 1000;
+            if (v > 5000000) v = 5000000;
+            if (v < 1000) v = 1000;
+
+            userBase.n = v;
+            ui.nNumber.value = v;
+            // Keep slider in sync using log10
+            ui.nSlider.value = Math.log10(v).toFixed(5);
+
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+        };
+
+        ui.nSlider.oninput = (e) => updateN(e.target.value, true);
+        ui.nNumber.onchange = (e) => updateN(e.target.value, false);
+
+        const updateC = (val) => {
+            const v = parseFloat(val);
+            userBase.c = v;
+            ui.cSlider.value = v.toFixed(6);
+            ui.cNumber.value = v.toFixed(6);
+            
+            if (isPaused) 
+            { 
+                isPaused = false; 
+                ui.pauseOverlay.style.display = 'none'; 
+            }
+        };
+
+        ui.cSlider.oninput = (e) => updateC(e.target.value);
+        ui.cNumber.onchange = (e) => updateC(e.target.value);
+
+        ui.presetSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val.startsWith('user:')) {
+                ui.editor.value = userPresets[val.split(':')[1]];
+            } else if (presets[val]) {
+                ui.editor.value = presets[val];
+            }
+            compileFunction(); 
+        });
+
+        ui.runBtn.addEventListener('click', compileFunction);
+        ui.editor.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') compileFunction(); });
+
+        ui.savePresetBtn.addEventListener('click', () => {
+            const name = prompt("Name your function:");
+            if (name) {
+                userPresets[name] = ui.editor.value;
+                localStorage.setItem('angle_path_presets', JSON.stringify(userPresets));
+                updatePresetDropdown();
+                ui.presetSelect.value = `user:${name}`;
+            }
+        });
+
+        const generateRandom = () => {
+            let logN = 3.0000 + Math.random() * 3.69897; // min="3" max="6.69897"
+            userBase.n = Math.floor(Math.pow(10.0000, logN))
+            userBase.c = Number((Math.random() * 2.000000).toFixed(6));
+            if(userBase.c < 0.000001) userBase.c = 0.000001;
+
+            ui.nSlider.value = Math.log10(userBase.n); 
+            ui.nNumber.value = userBase.n;
+            ui.cSlider.value = userBase.c.toFixed(6); 
+            ui.cNumber.value = userBase.c.toFixed(6); 
+
+            // Randomly decide animation state: 0=None, 1=N, 2=C
+            const animChoice = Math.floor(Math.random() * 3);
+            ui.nAnim.checked = (animChoice === 1);
+            ui.cAnim.checked = (animChoice === 2);
+
+            const funcs = Object.keys(presets);
+            const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
+            ui.presetSelect.value = randFunc;
+            ui.editor.value = presets[randFunc];
+            
+            const styles = ['neon', 'sketch', 'rainbow', 'solid'];
+            ui.style.value = styles[Math.floor(Math.random() * styles.length)];
+            
+            compileFunction();
+        };
+
+        const toggleRec = () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                ui.recBtn.textContent = "⏺ Record"; ui.recInd.style.display = 'none';
+            } else {
+                recordedChunks = [];
+                const stream = canvas.captureStream(60);
+                try { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' }); } 
+                catch (e) { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); }
+                mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    const b = new Blob(recordedChunks, { type: 'video/webm' });
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `anglepath-${Date.now()}.webm`; a.click();
+                };
+                recStartTime = performance.now();
+                mediaRecorder.start();
+                ui.recBtn.textContent = "⏹ Stop"; ui.recInd.style.display = 'flex';
+            }
+        };
+
+        function updateRecTimer() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                const elapsed = Math.floor((performance.now() - recStartTime) / 1000);
+                ui.recTimer.textContent = `${Math.floor(elapsed/60).toString().padStart(2,'0')}:${(elapsed%60).toString().padStart(2,'0')}`;
+            }
+        }
+
+        const saveImage = () => {
+            const link = document.createElement('a');
+            link.download = `anglepath-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
+        canvas.onclick = () => { 
+            isPaused = !isPaused; 
+            ui.pauseOverlay.textContent = "PAUSED"; 
+            ui.pauseOverlay.style.display = isPaused ? 'block' : 'none'; 
+        };
+        document.getElementById('fs-btn').onclick = () => canvas.requestFullscreen();
+        document.getElementById('save-btn').onclick = saveImage;
+        document.getElementById('rec-btn').onclick = toggleRec;
+        document.getElementById('random-btn').onclick = generateRandom;
+        ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
+
+        // Init
+        updatePresetDropdown();
+        compileFunction();
+        liveLoop();
+    </script>
+</body>
+</html>
