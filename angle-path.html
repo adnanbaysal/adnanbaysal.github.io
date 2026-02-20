@@ -26,7 +26,7 @@
             display: flex; flex-direction: column; gap: 4px; border: 1px solid #222;
         }
 
-        .label-row { display: flex; justify-content: space-between; color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; }
         .input-row { display: flex; align-items: center; gap: 8px; }
         .anim-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; }
@@ -142,19 +142,25 @@
         <button id="info-btn" class="btn-info" title="Information">?</button>
 
         <div class="control-group">
-            <div class="label-row"><span>Steps (N)</span></div>
+            <div class="label-row">
+                <span>Steps (N)</span>
+                <input type="number" id="n-number" class="num-input" min="1000" max="5000000" step="1000" value="90000">
+            </div>
             <div class="input-row">
-                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" style="width: 100px;">
-                <input type="number" id="n-number" class="num-input" min="1000" max="5000000" step="1000" value="90000" style="width: 85px;">
+                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" style="width: 130px;">
+                
                 <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="n-anim"></div>
             </div>
         </div>
 
         <div class="control-group">
-            <div class="label-row"><span>Multiplier (c)</span></div>
-            <div class="input-row">
-                <input type="range" id="c-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000" style="width: 150px;">
+            <div class="label-row">
+                <span>C Multiplier</span>
                 <input type="number" id="c-number" class="num-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000">
+            </div>
+            <div class="input-row">
+                <input type="range" id="c-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000" style="width: 130px;">
+                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="c-anim"></div>
             </div>
         </div>
 
@@ -242,17 +248,48 @@
         const ctx = canvas.getContext('2d', { alpha: false });
         
         const ui = {
-            nSlider: document.getElementById('n-input'), nNumber: document.getElementById('n-number'), nAnim: document.getElementById('n-anim'),
-            cSlider: document.getElementById('c-input'), cNumber: document.getElementById('c-number'),
-            speed: document.getElementById('speed-input'), spdLabel: document.getElementById('spd-val'),
-            style: document.getElementById('style-select'), pauseOverlay: document.getElementById('pause-overlay'),
-            recBtn: document.getElementById('rec-btn'), recInd: document.getElementById('rec-indicator'), recTimer: document.getElementById('rec-timer'),
-            infoBtn: document.getElementById('info-btn'), infoModal: document.getElementById('info-modal'),
+            nSlider: document.getElementById('n-input'),
+            nNumber: document.getElementById('n-number'), 
+            nAnim: document.getElementById('n-anim'),
+            cSlider: document.getElementById('c-input'),
+            cNumber: document.getElementById('c-number'), 
+            cAnim: document.getElementById('c-anim'),
+            speed: document.getElementById('speed-input'), 
+            spdLabel: document.getElementById('spd-val'),
+            style: document.getElementById('style-select'), 
+            pauseOverlay: document.getElementById('pause-overlay'),
+            recBtn: document.getElementById('rec-btn'), 
+            recInd: document.getElementById('rec-indicator'), 
+            recTimer: document.getElementById('rec-timer'),
+            infoBtn: document.getElementById('info-btn'), 
+            infoModal: document.getElementById('info-modal'),
             
-            editor: document.getElementById('code-area'), presetSelect: document.getElementById('preset-select'),
-            userGroup: document.getElementById('user-presets-group'), runBtn: document.getElementById('run-btn'),
-            savePresetBtn: document.getElementById('save-preset-btn'), errorMsg: document.getElementById('code-error')
+            editor: document.getElementById('code-area'), 
+            presetSelect: document.getElementById('preset-select'),
+            userGroup: document.getElementById('user-presets-group'), 
+            runBtn: document.getElementById('run-btn'),
+            savePresetBtn: document.getElementById('save-preset-btn'), 
+            errorMsg: document.getElementById('code-error')
         };
+
+        // Mutual Exclusivity Logic
+        ui.nAnim.addEventListener('change', () => {
+            if (ui.nAnim.checked) {
+                ui.cAnim.checked = false;
+            } else {
+                // When unchecking, ensure userBase.n reflects the last animated value
+                userBase.n = parseInt(ui.nNumber.value);
+            }
+        });
+
+        ui.cAnim.addEventListener('change', () => {
+            if (ui.cAnim.checked) {
+                ui.nAnim.checked = false;
+            } else {
+                // When unchecking, ensure userBase.c reflects the last animated value
+                userBase.c = parseFloat(ui.cSlider.value);
+            }
+        });
 
         const presets = {
             'n2': 'return n * n;',
@@ -401,28 +438,30 @@
             lastRealTime = now;
 
             if (!isPaused) {
-                // Reduced multiplier for finer control at base speed
                 virtualTime += delta * Math.pow(2.0, parseInt(ui.speed.value) - 1) * 0.0025; 
                 const cycle = (virtualTime % 4) / 4;
                 const pingPong = 1 - Math.abs(2 * cycle - 1);
 
                 let aN = userBase.n;
+                let aC = userBase.c;
                 
+                // N Animation (Log-mapped for UI, Ease-in for movement)
                 if (ui.nAnim.checked) {
                     // 1. USE POWER EASING (pingPong^2)
                     // This slows down the animation at the low end (start/end of cycle)
                     const easedProgress = Math.pow(pingPong, 2); 
-                    
-                    // 2. REMOVE THE 1000x SNAP
-                    // We want every single integer to be possible for smooth transitions
                     aN = Math.floor(1000 + (4999000) * easedProgress);
-                    
                     ui.nNumber.value = aN;
                     ui.nSlider.value = Math.log10(aN);
+                } 
+                // C Animation (Linear)
+                else if (ui.cAnim.checked) {
+                    aC = 0 + (2.000000 * pingPong);
+                    ui.cSlider.value = aC.toFixed(6);
+                    ui.cNumber.value = aC.toFixed(6);
                 }
                 
-                // Pass virtualTime to help with color/rotation offsets
-                performRender(aN, userBase.c, virtualTime);
+                performRender(aN, aC, virtualTime);
             }
             
             updateRecTimer();
@@ -457,9 +496,14 @@
         const updateC = (val) => {
             const v = parseFloat(val);
             userBase.c = v;
-            ui.cSlider.value = v;
+            ui.cSlider.value = v.toFixed(6);
             ui.cNumber.value = v.toFixed(6);
-            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+            
+            if (isPaused) 
+            { 
+                isPaused = false; 
+                ui.pauseOverlay.style.display = 'none'; 
+            }
         };
 
         ui.cSlider.oninput = (e) => updateC(e.target.value);
@@ -489,14 +533,20 @@
         });
 
         const generateRandom = () => {
-            userBase.n = 10000 + Math.floor(Math.random() * 4990000);
-            userBase.c = Number((Math.random() * 0.5).toFixed(6));
-            if(userBase.c < 0.000001) userBase.c = 0.024000;
+            let logN = 3.0000 + Math.random() * 3.69897; // min="3" max="6.69897"
+            userBase.n = Math.floor(Math.pow(10.0000, logN))
+            userBase.c = Number((Math.random() * 2.000000).toFixed(6));
+            if(userBase.c < 0.000001) userBase.c = 0.000001;
 
             ui.nSlider.value = Math.log10(userBase.n); 
             ui.nNumber.value = userBase.n;
-            ui.cSlider.value = userBase.c; 
-            ui.cNumber.value = userBase.c.toFixed(6);
+            ui.cSlider.value = userBase.c.toFixed(6); 
+            ui.cNumber.value = userBase.c.toFixed(6); 
+
+            // Randomly decide animation state: 0=None, 1=N, 2=C
+            const animChoice = Math.floor(Math.random() * 3);
+            ui.nAnim.checked = (animChoice === 1);
+            ui.cAnim.checked = (animChoice === 2);
 
             const funcs = Object.keys(presets);
             const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
@@ -505,8 +555,6 @@
             
             const styles = ['neon', 'sketch', 'rainbow', 'solid'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
-
-            ui.nAnim.checked = false;
             
             compileFunction();
         };
