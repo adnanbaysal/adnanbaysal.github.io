@@ -142,9 +142,10 @@
         <button id="info-btn" class="btn-info" title="Information">?</button>
 
         <div class="control-group">
-            <div class="label-row"><span>Steps (N)</span> <span id="n-val" class="value">90000</span></div>
+            <div class="label-row"><span>Steps (N)</span></div>
             <div class="input-row">
-                <input type="range" id="n-input" min="1000" max="1500000" step="1000" value="90000" style="width: 100px;">
+                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" style="width: 100px;">
+                <input type="number" id="n-number" class="num-input" min="1000" max="5000000" step="1000" value="90000" style="width: 85px;">
                 <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="n-anim"></div>
             </div>
         </div>
@@ -158,8 +159,8 @@
         </div>
 
         <div class="control-group">
-            <div class="label-row"><span>Speed</span> <span id="spd-val" class="value">3</span></div>
-            <div class="input-row"><input type="range" id="speed-input" min="1" max="10" value="3" style="width: 70px;"></div>
+            <div class="label-row"><span>Speed</span> <span id="spd-val" class="value">5</span></div>
+            <div class="input-row"><input type="range" id="speed-input" min="1" max="10" value="5" style="width: 70px;"></div>
         </div>
 
         <div class="control-group">
@@ -221,7 +222,7 @@
                 <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
                 
                 <h3>Custom Function Engine</h3>
-                <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 1.5 million times per frame.</p>
+                <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 15 million times per frame.</p>
                 
                 <h3>Centering & Scaling</h3>
                 <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
@@ -241,7 +242,7 @@
         const ctx = canvas.getContext('2d', { alpha: false });
         
         const ui = {
-            n: document.getElementById('n-input'), nAnim: document.getElementById('n-anim'), nLabel: document.getElementById('n-val'),
+            nSlider: document.getElementById('n-input'), nNumber: document.getElementById('n-number'), nAnim: document.getElementById('n-anim'),
             cSlider: document.getElementById('c-input'), cNumber: document.getElementById('c-number'),
             speed: document.getElementById('speed-input'), spdLabel: document.getElementById('spd-val'),
             style: document.getElementById('style-select'), pauseOverlay: document.getElementById('pause-overlay'),
@@ -271,8 +272,8 @@
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
-        // Up to 1.5 million steps * 2 (x,y points)
-        let points = new Float32Array((1500000 + 1) * 2);
+        // Up to 5 million steps * 2 (x,y points)
+        let points = new Float32Array((5000000 + 1) * 2);
 
         // --- Editor & Function Logic ---
         function updatePresetDropdown() {
@@ -336,10 +337,7 @@
             
             const bbWidth = bounds.maxX - bounds.minX;
             const bbHeight = bounds.maxY - bounds.minY;
-            const w = bbWidth || 1; 
-            const h = bbHeight || 1;
-
-            const scale = Math.min(canvas.width / w, canvas.height / h) * 0.90;
+            const scale = Math.min(canvas.width / (bbWidth || 1), canvas.height / (bbHeight || 1)) * 0.90;
             const bbCenterX = (bounds.maxX + bounds.minX) / 2;
             const bbCenterY = (bounds.maxY + bounds.minY) / 2;
 
@@ -352,33 +350,30 @@
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             
-            let baseLineWidth = Math.max(0.1, 80000 / N) / scale; 
+            let baseLineWidth = Math.max(0.1, 80000 / N) / scale;
 
-            if (style === 'rainbow') {
-                ctx.lineWidth = baseLineWidth * 1.5;
-                const chunks = 100;
-                const chunkSize = Math.floor(N / chunks);
-                
-                for (let i = 0; i < chunks; i++) {
-                    ctx.beginPath();
-                    let start = i * chunkSize;
-                    let end = (i === chunks - 1) ? N : (i + 1) * chunkSize + 1; 
-                    
-                    ctx.moveTo(points[start * 2], points[start * 2 + 1]);
-                    for (let j = start + 1; j <= end; j++) {
-                        ctx.lineTo(points[j * 2], points[j * 2 + 1]);
-                    }
-                    ctx.strokeStyle = `hsl(${(i / chunks) * 360 + (time * 50)}, 90%, 60%)`;
-                    ctx.stroke();
-                }
-            } else {
+            // --- CHUNKED RENDERING LOGIC ---
+            // We break the path into segments of 500k to avoid GPU buffer limits
+            const MAX_PATH_SIZE = 500000; 
+            const numChunks = Math.ceil(N / MAX_PATH_SIZE);
+
+            for (let i = 0; i < numChunks; i++) {
+                const start = i * MAX_PATH_SIZE;
+                const end = Math.min((i + 1) * MAX_PATH_SIZE, N);
+
                 ctx.beginPath();
-                ctx.moveTo(points[0], points[1]);
-                for (let n = 1; n <= N; n++) {
-                    ctx.lineTo(points[n * 2], points[n * 2 + 1]);
+                ctx.moveTo(points[start * 2], points[start * 2 + 1]);
+                
+                for (let j = start + 1; j <= end; j++) {
+                    ctx.lineTo(points[j * 2], points[j * 2 + 1]);
                 }
 
-                if (style === 'neon') {
+                // Apply style to this specific chunk
+                if (style === 'rainbow') {
+                    ctx.lineWidth = baseLineWidth * 1.5;
+                    ctx.strokeStyle = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
+                    ctx.stroke();
+                } else if (style === 'neon') {
                     ctx.lineWidth = baseLineWidth;
                     ctx.strokeStyle = `rgba(0, 210, 255, 0.4)`;
                     ctx.stroke();
@@ -389,7 +384,7 @@
                     ctx.lineWidth = baseLineWidth * 0.8;
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.25)`;
                     ctx.stroke();
-                } else if (style === 'solid') {
+                } else {
                     ctx.lineWidth = baseLineWidth * 0.5;
                     ctx.strokeStyle = `#ffffff`;
                     ctx.stroke();
@@ -406,18 +401,27 @@
             lastRealTime = now;
 
             if (!isPaused) {
-                virtualTime += delta * (parseInt(ui.speed.value) * 0.2);
+                // Reduced multiplier for finer control at base speed
+                virtualTime += delta * Math.pow(2.0, parseInt(ui.speed.value) - 1) * 0.0025; 
                 const cycle = (virtualTime % 4) / 4;
                 const pingPong = 1 - Math.abs(2 * cycle - 1);
 
                 let aN = userBase.n;
                 
                 if (ui.nAnim.checked) {
-                    aN = Math.round(1000 + (parseInt(ui.n.max) - 1000) * pingPong);
-                    ui.n.value = aN;
-                    ui.nLabel.textContent = aN;
+                    // 1. USE POWER EASING (pingPong^2)
+                    // This slows down the animation at the low end (start/end of cycle)
+                    const easedProgress = Math.pow(pingPong, 2); 
+                    
+                    // 2. REMOVE THE 1000x SNAP
+                    // We want every single integer to be possible for smooth transitions
+                    aN = Math.floor(1000 + (4999000) * easedProgress);
+                    
+                    ui.nNumber.value = aN;
+                    ui.nSlider.value = Math.log10(aN);
                 }
                 
+                // Pass virtualTime to help with color/rotation offsets
                 performRender(aN, userBase.c, virtualTime);
             }
             
@@ -426,6 +430,30 @@
         }
 
         // --- Interaction & UI Sync ---
+        const updateN = (val, fromSlider = false) => {
+            let v;
+            if (fromSlider) {
+                // Map log slider value (3 to 6.698) back to 1,000 to 5,000,000
+                v = Math.round(Math.pow(10, parseFloat(val)));
+            } else {
+                v = parseInt(val);
+            }
+
+            if (isNaN(v)) v = 1000;
+            if (v > 5000000) v = 5000000;
+            if (v < 1000) v = 1000;
+
+            userBase.n = v;
+            ui.nNumber.value = v;
+            // Keep slider in sync using log10
+            ui.nSlider.value = Math.log10(v).toFixed(5);
+
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+        };
+
+        ui.nSlider.oninput = (e) => updateN(e.target.value, true);
+        ui.nNumber.onchange = (e) => updateN(e.target.value, false);
+
         const updateC = (val) => {
             const v = parseFloat(val);
             userBase.c = v;
@@ -436,12 +464,6 @@
 
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
-
-        ui.n.oninput = (e) => {
-            userBase.n = parseInt(e.target.value);
-            ui.nLabel.textContent = userBase.n;
-            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
-        };
 
         ui.presetSelect.addEventListener('change', (e) => {
             const val = e.target.value;
@@ -467,12 +489,14 @@
         });
 
         const generateRandom = () => {
-            userBase.n = 10000 + Math.floor(Math.random() * 1490000);
+            userBase.n = 10000 + Math.floor(Math.random() * 4990000);
             userBase.c = Number((Math.random() * 0.5).toFixed(6));
             if(userBase.c < 0.000001) userBase.c = 0.024000;
 
-            ui.n.value = userBase.n; ui.nLabel.textContent = userBase.n;
-            ui.cSlider.value = userBase.c; ui.cNumber.value = userBase.c.toFixed(6);
+            ui.nSlider.value = Math.log10(userBase.n); 
+            ui.nNumber.value = userBase.n;
+            ui.cSlider.value = userBase.c; 
+            ui.cNumber.value = userBase.c.toFixed(6);
 
             const funcs = Object.keys(presets);
             const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
