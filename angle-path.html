@@ -98,7 +98,7 @@
             background: rgba(0,0,0,0.7); color: var(--accent); padding: 15px 30px;
             border-radius: 8px; font-weight: bold; pointer-events: none;
             display: none; border: 1px solid var(--accent); text-transform: uppercase;
-            z-index: 5; letter-spacing: 2px;
+            z-index: 5; letter-spacing: 2px; text-align: center;
         }
 
         #rec-indicator {
@@ -236,6 +236,7 @@
         <button id="reset-zoom-btn">🔍 Reset Zoom</button>
         <button id="random-btn" class="btn-rand" style="margin-top: 2px;">🎲 Rand</button>
         <button id="save-btn" class="btn-util" style="margin-top: 2px;">📸 Canvas</button>
+        <button id="save-svg-btn" class="btn-util" style="margin-top: 2px;">📄 SVG</button>
         <button id="rec-btn" class="btn-rec" style="margin-top: 2px;">⏺ Record</button>
         <button id="fs-btn" class="btn-util" style="margin-top: 2px;">⛶ Full</button>
     </header>
@@ -344,7 +345,9 @@
             saveConfigBtn: document.getElementById('save-config-btn'),
             exportConfigBtn: document.getElementById('export-config-btn'),
             importConfigBtn: document.getElementById('import-config-btn'),
-            importFile: document.getElementById('import-file')
+            importFile: document.getElementById('import-file'),
+
+            saveSvgBtn: document.getElementById('save-svg-btn')
         };
 
         const builtinConfigs = {
@@ -355,6 +358,7 @@
         };
         
         let savedConfigs = JSON.parse(localStorage.getItem('angle_path_configs') || '{}');
+        let currentRenderState = { N: 0, c: 0, time: 0, bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 } };
 
         function updateConfigDropdown() {
             ui.builtinConfigGroup.innerHTML = '';
@@ -557,6 +561,9 @@
             
             const geoBounds = calculatePath(N, c_val);
             let renderBounds = isZoomed ? zoomBounds : geoBounds;
+            
+            // Store the currently rendered properties for SVG export
+            currentRenderState = { N, c: c_val, time, bounds: renderBounds };
             
             ctx.fillStyle = isLightTheme ? '#ffffff' : '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -967,9 +974,92 @@
             link.click();
         };
 
+        const saveSVG = () => {
+            const wasPaused = isPaused;
+            isPaused = true;
+            ui.pauseOverlay.innerHTML = "Building SVG<br><span style='font-size: 10px; color: #fff;'>Please wait...</span>";
+            ui.pauseOverlay.style.display = 'block';
+
+            // Use a short timeout to let the browser paint the "Paused/Building" UI 
+            // before the synchronous SVG creation locks up the main thread momentarily
+            setTimeout(() => {
+                try {
+                    const { N, time, bounds } = currentRenderState;
+                    const style = ui.style.value;
+                    const isLightTheme = style === 'light' || style === 'light-glow';
+                    const bg = isLightTheme ? '#ffffff' : '#050505';
+                    
+                    // Add padding to bounds so lines aren't cut off on the edges
+                    const pad = Math.max(0.1, 80000 / N) * 5;
+                    const minX = bounds.minX - pad;
+                    const minY = bounds.minY - pad;
+                    const bbWidth = (bounds.maxX - bounds.minX) + pad * 2;
+                    const bbHeight = (bounds.maxY - bounds.minY) + pad * 2;
+                    
+                    // Base stroke width relative to the raw viewport mapping
+                    let baseLineWidth = Math.max(0.1, 80000 / N);
+
+                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${bbWidth} ${bbHeight}" style="background-color: ${bg};">\n`;
+
+                    const MAX_PATH_SIZE = 500000; 
+                    const numChunks = Math.ceil(N / MAX_PATH_SIZE);
+                    let pathStrings = [];
+
+                    for (let i = 0; i < numChunks; i++) {
+                        const start = i * MAX_PATH_SIZE;
+                        const end = Math.min((i + 1) * MAX_PATH_SIZE, N);
+
+                        let dArray = [`M ${points[start * 2]} ${points[start * 2 + 1]}`];
+                        for (let j = start + 1; j <= end; j++) {
+                            dArray.push(`L ${points[j * 2]} ${points[j * 2 + 1]}`);
+                        }
+                        const dStr = dArray.join(' ');
+
+                        if (style === 'rainbow') {
+                            const color = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
+                            pathStrings.push(`<path d="${dStr}" stroke="${color}" stroke-width="${baseLineWidth * 1.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'neon') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(0, 210, 255, 0.4)" stroke-width="${baseLineWidth}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.3}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'light-glow') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 0, 128, 0.3)" stroke-width="${baseLineWidth * 1.5}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(30, 30, 30, 0.9)" stroke-width="${baseLineWidth * 0.4}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'light') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(10, 10, 10, 0.9)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else {
+                            pathStrings.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        }
+                    }
+
+                    svg += pathStrings.join('\n') + '\n</svg>';
+
+                    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `anglepath-${Date.now()}.svg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+
+                } catch (e) {
+                    console.error("Failed to build SVG:", e);
+                    alert("Could not export SVG. The current step count may be too large to generate a vector path string.");
+                }
+
+                // Restore previous state
+                isPaused = wasPaused;
+                if (!isPaused) {
+                    ui.pauseOverlay.style.display = 'none';
+                } else {
+                    ui.pauseOverlay.textContent = "PAUSED";
+                }
+            }, 100); 
+        };
+
         ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
         document.getElementById('fs-btn').onclick = () => canvasContainer.requestFullscreen();
         document.getElementById('save-btn').onclick = saveImage;
+        ui.saveSvgBtn.onclick = saveSVG;
         document.getElementById('rec-btn').onclick = toggleRec;
         document.getElementById('random-btn').onclick = generateRandom;
         ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
