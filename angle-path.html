@@ -17,7 +17,7 @@
         header { 
             background: var(--panel); padding: 8px 12px; 
             border-bottom: 1px solid #333; 
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
             gap: 8px; z-index: 10;
         }
         
@@ -29,7 +29,18 @@
         .label-row { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; }
         .input-row { display: flex; align-items: center; gap: 8px; }
         .anim-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-        .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; }
+        .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; cursor: pointer; }
+
+        /* --- New Animation Settings UI --- */
+        .anim-settings { 
+            display: none; justify-content: space-between; gap: 4px; 
+            margin-top: 4px; border-top: 1px dashed #333; padding-top: 6px; 
+        }
+        .anim-settings label { 
+            font-size: 9px; color: #888; display: flex; align-items: center; 
+            gap: 4px; font-weight: bold; text-transform: uppercase; 
+        }
+        .anim-settings input.num-input { width: 55px; font-size: 10px; }
 
         /* --- Main Layout --- */
         main { 
@@ -129,10 +140,10 @@
         .btn-util:hover { background: #444; color: #fff; }
         .btn-sec { background: #333; color: #ccc; }
         .btn-sec:hover { background: #444; color: #fff; }
-        .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
+        .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; margin-top: 2px; }
         .btn-info:hover { color: #fff; border-color: #fff; }
         .btn-icon { padding: 0 8px; font-size: 14px; }
-        #reset-zoom-btn { background: #f39c12; color: #fff; display: none; }
+        #reset-zoom-btn { background: #f39c12; color: #fff; display: none; margin-top: 2px; }
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { accent-color: var(--accent); cursor: pointer; }
@@ -168,8 +179,11 @@
             </div>
             <div class="input-row">
                 <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" style="width: 130px;">
-                
-                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="n-anim"></div>
+                <div class="anim-unit"><label for="n-anim">ANIM</label><input type="checkbox" id="n-anim"></div>
+            </div>
+            <div id="n-anim-settings" class="anim-settings">
+                <label>Min <input type="number" id="n-anim-min" class="num-input" value="1000" min="1"></label>
+                <label>Max <input type="number" id="n-anim-max" class="num-input" value="5000000" max="5000000"></label>
             </div>
         </div>
 
@@ -180,7 +194,11 @@
             </div>
             <div class="input-row">
                 <input type="range" id="c-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000" style="width: 130px;">
-                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="c-anim"></div>
+                <div class="anim-unit"><label for="c-anim">ANIM</label><input type="checkbox" id="c-anim"></div>
+            </div>
+            <div id="c-anim-settings" class="anim-settings">
+                <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.000000" step="0.000001"></label>
+                <label>Max <input type="number" id="c-anim-max" class="num-input" value="2.000000" step="0.000001"></label>
             </div>
         </div>
 
@@ -216,10 +234,10 @@
         <input type="file" id="import-file" style="display:none" accept=".json">
 
         <button id="reset-zoom-btn">🔍 Reset Zoom</button>
-        <button id="random-btn" class="btn-rand">🎲 Rand</button>
-        <button id="save-btn" class="btn-util">📸 Canvas</button>
-        <button id="rec-btn" class="btn-rec">⏺ Record</button>
-        <button id="fs-btn" class="btn-util">⛶ Full</button>
+        <button id="random-btn" class="btn-rand" style="margin-top: 2px;">🎲 Rand</button>
+        <button id="save-btn" class="btn-util" style="margin-top: 2px;">📸 Canvas</button>
+        <button id="rec-btn" class="btn-rec" style="margin-top: 2px;">⏺ Record</button>
+        <button id="fs-btn" class="btn-util" style="margin-top: 2px;">⛶ Full</button>
     </header>
 
     <main>
@@ -291,9 +309,17 @@
             nSlider: document.getElementById('n-input'),
             nNumber: document.getElementById('n-number'), 
             nAnim: document.getElementById('n-anim'),
+            nAnimSettings: document.getElementById('n-anim-settings'),
+            nAnimMin: document.getElementById('n-anim-min'),
+            nAnimMax: document.getElementById('n-anim-max'),
+
             cSlider: document.getElementById('c-input'),
             cNumber: document.getElementById('c-number'), 
             cAnim: document.getElementById('c-anim'),
+            cAnimSettings: document.getElementById('c-anim-settings'),
+            cAnimMin: document.getElementById('c-anim-min'),
+            cAnimMax: document.getElementById('c-anim-max'),
+
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
             style: document.getElementById('style-select'), 
@@ -354,6 +380,10 @@
                 c: userBase.c,
                 nAnim: ui.nAnim.checked,
                 cAnim: ui.cAnim.checked,
+                nAnimMin: parseInt(ui.nAnimMin.value),
+                nAnimMax: parseInt(ui.nAnimMax.value),
+                cAnimMin: parseFloat(ui.cAnimMin.value),
+                cAnimMax: parseFloat(ui.cAnimMax.value),
                 speed: parseInt(ui.speed.value),
                 style: ui.style.value,
                 code: ui.editor.value
@@ -370,9 +400,17 @@
             updateN(config.n, false);
             updateC(config.c);
 
-            // Re-apply animations if specified
+            // Set Min/Max limits if they exist in config
+            if (config.nAnimMin !== undefined) ui.nAnimMin.value = config.nAnimMin;
+            if (config.nAnimMax !== undefined) ui.nAnimMax.value = config.nAnimMax;
+            if (config.cAnimMin !== undefined) ui.cAnimMin.value = config.cAnimMin;
+            if (config.cAnimMax !== undefined) ui.cAnimMax.value = config.cAnimMax;
+
+            // Re-apply animations if specified and trigger UI expand
             ui.nAnim.checked = !!config.nAnim;
             ui.cAnim.checked = !!config.cAnim;
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
 
             ui.speed.value = config.speed || 5;
             ui.spdLabel.textContent = ui.speed.value;
@@ -761,12 +799,18 @@
                 
                 if (ui.nAnim.checked) {
                     const easedProgress = Math.pow(pingPong, 2); 
-                    aN = Math.floor(1000 + (4999000) * easedProgress);
+                    const minN = parseInt(ui.nAnimMin.value) || 1;
+                    const maxN = parseInt(ui.nAnimMax.value) || 5000000;
+                    aN = Math.floor(minN + (maxN - minN) * easedProgress);
+                    
                     ui.nNumber.value = aN;
-                    ui.nSlider.value = Math.log10(aN);
+                    ui.nSlider.value = Math.log10(Math.max(1, aN)); // Keep it above 0 to prevent log issues
                 } 
                 else if (ui.cAnim.checked) {
-                    aC = 0 + (2.000000 * pingPong);
+                    const minC = parseFloat(ui.cAnimMin.value) || 0;
+                    const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
+                    aC = minC + ((maxC - minC) * pingPong);
+
                     ui.cSlider.value = aC.toFixed(6);
                     ui.cNumber.value = aC.toFixed(6);
                 }
@@ -815,18 +859,22 @@
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
 
-        // Mutual Exclusivity Logic
+        // Mutual Exclusivity and Dynamic Min/Max Logic
         ui.nAnim.addEventListener('change', () => {
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             if (ui.nAnim.checked) {
                 ui.cAnim.checked = false;
+                ui.cAnimSettings.style.display = 'none';
             } else {
                 userBase.n = parseInt(ui.nNumber.value);
             }
         });
 
         ui.cAnim.addEventListener('change', () => {
+            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
             if (ui.cAnim.checked) {
                 ui.nAnim.checked = false;
+                ui.nAnimSettings.style.display = 'none';
             } else {
                 userBase.c = parseFloat(ui.cSlider.value);
             }
@@ -869,6 +917,10 @@
             const animChoice = Math.floor(Math.random() * 3);
             ui.nAnim.checked = (animChoice === 1);
             ui.cAnim.checked = (animChoice === 2);
+
+            // Trigger the UI displays for the animated panels
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
 
             const funcs = Object.keys(presets);
             const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
