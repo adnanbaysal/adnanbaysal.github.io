@@ -184,10 +184,11 @@
         <div class="control-group">
             <div class="label-row"><span>Style</span></div>
             <select id="style-select" style="height: 24px;">
-                <option value="neon">Neon Glow</option>
-                <option value="sketch">Ink Sketch</option>
-                <option value="rainbow">Spectrum</option>
-                <option value="solid">Solid White</option>
+                <option value="neon">Neon Glow (Dark)</option>
+                <option value="rainbow">Spectrum (Dark)</option>
+                <option value="solid">Solid White (Dark)</option>
+                <option value="light">Solid Black (Light)</option>
+                <option value="light-glow">Neon Glow (Light)</option>
             </select>
         </div>
 
@@ -267,7 +268,7 @@
                 <div id="pause-overlay">Paused</div>
                 <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
             </div>
-            <div id="status" style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-family: monospace; z-index: 2; pointer-events: none;">LIVE MODE | CLICK CANVAS TO PAUSE</div>
+            <div id="status" style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-family: monospace; z-index: 2; pointer-events: none; mix-blend-mode: difference;">LIVE MODE | CLICK CANVAS TO PAUSE</div>
         </div>
     </main>
 
@@ -299,7 +300,6 @@
             savePresetBtn: document.getElementById('save-preset-btn'), 
             errorMsg: document.getElementById('code-error'),
 
-            // New Config UI elements
             configSelect: document.getElementById('config-select'),
             builtinConfigGroup: document.getElementById('builtin-configs-group'),
             savedConfigGroup: document.getElementById('saved-configs-group'),
@@ -309,15 +309,13 @@
             importFile: document.getElementById('import-file')
         };
 
-        // --- NEW: Configuration Management ---
         const builtinConfigs = {
             "Default Neon": { n: 90000, c: 0.024, speed: 5, style: "neon", nAnim: false, cAnim: false, code: "return n * n;" },
-            "Dense Core": { n: 250000, c: 0.150000, speed: 6, style: "sketch", nAnim: false, cAnim: false, code: "return n * Math.log(n);" },
+            "Light Glow Core": { n: 250000, c: 0.150000, speed: 6, style: "light-glow", nAnim: false, cAnim: false, code: "return n * Math.log(n);" },
             "Rainbow Web": { n: 120000, c: 89.500000, speed: 4, style: "rainbow", nAnim: false, cAnim: false, code: "return n;" },
-            "Sine Petals": { n: 50000, c: 1.000000, speed: 5, style: "solid", nAnim: false, cAnim: false, code: "return n * Math.sin(n);" }
+            "Sine Petals (Light)": { n: 50000, c: 1.000000, speed: 5, style: "light", nAnim: false, cAnim: false, code: "return n * Math.sin(n);" }
         };
         
-        // Scope to specific page using 'angle_path_configs'
         let savedConfigs = JSON.parse(localStorage.getItem('angle_path_configs') || '{}');
 
         function updateConfigDropdown() {
@@ -418,13 +416,13 @@
                 try {
                     const cfg = JSON.parse(ev.target.result);
                     loadConfig(cfg);
-                    ui.configSelect.value = ""; // Reset dropdown view
+                    ui.configSelect.value = ""; 
                 } catch (err) {
                     alert("Invalid JSON configuration file.");
                 }
             };
             reader.readAsText(file);
-            ui.importFile.value = ''; // Reset input
+            ui.importFile.value = ''; 
         });
         // --- END Configuration Management ---
 
@@ -517,9 +515,10 @@
 
         function performRender(N, c_val, time) {
             const style = ui.style.value;
+            const isLightTheme = style === 'light' || style === 'light-glow';
             const bounds = calculatePath(N, c_val);
             
-            ctx.fillStyle = '#050505';
+            ctx.fillStyle = isLightTheme ? '#ffffff' : '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             const bbWidth = bounds.maxX - bounds.minX;
@@ -533,7 +532,10 @@
             ctx.scale(scale, scale);
             ctx.translate(-bbCenterX, -bbCenterY);
 
-            ctx.globalCompositeOperation = style === 'neon' ? 'lighter' : 'source-over';
+            if (style === 'neon') ctx.globalCompositeOperation = 'lighter';
+            else if (style === 'light-glow') ctx.globalCompositeOperation = 'multiply';
+            else ctx.globalCompositeOperation = 'source-over';
+            
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             
@@ -564,9 +566,16 @@
                     ctx.lineWidth = baseLineWidth * 0.3;
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
                     ctx.stroke();
-                } else if (style === 'sketch') {
-                    ctx.lineWidth = baseLineWidth * 0.8;
-                    ctx.strokeStyle = `rgba(255, 255, 255, 0.25)`;
+                } else if (style === 'light-glow') {
+                    ctx.lineWidth = baseLineWidth * 1.5;
+                    ctx.strokeStyle = `rgba(255, 0, 128, 0.3)`; /* Magenta Glow */
+                    ctx.stroke();
+                    ctx.lineWidth = baseLineWidth * 0.4;
+                    ctx.strokeStyle = `rgba(30, 30, 30, 0.9)`; /* Dark Core */
+                    ctx.stroke();
+                } else if (style === 'light') {
+                    ctx.lineWidth = baseLineWidth * 0.5;
+                    ctx.strokeStyle = `rgba(10, 10, 10, 0.9)`;
                     ctx.stroke();
                 } else {
                     ctx.lineWidth = baseLineWidth * 0.5;
@@ -690,7 +699,7 @@
             ui.presetSelect.value = randFunc;
             ui.editor.value = presets[randFunc];
             
-            const styles = ['neon', 'sketch', 'rainbow', 'solid'];
+            const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
