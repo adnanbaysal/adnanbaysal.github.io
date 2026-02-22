@@ -17,7 +17,7 @@
         header { 
             background: var(--panel); padding: 8px 12px; 
             border-bottom: 1px solid #333; 
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
             gap: 8px; z-index: 10;
         }
         
@@ -29,7 +29,18 @@
         .label-row { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; }
         .input-row { display: flex; align-items: center; gap: 8px; }
         .anim-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-        .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; }
+        .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; cursor: pointer; }
+
+        /* --- New Animation Settings UI --- */
+        .anim-settings { 
+            display: none; justify-content: space-between; gap: 4px; 
+            margin-top: 4px; border-top: 1px dashed #333; padding-top: 6px; 
+        }
+        .anim-settings label { 
+            font-size: 9px; color: #888; display: flex; align-items: center; 
+            gap: 4px; font-weight: bold; text-transform: uppercase; 
+        }
+        .anim-settings input.num-input { width: 55px; font-size: 10px; }
 
         /* --- Main Layout --- */
         main { 
@@ -39,13 +50,20 @@
         }
 
         .left-col { display: flex; flex-direction: column; width: 320px; gap: 10px; flex-shrink: 0; }
-        .right-col { flex-grow: 1; display: flex; flex-direction: column; position: relative; border-radius: 6px; overflow: hidden; }
+        .right-col { flex-grow: 1; display: flex; flex-direction: column; position: relative; border-radius: 6px; overflow: hidden; touch-action: none;}
 
         /* --- Canvas Area --- */
         #canvas-container { position: relative; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; }
         canvas { 
-            background: transparent; border-radius: 4px; cursor: pointer;
+            background: transparent; border-radius: 4px; cursor: crosshair;
             max-height: 100%; max-width: 100%; object-fit: contain;
+        }
+
+        /* --- Selection Box Overlay --- */
+        #selection-box {
+            position: absolute; border: 1px dashed var(--accent);
+            background: rgba(0, 210, 255, 0.15); pointer-events: none;
+            display: none; z-index: 10;
         }
 
         /* --- Code Editor --- */
@@ -80,7 +98,7 @@
             background: rgba(0,0,0,0.7); color: var(--accent); padding: 15px 30px;
             border-radius: 8px; font-weight: bold; pointer-events: none;
             display: none; border: 1px solid var(--accent); text-transform: uppercase;
-            z-index: 5; letter-spacing: 2px;
+            z-index: 5; letter-spacing: 2px; text-align: center;
         }
 
         #rec-indicator {
@@ -122,8 +140,10 @@
         .btn-util:hover { background: #444; color: #fff; }
         .btn-sec { background: #333; color: #ccc; }
         .btn-sec:hover { background: #444; color: #fff; }
-        .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
+        .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; margin-top: 2px; }
         .btn-info:hover { color: #fff; border-color: #fff; }
+        .btn-icon { padding: 0 8px; font-size: 14px; }
+        #reset-zoom-btn { background: #f39c12; color: #fff; display: none; margin-top: 2px; }
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { accent-color: var(--accent); cursor: pointer; }
@@ -134,6 +154,17 @@
         input[type="number"].num-input:focus { border-color: var(--accent); }
         select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; padding: 4px; border-radius: 4px; outline: none; cursor: pointer;}
         select:hover { border-color: #666; }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media (max-width: 900px) {
+            body { height: auto; overflow-y: auto; }
+            header { height: auto; padding: 10px; justify-content: center; gap: 15px; }
+            main { flex-direction: column; height: auto; overflow: visible; }
+            .left-col { width: 100%; order: 2; }
+            .right-col { width: 100%; order: 1; height: 55vh; min-height: 350px; }
+            #matrix-wrapper { margin: 0 auto; max-width: 300px; }
+            .editor-container { min-height: 300px; }
+        }
     </style>
 </head>
 <body>
@@ -144,23 +175,30 @@
         <div class="control-group">
             <div class="label-row">
                 <span>Steps (N)</span>
-                <input type="number" id="n-number" class="num-input" min="1000" max="5000000" step="1000" value="90000">
+                <input type="number" id="n-number" class="num-input" min="1" max="5000000" step="1000" value="90000">
             </div>
             <div class="input-row">
                 <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" style="width: 130px;">
-                
-                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="n-anim"></div>
+                <div class="anim-unit"><label for="n-anim">ANIM</label><input type="checkbox" id="n-anim"></div>
+            </div>
+            <div id="n-anim-settings" class="anim-settings">
+                <label>Min <input type="number" id="n-anim-min" class="num-input" value="1000" min="1"></label>
+                <label>Max <input type="number" id="n-anim-max" class="num-input" value="5000000" max="5000000"></label>
             </div>
         </div>
 
         <div class="control-group">
             <div class="label-row">
                 <span>C Multiplier</span>
-                <input type="number" id="c-number" class="num-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000">
+                <input type="number" id="c-number" class="num-input" min="0.001" max="2.000" step="0.001" value="0.024">
             </div>
             <div class="input-row">
-                <input type="range" id="c-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000" style="width: 130px;">
-                <div class="anim-unit"><label>ANIM</label><input type="checkbox" id="c-anim"></div>
+                <input type="range" id="c-input" min="0.001" max="2.000" step="0.001" value="0.024" style="width: 130px;">
+                <div class="anim-unit"><label for="c-anim">ANIM</label><input type="checkbox" id="c-anim"></div>
+            </div>
+            <div id="c-anim-settings" class="anim-settings">
+                <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.000" step="0.001"></label>
+                <label>Max <input type="number" id="c-anim-max" class="num-input" value="2.000" step="0.001"></label>
             </div>
         </div>
 
@@ -171,18 +209,36 @@
 
         <div class="control-group">
             <div class="label-row"><span>Style</span></div>
-            <select id="style-select">
-                <option value="neon">Neon Glow</option>
-                <option value="sketch">Ink Sketch</option>
-                <option value="rainbow">Spectrum</option>
-                <option value="solid">Solid White</option>
+            <select id="style-select" style="height: 24px;">
+                <option value="neon">Neon Glow (Dark)</option>
+                <option value="rainbow">Spectrum (Dark)</option>
+                <option value="solid">Solid White (Dark)</option>
+                <option value="light">Solid Black (Light)</option>
+                <option value="light-glow">Neon Glow (Light)</option>
             </select>
         </div>
 
-        <button id="random-btn" class="btn-rand">🎲 Rand</button>
-        <button id="save-btn" class="btn-util">📸 Save</button>
-        <button id="rec-btn" class="btn-rec">⏺ Record</button>
-        <button id="fs-btn" class="btn-util">⛶ Full</button>
+        <div class="control-group">
+            <div class="label-row"><span>Configuration</span></div>
+            <div class="input-row">
+                <select id="config-select" style="width: 90px; height: 24px;">
+                    <option value="">Load...</option>
+                    <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
+                    <optgroup label="Saved" id="saved-configs-group"></optgroup>
+                </select>
+                <button id="save-config-btn" class="btn-sec btn-icon" title="Save Config">💾</button>
+                <button id="export-config-btn" class="btn-sec btn-icon" title="Export to File">📤</button>
+                <button id="import-config-btn" class="btn-sec btn-icon" title="Import from File">📥</button>
+            </div>
+        </div>
+        <input type="file" id="import-file" style="display:none" accept=".json">
+
+        <button id="reset-zoom-btn">🔍 Reset Zoom</button>
+        <button id="random-btn" class="btn-rand" style="margin-top: 2px;">🎲 Rand</button>
+        <button id="save-btn" class="btn-util" style="margin-top: 2px;">📸 Canvas</button>
+        <button id="save-svg-btn" class="btn-util" style="margin-top: 2px;">📄 SVG</button>
+        <button id="rec-btn" class="btn-rec" style="margin-top: 2px;">⏺ Record</button>
+        <button id="fs-btn" class="btn-util" style="margin-top: 2px;">⛶ Full</button>
     </header>
 
     <main>
@@ -205,8 +261,8 @@
                 <textarea id="code-area" spellcheck="false">return n * n;</textarea>
 
                 <div class="editor-actions">
-                    <button id="save-preset-btn" class="btn-sec">💾 Save</button>
-                    <button id="run-btn" class="btn-run">▶ Update</button>
+                    <button id="save-preset-btn" class="btn-sec">💾 Save Func</button>
+                    <button id="run-btn" class="btn-run">▶ Update Canvas</button>
                 </div>
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
             </div>
@@ -236,24 +292,35 @@
 
             <div id="canvas-container">
                 <canvas id="mainCanvas" width="1600" height="1600"></canvas>
+                <div id="selection-box"></div>
                 <div id="pause-overlay">Paused</div>
                 <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
             </div>
-            <div id="status" style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-family: monospace; z-index: 2; pointer-events: none;">LIVE MODE | CLICK CANVAS TO PAUSE</div>
+            <div id="status" style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-family: monospace; z-index: 2; pointer-events: none; mix-blend-mode: difference;">CLICK/DRAG TO ZOOM | RIGHT-CLICK OUT | QUICK CLICK PAUSE</div>
         </div>
     </main>
 
     <script>
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d', { alpha: false });
+        const canvasContainer = document.getElementById('canvas-container');
+        const selectionBox = document.getElementById('selection-box');
         
         const ui = {
             nSlider: document.getElementById('n-input'),
             nNumber: document.getElementById('n-number'), 
             nAnim: document.getElementById('n-anim'),
+            nAnimSettings: document.getElementById('n-anim-settings'),
+            nAnimMin: document.getElementById('n-anim-min'),
+            nAnimMax: document.getElementById('n-anim-max'),
+
             cSlider: document.getElementById('c-input'),
             cNumber: document.getElementById('c-number'), 
             cAnim: document.getElementById('c-anim'),
+            cAnimSettings: document.getElementById('c-anim-settings'),
+            cAnimMin: document.getElementById('c-anim-min'),
+            cAnimMax: document.getElementById('c-anim-max'),
+
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
             style: document.getElementById('style-select'), 
@@ -263,33 +330,164 @@
             recTimer: document.getElementById('rec-timer'),
             infoBtn: document.getElementById('info-btn'), 
             infoModal: document.getElementById('info-modal'),
+            resetZoomBtn: document.getElementById('reset-zoom-btn'),
             
             editor: document.getElementById('code-area'), 
             presetSelect: document.getElementById('preset-select'),
             userGroup: document.getElementById('user-presets-group'), 
             runBtn: document.getElementById('run-btn'),
             savePresetBtn: document.getElementById('save-preset-btn'), 
-            errorMsg: document.getElementById('code-error')
+            errorMsg: document.getElementById('code-error'),
+
+            configSelect: document.getElementById('config-select'),
+            builtinConfigGroup: document.getElementById('builtin-configs-group'),
+            savedConfigGroup: document.getElementById('saved-configs-group'),
+            saveConfigBtn: document.getElementById('save-config-btn'),
+            exportConfigBtn: document.getElementById('export-config-btn'),
+            importConfigBtn: document.getElementById('import-config-btn'),
+            importFile: document.getElementById('import-file'),
+
+            saveSvgBtn: document.getElementById('save-svg-btn')
         };
 
-        // Mutual Exclusivity Logic
-        ui.nAnim.addEventListener('change', () => {
-            if (ui.nAnim.checked) {
-                ui.cAnim.checked = false;
-            } else {
-                // When unchecking, ensure userBase.n reflects the last animated value
-                userBase.n = parseInt(ui.nNumber.value);
+        const builtinConfigs = {
+            "Default Neon": { n: 90000, c: 0.024, speed: 5, style: "neon", nAnim: false, cAnim: false, code: "return n * n;" },
+            "Light Glow Core": { n: 250000, c: 0.150000, speed: 6, style: "light-glow", nAnim: false, cAnim: false, code: "return n * Math.log(n);" },
+            "Rainbow Web": { n: 120000, c: 89.500000, speed: 4, style: "rainbow", nAnim: false, cAnim: false, code: "return n;" },
+            "Sine Petals (Light)": { n: 50000, c: 1.000000, speed: 5, style: "light", nAnim: false, cAnim: false, code: "return n * Math.sin(n);" }
+        };
+        
+        let savedConfigs = JSON.parse(localStorage.getItem('angle_path_configs') || '{}');
+        let currentRenderState = { N: 0, c: 0, time: 0, bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 } };
+
+        function updateConfigDropdown() {
+            ui.builtinConfigGroup.innerHTML = '';
+            Object.keys(builtinConfigs).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = `builtin:${name}`;
+                opt.textContent = name;
+                ui.builtinConfigGroup.appendChild(opt);
+            });
+
+            ui.savedConfigGroup.innerHTML = '';
+            Object.keys(savedConfigs).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = `saved:${name}`;
+                opt.textContent = name;
+                ui.savedConfigGroup.appendChild(opt);
+            });
+        }
+
+        function getCurrentConfig() {
+            return {
+                n: userBase.n,
+                c: userBase.c,
+                nAnim: ui.nAnim.checked,
+                cAnim: ui.cAnim.checked,
+                nAnimMin: parseInt(ui.nAnimMin.value),
+                nAnimMax: parseInt(ui.nAnimMax.value),
+                cAnimMin: parseFloat(ui.cAnimMin.value),
+                cAnimMax: parseFloat(ui.cAnimMax.value),
+                speed: parseInt(ui.speed.value),
+                style: ui.style.value,
+                code: ui.editor.value
+            };
+        }
+
+        function loadConfig(config) {
+            if (!config) return;
+            
+            // Uncheck animations to safely set values
+            ui.nAnim.checked = false;
+            ui.cAnim.checked = false;
+
+            if (config.code) {
+                ui.editor.value = config.code;
+            }
+            
+            // Determine and enforce precision for loaded code before updating C values
+            updateCPrecision();
+
+            updateN(config.n, false);
+            updateC(config.c);
+
+            // Set Min/Max limits if they exist in config
+            if (config.nAnimMin !== undefined) ui.nAnimMin.value = config.nAnimMin;
+            if (config.nAnimMax !== undefined) ui.nAnimMax.value = config.nAnimMax;
+            if (config.cAnimMin !== undefined) ui.cAnimMin.value = parseFloat(config.cAnimMin).toFixed(cPrecision);
+            if (config.cAnimMax !== undefined) ui.cAnimMax.value = parseFloat(config.cAnimMax).toFixed(cPrecision);
+
+            // Re-apply animations if specified and trigger UI expand
+            ui.nAnim.checked = !!config.nAnim;
+            ui.cAnim.checked = !!config.cAnim;
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
+
+            ui.speed.value = config.speed || 5;
+            ui.spdLabel.textContent = ui.speed.value;
+            ui.style.value = config.style || 'neon';
+
+            compileFunction();
+            resetZoom(); 
+        }
+
+        // Config Event Listeners
+        ui.configSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (!val) return;
+            let cfg = null;
+            if (val.startsWith('builtin:')) {
+                cfg = builtinConfigs[val.split(':')[1]];
+            } else if (val.startsWith('saved:')) {
+                cfg = savedConfigs[val.split(':')[1]];
+            }
+            if (cfg) loadConfig(cfg);
+        });
+
+        ui.saveConfigBtn.addEventListener('click', () => {
+            const name = prompt("Enter a name to save this full configuration:");
+            if (name) {
+                savedConfigs[name] = getCurrentConfig();
+                localStorage.setItem('angle_path_configs', JSON.stringify(savedConfigs));
+                updateConfigDropdown();
+                ui.configSelect.value = `saved:${name}`;
             }
         });
 
-        ui.cAnim.addEventListener('change', () => {
-            if (ui.cAnim.checked) {
-                ui.nAnim.checked = false;
-            } else {
-                // When unchecking, ensure userBase.c reflects the last animated value
-                userBase.c = parseFloat(ui.cSlider.value);
-            }
+        ui.exportConfigBtn.addEventListener('click', () => {
+            const cfg = getCurrentConfig();
+            const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `anglepath-config-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
         });
+
+        ui.importConfigBtn.addEventListener('click', () => ui.importFile.click());
+
+        ui.importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const cfg = JSON.parse(ev.target.result);
+                    loadConfig(cfg);
+                    ui.configSelect.value = ""; 
+                } catch (err) {
+                    alert("Invalid JSON configuration file.");
+                }
+            };
+            reader.readAsText(file);
+            ui.importFile.value = ''; 
+        });
+
+        // --- ZOOM STATE ---
+        let isZoomed = false;
+        let zoomBounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+        let activeTransform = { scale: 1, cx: 0, cy: 0 }; 
 
         const presets = {
             'n2': 'return n * n;',
@@ -305,14 +503,14 @@
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { n: 90000, c: 0.024000 };
+        let userBase = { n: 90000, c: 0.024 };
+        let cPrecision = 3; // Core dynamic precision state tracking
+        
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
-        // Up to 5 million steps * 2 (x,y points)
         let points = new Float32Array((5000000 + 1) * 2);
 
-        // --- Editor & Function Logic ---
         function updatePresetDropdown() {
             ui.userGroup.innerHTML = '';
             Object.keys(userPresets).forEach(name => {
@@ -323,14 +521,51 @@
             });
         }
 
+        function updateCPrecision() {
+            const code = ui.editor.value.trim();
+            // Check exactly matching 3-digit functions
+            const isStandard3Digit = (
+                code === presets['n2'] || 
+                code === presets['n'] || 
+                code === presets['n3'] || 
+                code === presets['nlog'] || 
+                code === presets['sqrt']
+            );
+            
+            cPrecision = isStandard3Digit ? 3 : 6;
+
+            const step = cPrecision === 6 ? "0.000001" : "0.001";
+            const minVal = cPrecision === 6 ? "0.000001" : "0.001";
+
+            ui.cSlider.step = step;
+            ui.cSlider.min = minVal;
+            ui.cNumber.step = step;
+            ui.cNumber.min = minVal;
+            ui.cAnimMin.step = step;
+            ui.cAnimMax.step = step;
+
+            // Enforce limits with new precision layout
+            let currentC = parseFloat(userBase.c);
+            if (currentC < parseFloat(minVal)) currentC = parseFloat(minVal);
+            
+            userBase.c = currentC;
+            ui.cSlider.value = currentC.toFixed(cPrecision);
+            ui.cNumber.value = currentC.toFixed(cPrecision);
+            
+            ui.cAnimMin.value = parseFloat(ui.cAnimMin.value || 0).toFixed(cPrecision);
+            ui.cAnimMax.value = parseFloat(ui.cAnimMax.value || 2).toFixed(cPrecision);
+        }
+
         function compileFunction() {
             try {
                 const code = ui.editor.value;
                 const testFunc = new Function('n', code);
-                testFunc(1); // Test execution
+                testFunc(1); 
                 activeFunc = testFunc;
                 
                 ui.errorMsg.style.display = 'none';
+                
+                updateCPrecision();
                 
                 if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
             } catch (err) {
@@ -339,7 +574,6 @@
             }
         }
 
-        // --- Core Algorithm ---
         function calculatePath(N, c_val) {
             let x = 0, y = 0, angle = 0;
             const c = c_val * (Math.PI / 180); 
@@ -364,33 +598,43 @@
             return { minX, maxX, minY, maxY };
         }
 
-        // --- Drawing Routine ---
         function performRender(N, c_val, time) {
             const style = ui.style.value;
-            const bounds = calculatePath(N, c_val);
+            const isLightTheme = style === 'light' || style === 'light-glow';
             
-            ctx.fillStyle = '#050505';
+            const geoBounds = calculatePath(N, c_val);
+            let renderBounds = isZoomed ? zoomBounds : geoBounds;
+            
+            // Store the currently rendered properties for SVG export
+            currentRenderState = { N, c: c_val, time, bounds: renderBounds };
+            
+            ctx.fillStyle = isLightTheme ? '#ffffff' : '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            const bbWidth = bounds.maxX - bounds.minX;
-            const bbHeight = bounds.maxY - bounds.minY;
+            const bbWidth = renderBounds.maxX - renderBounds.minX;
+            const bbHeight = renderBounds.maxY - renderBounds.minY;
+            
             const scale = Math.min(canvas.width / (bbWidth || 1), canvas.height / (bbHeight || 1)) * 0.90;
-            const bbCenterX = (bounds.maxX + bounds.minX) / 2;
-            const bbCenterY = (bounds.maxY + bounds.minY) / 2;
+            const bbCenterX = (renderBounds.maxX + renderBounds.minX) / 2;
+            const bbCenterY = (renderBounds.maxY + renderBounds.minY) / 2;
+
+            activeTransform = { scale, cx: bbCenterX, cy: bbCenterY };
 
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.scale(scale, scale);
             ctx.translate(-bbCenterX, -bbCenterY);
 
-            ctx.globalCompositeOperation = style === 'neon' ? 'lighter' : 'source-over';
+            if (style === 'neon') ctx.globalCompositeOperation = 'lighter';
+            else if (style === 'light-glow') ctx.globalCompositeOperation = 'multiply';
+            else ctx.globalCompositeOperation = 'source-over';
+            
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             
             let baseLineWidth = Math.max(0.1, 80000 / N) / scale;
+            if (isZoomed) baseLineWidth *= 1.5;
 
-            // --- CHUNKED RENDERING LOGIC ---
-            // We break the path into segments of 500k to avoid GPU buffer limits
             const MAX_PATH_SIZE = 500000; 
             const numChunks = Math.ceil(N / MAX_PATH_SIZE);
 
@@ -405,7 +649,6 @@
                     ctx.lineTo(points[j * 2], points[j * 2 + 1]);
                 }
 
-                // Apply style to this specific chunk
                 if (style === 'rainbow') {
                     ctx.lineWidth = baseLineWidth * 1.5;
                     ctx.strokeStyle = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
@@ -417,9 +660,16 @@
                     ctx.lineWidth = baseLineWidth * 0.3;
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
                     ctx.stroke();
-                } else if (style === 'sketch') {
-                    ctx.lineWidth = baseLineWidth * 0.8;
-                    ctx.strokeStyle = `rgba(255, 255, 255, 0.25)`;
+                } else if (style === 'light-glow') {
+                    ctx.lineWidth = baseLineWidth * 1.5;
+                    ctx.strokeStyle = `rgba(255, 0, 128, 0.3)`;
+                    ctx.stroke();
+                    ctx.lineWidth = baseLineWidth * 0.4;
+                    ctx.strokeStyle = `rgba(30, 30, 30, 0.9)`; 
+                    ctx.stroke();
+                } else if (style === 'light') {
+                    ctx.lineWidth = baseLineWidth * 0.5;
+                    ctx.strokeStyle = `rgba(10, 10, 10, 0.9)`;
                     ctx.stroke();
                 } else {
                     ctx.lineWidth = baseLineWidth * 0.5;
@@ -431,7 +681,159 @@
             ctx.restore();
         }
 
-        // --- Main Loop ---
+        // --- ZOOM & INPUT HANDLERS ---
+        function screenToLogical(screenX, screenY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const x = (screenX - rect.left) * scaleX;
+            const y = (screenY - rect.top) * scaleY;
+
+            const logicalX = (x - canvas.width / 2) / activeTransform.scale + activeTransform.cx;
+            const logicalY = (y - canvas.height / 2) / activeTransform.scale + activeTransform.cy;
+            return { x: logicalX, y: logicalY };
+        }
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let lastPinchDist = null;
+
+        canvasContainer.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0 && e.pointerType === 'mouse') return; 
+            const rect = canvasContainer.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            isDragging = true;
+            selectionBox.style.left = startX + 'px';
+            selectionBox.style.top = startY + 'px';
+            selectionBox.style.width = '0px';
+            selectionBox.style.height = '0px';
+            selectionBox.style.display = 'block';
+        });
+
+        canvasContainer.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const rect = canvasContainer.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+            
+            const minX = Math.min(startX, currentX);
+            const minY = Math.min(startY, currentY);
+            const width = Math.abs(currentX - startX);
+            const height = Math.abs(currentY - startY);
+
+            selectionBox.style.left = minX + 'px';
+            selectionBox.style.top = minY + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+        });
+
+        canvasContainer.addEventListener('pointerup', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            selectionBox.style.display = 'none';
+
+            const rect = canvasContainer.getBoundingClientRect();
+            const endX = e.clientX - rect.left;
+            const endY = e.clientY - rect.top;
+
+            const dist = Math.hypot(endX - startX, endY - startY);
+
+            if (dist < 10) {
+                isPaused = !isPaused;
+                ui.pauseOverlay.textContent = "PAUSED";
+                ui.pauseOverlay.style.display = isPaused ? 'block' : 'none';
+                return;
+            }
+
+            const point1 = screenToLogical(startX + rect.left, startY + rect.top);
+            const point2 = screenToLogical(endX + rect.left, endY + rect.top);
+
+            zoomBounds = {
+                minX: Math.min(point1.x, point2.x),
+                maxX: Math.max(point1.x, point2.x),
+                minY: Math.min(point1.y, point2.y),
+                maxY: Math.max(point1.y, point2.y)
+            };
+            isZoomed = true;
+            ui.resetZoomBtn.style.display = 'inline-block';
+        });
+
+        canvasContainer.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            resetZoom();
+        });
+
+        canvasContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (!isZoomed) {
+                zoomBounds = calculatePath(userBase.n, userBase.c);
+                isZoomed = true;
+                ui.resetZoomBtn.style.display = 'inline-block';
+            }
+
+            const pointerLogical = screenToLogical(e.clientX, e.clientY);
+            const zoomFactor = e.deltaY > 0 ? 1.2 : 0.8; 
+
+            zoomBounds.minX = pointerLogical.x - (pointerLogical.x - zoomBounds.minX) * zoomFactor;
+            zoomBounds.maxX = pointerLogical.x + (zoomBounds.maxX - pointerLogical.x) * zoomFactor;
+            zoomBounds.minY = pointerLogical.y - (pointerLogical.y - zoomBounds.minY) * zoomFactor;
+            zoomBounds.maxY = pointerLogical.y + (zoomBounds.maxY - pointerLogical.y) * zoomFactor;
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                isDragging = false; 
+                selectionBox.style.display = 'none';
+                lastPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const currentDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+
+                if (lastPinchDist) {
+                    if (!isZoomed) {
+                        zoomBounds = calculatePath(userBase.n, userBase.c);
+                        isZoomed = true;
+                        ui.resetZoomBtn.style.display = 'inline-block';
+                    }
+
+                    const zoomFactor = lastPinchDist / currentDist; 
+                    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                    const midLogical = screenToLogical(midX, midY);
+
+                    zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
+                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
+                    zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
+                    zoomBounds.maxY = midLogical.y + (zoomBounds.maxY - midLogical.y) * zoomFactor;
+                }
+                lastPinchDist = currentDist;
+            }
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) lastPinchDist = null;
+        });
+
+        function resetZoom() {
+            isZoomed = false;
+            ui.resetZoomBtn.style.display = 'none';
+        }
+        ui.resetZoomBtn.addEventListener('click', resetZoom);
+
+        // --- END ZOOM HANDLERS ---
+
         function liveLoop() {
             const now = performance.now();
             const delta = (now - lastRealTime) / 1000;
@@ -445,20 +847,22 @@
                 let aN = userBase.n;
                 let aC = userBase.c;
                 
-                // N Animation (Log-mapped for UI, Ease-in for movement)
                 if (ui.nAnim.checked) {
-                    // 1. USE POWER EASING (pingPong^2)
-                    // This slows down the animation at the low end (start/end of cycle)
                     const easedProgress = Math.pow(pingPong, 2); 
-                    aN = Math.floor(1000 + (4999000) * easedProgress);
+                    const minN = parseInt(ui.nAnimMin.value) || 1;
+                    const maxN = parseInt(ui.nAnimMax.value) || 5000000;
+                    aN = Math.floor(minN + (maxN - minN) * easedProgress);
+                    
                     ui.nNumber.value = aN;
-                    ui.nSlider.value = Math.log10(aN);
+                    ui.nSlider.value = Math.log10(Math.max(1, aN)); // Keep it above 0 to prevent log issues
                 } 
-                // C Animation (Linear)
                 else if (ui.cAnim.checked) {
-                    aC = 0 + (2.000000 * pingPong);
-                    ui.cSlider.value = aC.toFixed(6);
-                    ui.cNumber.value = aC.toFixed(6);
+                    const minC = parseFloat(ui.cAnimMin.value) || 0;
+                    const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
+                    aC = minC + ((maxC - minC) * pingPong);
+
+                    ui.cSlider.value = aC.toFixed(cPrecision);
+                    ui.cNumber.value = aC.toFixed(cPrecision);
                 }
                 
                 performRender(aN, aC, virtualTime);
@@ -468,11 +872,9 @@
             animationFrameId = requestAnimationFrame(liveLoop);
         }
 
-        // --- Interaction & UI Sync ---
         const updateN = (val, fromSlider = false) => {
             let v;
             if (fromSlider) {
-                // Map log slider value (3 to 6.698) back to 1,000 to 5,000,000
                 v = Math.round(Math.pow(10, parseFloat(val)));
             } else {
                 v = parseInt(val);
@@ -480,11 +882,9 @@
 
             if (isNaN(v)) v = 1000;
             if (v > 5000000) v = 5000000;
-            if (v < 1000) v = 1000;
 
             userBase.n = v;
             ui.nNumber.value = v;
-            // Keep slider in sync using log10
             ui.nSlider.value = Math.log10(v).toFixed(5);
 
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
@@ -494,10 +894,13 @@
         ui.nNumber.onchange = (e) => updateN(e.target.value, false);
 
         const updateC = (val) => {
-            const v = parseFloat(val);
+            let v = parseFloat(val);
+            const minVal = cPrecision === 6 ? 0.000001 : 0.001;
+            if (v < minVal) v = minVal; 
+            
             userBase.c = v;
-            ui.cSlider.value = v.toFixed(6);
-            ui.cNumber.value = v.toFixed(6);
+            ui.cSlider.value = v.toFixed(cPrecision);
+            ui.cNumber.value = v.toFixed(cPrecision);
             
             if (isPaused) 
             { 
@@ -508,6 +911,27 @@
 
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
+
+        // Mutual Exclusivity and Dynamic Min/Max Logic
+        ui.nAnim.addEventListener('change', () => {
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+            if (ui.nAnim.checked) {
+                ui.cAnim.checked = false;
+                ui.cAnimSettings.style.display = 'none';
+            } else {
+                userBase.n = parseInt(ui.nNumber.value);
+            }
+        });
+
+        ui.cAnim.addEventListener('change', () => {
+            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
+            if (ui.cAnim.checked) {
+                ui.nAnim.checked = false;
+                ui.nAnimSettings.style.display = 'none';
+            } else {
+                userBase.c = parseFloat(ui.cSlider.value);
+            }
+        });
 
         ui.presetSelect.addEventListener('change', (e) => {
             const val = e.target.value;
@@ -529,31 +953,39 @@
                 localStorage.setItem('angle_path_presets', JSON.stringify(userPresets));
                 updatePresetDropdown();
                 ui.presetSelect.value = `user:${name}`;
+                compileFunction();
             }
         });
 
         const generateRandom = () => {
-            let logN = 3.0000 + Math.random() * 3.69897; // min="3" max="6.69897"
-            userBase.n = Math.floor(Math.pow(10.0000, logN))
-            userBase.c = Number((Math.random() * 2.000000).toFixed(6));
-            if(userBase.c < 0.000001) userBase.c = 0.000001;
-
-            ui.nSlider.value = Math.log10(userBase.n); 
-            ui.nNumber.value = userBase.n;
-            ui.cSlider.value = userBase.c.toFixed(6); 
-            ui.cNumber.value = userBase.c.toFixed(6); 
-
-            // Randomly decide animation state: 0=None, 1=N, 2=C
-            const animChoice = Math.floor(Math.random() * 3);
-            ui.nAnim.checked = (animChoice === 1);
-            ui.cAnim.checked = (animChoice === 2);
-
             const funcs = Object.keys(presets);
             const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
             ui.presetSelect.value = randFunc;
             ui.editor.value = presets[randFunc];
             
-            const styles = ['neon', 'sketch', 'rainbow', 'solid'];
+            updateCPrecision(); 
+            
+            let logN = 3.0000 + Math.random() * 3.69897; 
+            userBase.n = Math.floor(Math.pow(10.0000, logN));
+            
+            const minC = cPrecision === 6 ? 0.000001 : 0.001;
+            let randC = Number((Math.random() * 2.0).toFixed(cPrecision));
+            if(randC < minC) randC = minC;
+            
+            updateC(randC); 
+
+            ui.nSlider.value = Math.log10(userBase.n); 
+            ui.nNumber.value = userBase.n;
+
+            const animChoice = Math.floor(Math.random() * 3);
+            ui.nAnim.checked = (animChoice === 1);
+            ui.cAnim.checked = (animChoice === 2);
+
+            // Trigger the UI displays for the animated panels
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
+            
+            const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
@@ -593,19 +1025,98 @@
             link.click();
         };
 
-        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
-        canvas.onclick = () => { 
-            isPaused = !isPaused; 
-            ui.pauseOverlay.textContent = "PAUSED"; 
-            ui.pauseOverlay.style.display = isPaused ? 'block' : 'none'; 
+        const saveSVG = () => {
+            const wasPaused = isPaused;
+            isPaused = true;
+            ui.pauseOverlay.innerHTML = "Building SVG<br><span style='font-size: 10px; color: #fff;'>Please wait...</span>";
+            ui.pauseOverlay.style.display = 'block';
+
+            // Use a short timeout to let the browser paint the "Paused/Building" UI 
+            // before the synchronous SVG creation locks up the main thread momentarily
+            setTimeout(() => {
+                try {
+                    const { N, time, bounds } = currentRenderState;
+                    const style = ui.style.value;
+                    const isLightTheme = style === 'light' || style === 'light-glow';
+                    const bg = isLightTheme ? '#ffffff' : '#050505';
+                    
+                    // Add padding to bounds so lines aren't cut off on the edges
+                    const pad = Math.max(0.1, 80000 / N) * 5;
+                    const minX = bounds.minX - pad;
+                    const minY = bounds.minY - pad;
+                    const bbWidth = (bounds.maxX - bounds.minX) + pad * 2;
+                    const bbHeight = (bounds.maxY - bounds.minY) + pad * 2;
+                    
+                    // Base stroke width relative to the raw viewport mapping
+                    let baseLineWidth = Math.max(0.1, 80000 / N);
+
+                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${bbWidth} ${bbHeight}" style="background-color: ${bg};">\n`;
+
+                    const MAX_PATH_SIZE = 500000; 
+                    const numChunks = Math.ceil(N / MAX_PATH_SIZE);
+                    let pathStrings = [];
+
+                    for (let i = 0; i < numChunks; i++) {
+                        const start = i * MAX_PATH_SIZE;
+                        const end = Math.min((i + 1) * MAX_PATH_SIZE, N);
+
+                        let dArray = [`M ${points[start * 2]} ${points[start * 2 + 1]}`];
+                        for (let j = start + 1; j <= end; j++) {
+                            dArray.push(`L ${points[j * 2]} ${points[j * 2 + 1]}`);
+                        }
+                        const dStr = dArray.join(' ');
+
+                        if (style === 'rainbow') {
+                            const color = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
+                            pathStrings.push(`<path d="${dStr}" stroke="${color}" stroke-width="${baseLineWidth * 1.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'neon') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(0, 210, 255, 0.4)" stroke-width="${baseLineWidth}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.3}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'light-glow') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 0, 128, 0.3)" stroke-width="${baseLineWidth * 1.5}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(30, 30, 30, 0.9)" stroke-width="${baseLineWidth * 0.4}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'light') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(10, 10, 10, 0.9)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else {
+                            pathStrings.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        }
+                    }
+
+                    svg += pathStrings.join('\n') + '\n</svg>';
+
+                    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `anglepath-${Date.now()}.svg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+
+                } catch (e) {
+                    console.error("Failed to build SVG:", e);
+                    alert("Could not export SVG. The current step count may be too large to generate a vector path string.");
+                }
+
+                // Restore previous state
+                isPaused = wasPaused;
+                if (!isPaused) {
+                    ui.pauseOverlay.style.display = 'none';
+                } else {
+                    ui.pauseOverlay.textContent = "PAUSED";
+                }
+            }, 100); 
         };
-        document.getElementById('fs-btn').onclick = () => canvas.requestFullscreen();
+
+        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
+        document.getElementById('fs-btn').onclick = () => canvasContainer.requestFullscreen();
         document.getElementById('save-btn').onclick = saveImage;
+        ui.saveSvgBtn.onclick = saveSVG;
         document.getElementById('rec-btn').onclick = toggleRec;
         document.getElementById('random-btn').onclick = generateRandom;
         ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
 
         // Init
+        updateConfigDropdown(); 
         updatePresetDropdown();
         compileFunction();
         liveLoop();
