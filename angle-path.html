@@ -39,13 +39,20 @@
         }
 
         .left-col { display: flex; flex-direction: column; width: 320px; gap: 10px; flex-shrink: 0; }
-        .right-col { flex-grow: 1; display: flex; flex-direction: column; position: relative; border-radius: 6px; overflow: hidden; }
+        .right-col { flex-grow: 1; display: flex; flex-direction: column; position: relative; border-radius: 6px; overflow: hidden; touch-action: none;}
 
         /* --- Canvas Area --- */
         #canvas-container { position: relative; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; }
         canvas { 
-            background: transparent; border-radius: 4px; cursor: pointer;
+            background: transparent; border-radius: 4px; cursor: crosshair;
             max-height: 100%; max-width: 100%; object-fit: contain;
+        }
+
+        /* --- Selection Box Overlay --- */
+        #selection-box {
+            position: absolute; border: 1px dashed var(--accent);
+            background: rgba(0, 210, 255, 0.15); pointer-events: none;
+            display: none; z-index: 10;
         }
 
         /* --- Code Editor --- */
@@ -125,6 +132,7 @@
         .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
         .btn-info:hover { color: #fff; border-color: #fff; }
         .btn-icon { padding: 0 8px; font-size: 14px; }
+        #reset-zoom-btn { background: #f39c12; color: #fff; display: none; }
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { accent-color: var(--accent); cursor: pointer; }
@@ -207,11 +215,11 @@
         </div>
         <input type="file" id="import-file" style="display:none" accept=".json">
 
+        <button id="reset-zoom-btn">🔍 Reset Zoom</button>
         <button id="random-btn" class="btn-rand">🎲 Rand</button>
         <button id="save-btn" class="btn-util">📸 Canvas</button>
         <button id="rec-btn" class="btn-rec">⏺ Record</button>
         <button id="fs-btn" class="btn-util">⛶ Full</button>
-        <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
     </header>
 
     <main>
@@ -265,16 +273,19 @@
 
             <div id="canvas-container">
                 <canvas id="mainCanvas" width="1600" height="1600"></canvas>
+                <div id="selection-box"></div>
                 <div id="pause-overlay">Paused</div>
                 <div id="rec-indicator"><div class="dot"></div><span id="rec-timer">00:00</span></div>
             </div>
-            <div id="status" style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-family: monospace; z-index: 2; pointer-events: none; mix-blend-mode: difference;">LIVE MODE | CLICK CANVAS TO PAUSE</div>
+            <div id="status" style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-family: monospace; z-index: 2; pointer-events: none; mix-blend-mode: difference;">CLICK/DRAG TO ZOOM | RIGHT-CLICK OUT | QUICK CLICK PAUSE</div>
         </div>
     </main>
 
     <script>
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d', { alpha: false });
+        const canvasContainer = document.getElementById('canvas-container');
+        const selectionBox = document.getElementById('selection-box');
         
         const ui = {
             nSlider: document.getElementById('n-input'),
@@ -292,6 +303,7 @@
             recTimer: document.getElementById('rec-timer'),
             infoBtn: document.getElementById('info-btn'), 
             infoModal: document.getElementById('info-modal'),
+            resetZoomBtn: document.getElementById('reset-zoom-btn'),
             
             editor: document.getElementById('code-area'), 
             presetSelect: document.getElementById('preset-select'),
@@ -370,6 +382,7 @@
                 ui.editor.value = config.code;
             }
             compileFunction();
+            resetZoom(); // Reset Zoom when a config changes so we can see it!
         }
 
         // Config Event Listeners
@@ -424,24 +437,11 @@
             reader.readAsText(file);
             ui.importFile.value = ''; 
         });
-        // --- END Configuration Management ---
 
-        // Mutual Exclusivity Logic
-        ui.nAnim.addEventListener('change', () => {
-            if (ui.nAnim.checked) {
-                ui.cAnim.checked = false;
-            } else {
-                userBase.n = parseInt(ui.nNumber.value);
-            }
-        });
-
-        ui.cAnim.addEventListener('change', () => {
-            if (ui.cAnim.checked) {
-                ui.nAnim.checked = false;
-            } else {
-                userBase.c = parseFloat(ui.cSlider.value);
-            }
-        });
+        // --- ZOOM STATE ---
+        let isZoomed = false;
+        let zoomBounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+        let activeTransform = { scale: 1, cx: 0, cy: 0 }; 
 
         const presets = {
             'n2': 'return n * n;',
@@ -516,16 +516,21 @@
         function performRender(N, c_val, time) {
             const style = ui.style.value;
             const isLightTheme = style === 'light' || style === 'light-glow';
-            const bounds = calculatePath(N, c_val);
+            
+            const geoBounds = calculatePath(N, c_val);
+            let renderBounds = isZoomed ? zoomBounds : geoBounds;
             
             ctx.fillStyle = isLightTheme ? '#ffffff' : '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            const bbWidth = bounds.maxX - bounds.minX;
-            const bbHeight = bounds.maxY - bounds.minY;
+            const bbWidth = renderBounds.maxX - renderBounds.minX;
+            const bbHeight = renderBounds.maxY - renderBounds.minY;
+            
             const scale = Math.min(canvas.width / (bbWidth || 1), canvas.height / (bbHeight || 1)) * 0.90;
-            const bbCenterX = (bounds.maxX + bounds.minX) / 2;
-            const bbCenterY = (bounds.maxY + bounds.minY) / 2;
+            const bbCenterX = (renderBounds.maxX + renderBounds.minX) / 2;
+            const bbCenterY = (renderBounds.maxY + renderBounds.minY) / 2;
+
+            activeTransform = { scale, cx: bbCenterX, cy: bbCenterY };
 
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -540,6 +545,7 @@
             ctx.lineCap = 'round';
             
             let baseLineWidth = Math.max(0.1, 80000 / N) / scale;
+            if (isZoomed) baseLineWidth *= 1.5;
 
             const MAX_PATH_SIZE = 500000; 
             const numChunks = Math.ceil(N / MAX_PATH_SIZE);
@@ -568,10 +574,10 @@
                     ctx.stroke();
                 } else if (style === 'light-glow') {
                     ctx.lineWidth = baseLineWidth * 1.5;
-                    ctx.strokeStyle = `rgba(255, 0, 128, 0.3)`; /* Magenta Glow */
+                    ctx.strokeStyle = `rgba(255, 0, 128, 0.3)`;
                     ctx.stroke();
                     ctx.lineWidth = baseLineWidth * 0.4;
-                    ctx.strokeStyle = `rgba(30, 30, 30, 0.9)`; /* Dark Core */
+                    ctx.strokeStyle = `rgba(30, 30, 30, 0.9)`; 
                     ctx.stroke();
                 } else if (style === 'light') {
                     ctx.lineWidth = baseLineWidth * 0.5;
@@ -586,6 +592,159 @@
             
             ctx.restore();
         }
+
+        // --- ZOOM & INPUT HANDLERS ---
+        function screenToLogical(screenX, screenY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const x = (screenX - rect.left) * scaleX;
+            const y = (screenY - rect.top) * scaleY;
+
+            const logicalX = (x - canvas.width / 2) / activeTransform.scale + activeTransform.cx;
+            const logicalY = (y - canvas.height / 2) / activeTransform.scale + activeTransform.cy;
+            return { x: logicalX, y: logicalY };
+        }
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let lastPinchDist = null;
+
+        canvasContainer.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0 && e.pointerType === 'mouse') return; 
+            const rect = canvasContainer.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            isDragging = true;
+            selectionBox.style.left = startX + 'px';
+            selectionBox.style.top = startY + 'px';
+            selectionBox.style.width = '0px';
+            selectionBox.style.height = '0px';
+            selectionBox.style.display = 'block';
+        });
+
+        canvasContainer.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const rect = canvasContainer.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+            
+            const minX = Math.min(startX, currentX);
+            const minY = Math.min(startY, currentY);
+            const width = Math.abs(currentX - startX);
+            const height = Math.abs(currentY - startY);
+
+            selectionBox.style.left = minX + 'px';
+            selectionBox.style.top = minY + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+        });
+
+        canvasContainer.addEventListener('pointerup', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            selectionBox.style.display = 'none';
+
+            const rect = canvasContainer.getBoundingClientRect();
+            const endX = e.clientX - rect.left;
+            const endY = e.clientY - rect.top;
+
+            const dist = Math.hypot(endX - startX, endY - startY);
+
+            if (dist < 10) {
+                isPaused = !isPaused;
+                ui.pauseOverlay.textContent = "PAUSED";
+                ui.pauseOverlay.style.display = isPaused ? 'block' : 'none';
+                return;
+            }
+
+            const point1 = screenToLogical(startX + rect.left, startY + rect.top);
+            const point2 = screenToLogical(endX + rect.left, endY + rect.top);
+
+            zoomBounds = {
+                minX: Math.min(point1.x, point2.x),
+                maxX: Math.max(point1.x, point2.x),
+                minY: Math.min(point1.y, point2.y),
+                maxY: Math.max(point1.y, point2.y)
+            };
+            isZoomed = true;
+            ui.resetZoomBtn.style.display = 'inline-block';
+        });
+
+        canvasContainer.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            resetZoom();
+        });
+
+        canvasContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (!isZoomed) {
+                zoomBounds = calculatePath(userBase.n, userBase.c);
+                isZoomed = true;
+                ui.resetZoomBtn.style.display = 'inline-block';
+            }
+
+            const pointerLogical = screenToLogical(e.clientX, e.clientY);
+            const zoomFactor = e.deltaY > 0 ? 1.2 : 0.8; 
+
+            zoomBounds.minX = pointerLogical.x - (pointerLogical.x - zoomBounds.minX) * zoomFactor;
+            zoomBounds.maxX = pointerLogical.x + (zoomBounds.maxX - pointerLogical.x) * zoomFactor;
+            zoomBounds.minY = pointerLogical.y - (pointerLogical.y - zoomBounds.minY) * zoomFactor;
+            zoomBounds.maxY = pointerLogical.y + (zoomBounds.maxY - pointerLogical.y) * zoomFactor;
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                isDragging = false; 
+                selectionBox.style.display = 'none';
+                lastPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const currentDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+
+                if (lastPinchDist) {
+                    if (!isZoomed) {
+                        zoomBounds = calculatePath(userBase.n, userBase.c);
+                        isZoomed = true;
+                        ui.resetZoomBtn.style.display = 'inline-block';
+                    }
+
+                    const zoomFactor = lastPinchDist / currentDist; 
+                    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                    const midLogical = screenToLogical(midX, midY);
+
+                    zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
+                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
+                    zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
+                    zoomBounds.maxY = midLogical.y + (zoomBounds.maxY - midLogical.y) * zoomFactor;
+                }
+                lastPinchDist = currentDist;
+            }
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) lastPinchDist = null;
+        });
+
+        function resetZoom() {
+            isZoomed = false;
+            ui.resetZoomBtn.style.display = 'none';
+        }
+        ui.resetZoomBtn.addEventListener('click', resetZoom);
+
+        // --- END ZOOM HANDLERS ---
 
         function liveLoop() {
             const now = performance.now();
@@ -655,6 +814,23 @@
 
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
+
+        // Mutual Exclusivity Logic
+        ui.nAnim.addEventListener('change', () => {
+            if (ui.nAnim.checked) {
+                ui.cAnim.checked = false;
+            } else {
+                userBase.n = parseInt(ui.nNumber.value);
+            }
+        });
+
+        ui.cAnim.addEventListener('change', () => {
+            if (ui.cAnim.checked) {
+                ui.nAnim.checked = false;
+            } else {
+                userBase.c = parseFloat(ui.cSlider.value);
+            }
+        });
 
         ui.presetSelect.addEventListener('change', (e) => {
             const val = e.target.value;
@@ -740,20 +916,15 @@
         };
 
         ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
-        canvas.onclick = () => { 
-            isPaused = !isPaused; 
-            ui.pauseOverlay.textContent = "PAUSED"; 
-            ui.pauseOverlay.style.display = isPaused ? 'block' : 'none'; 
-        };
-        document.getElementById('fs-btn').onclick = () => canvas.requestFullscreen();
+        document.getElementById('fs-btn').onclick = () => canvasContainer.requestFullscreen();
         document.getElementById('save-btn').onclick = saveImage;
         document.getElementById('rec-btn').onclick = toggleRec;
         document.getElementById('random-btn').onclick = generateRandom;
         ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
 
         // Init
+        updateConfigDropdown(); // Ensure the configuration dropdown gets populated
         updatePresetDropdown();
-        updateConfigDropdown();
         compileFunction();
         liveLoop();
     </script>
