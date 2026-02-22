@@ -124,6 +124,7 @@
         .btn-sec:hover { background: #444; color: #fff; }
         .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; }
         .btn-info:hover { color: #fff; border-color: #fff; }
+        .btn-icon { padding: 0 8px; font-size: 14px; }
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { accent-color: var(--accent); cursor: pointer; }
@@ -182,7 +183,7 @@
 
         <div class="control-group">
             <div class="label-row"><span>Style</span></div>
-            <select id="style-select">
+            <select id="style-select" style="height: 24px;">
                 <option value="neon">Neon Glow</option>
                 <option value="sketch">Ink Sketch</option>
                 <option value="rainbow">Spectrum</option>
@@ -190,8 +191,23 @@
             </select>
         </div>
 
+        <div class="control-group">
+            <div class="label-row"><span>Configuration</span></div>
+            <div class="input-row">
+                <select id="config-select" style="width: 90px; height: 24px;">
+                    <option value="">Load...</option>
+                    <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
+                    <optgroup label="Saved" id="saved-configs-group"></optgroup>
+                </select>
+                <button id="save-config-btn" class="btn-sec btn-icon" title="Save Config">💾</button>
+                <button id="export-config-btn" class="btn-sec btn-icon" title="Export to File">📤</button>
+                <button id="import-config-btn" class="btn-sec btn-icon" title="Import from File">📥</button>
+            </div>
+        </div>
+        <input type="file" id="import-file" style="display:none" accept=".json">
+
         <button id="random-btn" class="btn-rand">🎲 Rand</button>
-        <button id="save-btn" class="btn-util">📸 Save</button>
+        <button id="save-btn" class="btn-util">📸 Canvas</button>
         <button id="rec-btn" class="btn-rec">⏺ Record</button>
         <button id="fs-btn" class="btn-util">⛶ Full</button>
         <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
@@ -217,8 +233,8 @@
                 <textarea id="code-area" spellcheck="false">return n * n;</textarea>
 
                 <div class="editor-actions">
-                    <button id="save-preset-btn" class="btn-sec">💾 Save</button>
-                    <button id="run-btn" class="btn-run">▶ Update</button>
+                    <button id="save-preset-btn" class="btn-sec">💾 Save Func</button>
+                    <button id="run-btn" class="btn-run">▶ Update Canvas</button>
                 </div>
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
             </div>
@@ -281,15 +297,142 @@
             userGroup: document.getElementById('user-presets-group'), 
             runBtn: document.getElementById('run-btn'),
             savePresetBtn: document.getElementById('save-preset-btn'), 
-            errorMsg: document.getElementById('code-error')
+            errorMsg: document.getElementById('code-error'),
+
+            // New Config UI elements
+            configSelect: document.getElementById('config-select'),
+            builtinConfigGroup: document.getElementById('builtin-configs-group'),
+            savedConfigGroup: document.getElementById('saved-configs-group'),
+            saveConfigBtn: document.getElementById('save-config-btn'),
+            exportConfigBtn: document.getElementById('export-config-btn'),
+            importConfigBtn: document.getElementById('import-config-btn'),
+            importFile: document.getElementById('import-file')
         };
+
+        // --- NEW: Configuration Management ---
+        const builtinConfigs = {
+            "Default Neon": { n: 90000, c: 0.024, speed: 5, style: "neon", nAnim: false, cAnim: false, code: "return n * n;" },
+            "Dense Core": { n: 250000, c: 0.150000, speed: 6, style: "sketch", nAnim: false, cAnim: false, code: "return n * Math.log(n);" },
+            "Rainbow Web": { n: 120000, c: 89.500000, speed: 4, style: "rainbow", nAnim: false, cAnim: false, code: "return n;" },
+            "Sine Petals": { n: 50000, c: 1.000000, speed: 5, style: "solid", nAnim: false, cAnim: false, code: "return n * Math.sin(n);" }
+        };
+        
+        // Scope to specific page using 'angle_path_configs'
+        let savedConfigs = JSON.parse(localStorage.getItem('angle_path_configs') || '{}');
+
+        function updateConfigDropdown() {
+            ui.builtinConfigGroup.innerHTML = '';
+            Object.keys(builtinConfigs).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = `builtin:${name}`;
+                opt.textContent = name;
+                ui.builtinConfigGroup.appendChild(opt);
+            });
+
+            ui.savedConfigGroup.innerHTML = '';
+            Object.keys(savedConfigs).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = `saved:${name}`;
+                opt.textContent = name;
+                ui.savedConfigGroup.appendChild(opt);
+            });
+        }
+
+        function getCurrentConfig() {
+            return {
+                n: userBase.n,
+                c: userBase.c,
+                nAnim: ui.nAnim.checked,
+                cAnim: ui.cAnim.checked,
+                speed: parseInt(ui.speed.value),
+                style: ui.style.value,
+                code: ui.editor.value
+            };
+        }
+
+        function loadConfig(config) {
+            if (!config) return;
+            
+            // Uncheck animations to safely set values
+            ui.nAnim.checked = false;
+            ui.cAnim.checked = false;
+
+            updateN(config.n, false);
+            updateC(config.c);
+
+            // Re-apply animations if specified
+            ui.nAnim.checked = !!config.nAnim;
+            ui.cAnim.checked = !!config.cAnim;
+
+            ui.speed.value = config.speed || 5;
+            ui.spdLabel.textContent = ui.speed.value;
+            ui.style.value = config.style || 'neon';
+
+            if (config.code) {
+                ui.editor.value = config.code;
+            }
+            compileFunction();
+        }
+
+        // Config Event Listeners
+        ui.configSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (!val) return;
+            let cfg = null;
+            if (val.startsWith('builtin:')) {
+                cfg = builtinConfigs[val.split(':')[1]];
+            } else if (val.startsWith('saved:')) {
+                cfg = savedConfigs[val.split(':')[1]];
+            }
+            if (cfg) loadConfig(cfg);
+        });
+
+        ui.saveConfigBtn.addEventListener('click', () => {
+            const name = prompt("Enter a name to save this full configuration:");
+            if (name) {
+                savedConfigs[name] = getCurrentConfig();
+                localStorage.setItem('angle_path_configs', JSON.stringify(savedConfigs));
+                updateConfigDropdown();
+                ui.configSelect.value = `saved:${name}`;
+            }
+        });
+
+        ui.exportConfigBtn.addEventListener('click', () => {
+            const cfg = getCurrentConfig();
+            const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `anglepath-config-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        ui.importConfigBtn.addEventListener('click', () => ui.importFile.click());
+
+        ui.importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const cfg = JSON.parse(ev.target.result);
+                    loadConfig(cfg);
+                    ui.configSelect.value = ""; // Reset dropdown view
+                } catch (err) {
+                    alert("Invalid JSON configuration file.");
+                }
+            };
+            reader.readAsText(file);
+            ui.importFile.value = ''; // Reset input
+        });
+        // --- END Configuration Management ---
 
         // Mutual Exclusivity Logic
         ui.nAnim.addEventListener('change', () => {
             if (ui.nAnim.checked) {
                 ui.cAnim.checked = false;
             } else {
-                // When unchecking, ensure userBase.n reflects the last animated value
                 userBase.n = parseInt(ui.nNumber.value);
             }
         });
@@ -298,7 +441,6 @@
             if (ui.cAnim.checked) {
                 ui.nAnim.checked = false;
             } else {
-                // When unchecking, ensure userBase.c reflects the last animated value
                 userBase.c = parseFloat(ui.cSlider.value);
             }
         });
@@ -321,10 +463,8 @@
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
-        // Up to 5 million steps * 2 (x,y points)
         let points = new Float32Array((5000000 + 1) * 2);
 
-        // --- Editor & Function Logic ---
         function updatePresetDropdown() {
             ui.userGroup.innerHTML = '';
             Object.keys(userPresets).forEach(name => {
@@ -339,7 +479,7 @@
             try {
                 const code = ui.editor.value;
                 const testFunc = new Function('n', code);
-                testFunc(1); // Test execution
+                testFunc(1); 
                 activeFunc = testFunc;
                 
                 ui.errorMsg.style.display = 'none';
@@ -351,7 +491,6 @@
             }
         }
 
-        // --- Core Algorithm ---
         function calculatePath(N, c_val) {
             let x = 0, y = 0, angle = 0;
             const c = c_val * (Math.PI / 180); 
@@ -376,7 +515,6 @@
             return { minX, maxX, minY, maxY };
         }
 
-        // --- Drawing Routine ---
         function performRender(N, c_val, time) {
             const style = ui.style.value;
             const bounds = calculatePath(N, c_val);
@@ -401,8 +539,6 @@
             
             let baseLineWidth = Math.max(0.1, 80000 / N) / scale;
 
-            // --- CHUNKED RENDERING LOGIC ---
-            // We break the path into segments of 500k to avoid GPU buffer limits
             const MAX_PATH_SIZE = 500000; 
             const numChunks = Math.ceil(N / MAX_PATH_SIZE);
 
@@ -417,7 +553,6 @@
                     ctx.lineTo(points[j * 2], points[j * 2 + 1]);
                 }
 
-                // Apply style to this specific chunk
                 if (style === 'rainbow') {
                     ctx.lineWidth = baseLineWidth * 1.5;
                     ctx.strokeStyle = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
@@ -443,7 +578,6 @@
             ctx.restore();
         }
 
-        // --- Main Loop ---
         function liveLoop() {
             const now = performance.now();
             const delta = (now - lastRealTime) / 1000;
@@ -457,16 +591,12 @@
                 let aN = userBase.n;
                 let aC = userBase.c;
                 
-                // N Animation (Log-mapped for UI, Ease-in for movement)
                 if (ui.nAnim.checked) {
-                    // 1. USE POWER EASING (pingPong^2)
-                    // This slows down the animation at the low end (start/end of cycle)
                     const easedProgress = Math.pow(pingPong, 2); 
                     aN = Math.floor(1000 + (4999000) * easedProgress);
                     ui.nNumber.value = aN;
                     ui.nSlider.value = Math.log10(aN);
                 } 
-                // C Animation (Linear)
                 else if (ui.cAnim.checked) {
                     aC = 0 + (2.000000 * pingPong);
                     ui.cSlider.value = aC.toFixed(6);
@@ -480,11 +610,9 @@
             animationFrameId = requestAnimationFrame(liveLoop);
         }
 
-        // --- Interaction & UI Sync ---
         const updateN = (val, fromSlider = false) => {
             let v;
             if (fromSlider) {
-                // Map log slider value (3 to 6.698) back to 1,000 to 5,000,000
                 v = Math.round(Math.pow(10, parseFloat(val)));
             } else {
                 v = parseInt(val);
@@ -492,11 +620,9 @@
 
             if (isNaN(v)) v = 1000;
             if (v > 5000000) v = 5000000;
-            if (v < 1000) v = 1000;
 
             userBase.n = v;
             ui.nNumber.value = v;
-            // Keep slider in sync using log10
             ui.nSlider.value = Math.log10(v).toFixed(5);
 
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
@@ -545,7 +671,7 @@
         });
 
         const generateRandom = () => {
-            let logN = 3.0000 + Math.random() * 3.69897; // min="3" max="6.69897"
+            let logN = 3.0000 + Math.random() * 3.69897; 
             userBase.n = Math.floor(Math.pow(10.0000, logN))
             userBase.c = Number((Math.random() * 2.000000).toFixed(6));
             if(userBase.c < 0.000001) userBase.c = 0.000001;
@@ -555,7 +681,6 @@
             ui.cSlider.value = userBase.c.toFixed(6); 
             ui.cNumber.value = userBase.c.toFixed(6); 
 
-            // Randomly decide animation state: 0=None, 1=N, 2=C
             const animChoice = Math.floor(Math.random() * 3);
             ui.nAnim.checked = (animChoice === 1);
             ui.cAnim.checked = (animChoice === 2);
@@ -619,6 +744,7 @@
 
         // Init
         updatePresetDropdown();
+        updateConfigDropdown();
         compileFunction();
         liveLoop();
     </script>
