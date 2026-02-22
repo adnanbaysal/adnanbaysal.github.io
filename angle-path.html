@@ -190,15 +190,15 @@
         <div class="control-group">
             <div class="label-row">
                 <span>C Multiplier</span>
-                <input type="number" id="c-number" class="num-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000">
+                <input type="number" id="c-number" class="num-input" min="0.001" max="2.000" step="0.001" value="0.024">
             </div>
             <div class="input-row">
-                <input type="range" id="c-input" min="0.000001" max="2.000000" step="0.000001" value="0.024000" style="width: 130px;">
+                <input type="range" id="c-input" min="0.001" max="2.000" step="0.001" value="0.024" style="width: 130px;">
                 <div class="anim-unit"><label for="c-anim">ANIM</label><input type="checkbox" id="c-anim"></div>
             </div>
             <div id="c-anim-settings" class="anim-settings">
-                <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.000000" step="0.000001"></label>
-                <label>Max <input type="number" id="c-anim-max" class="num-input" value="2.000000" step="0.000001"></label>
+                <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.000" step="0.001"></label>
+                <label>Max <input type="number" id="c-anim-max" class="num-input" value="2.000" step="0.001"></label>
             </div>
         </div>
 
@@ -401,14 +401,21 @@
             ui.nAnim.checked = false;
             ui.cAnim.checked = false;
 
+            if (config.code) {
+                ui.editor.value = config.code;
+            }
+            
+            // Determine and enforce precision for loaded code before updating C values
+            updateCPrecision();
+
             updateN(config.n, false);
             updateC(config.c);
 
             // Set Min/Max limits if they exist in config
             if (config.nAnimMin !== undefined) ui.nAnimMin.value = config.nAnimMin;
             if (config.nAnimMax !== undefined) ui.nAnimMax.value = config.nAnimMax;
-            if (config.cAnimMin !== undefined) ui.cAnimMin.value = config.cAnimMin;
-            if (config.cAnimMax !== undefined) ui.cAnimMax.value = config.cAnimMax;
+            if (config.cAnimMin !== undefined) ui.cAnimMin.value = parseFloat(config.cAnimMin).toFixed(cPrecision);
+            if (config.cAnimMax !== undefined) ui.cAnimMax.value = parseFloat(config.cAnimMax).toFixed(cPrecision);
 
             // Re-apply animations if specified and trigger UI expand
             ui.nAnim.checked = !!config.nAnim;
@@ -420,11 +427,8 @@
             ui.spdLabel.textContent = ui.speed.value;
             ui.style.value = config.style || 'neon';
 
-            if (config.code) {
-                ui.editor.value = config.code;
-            }
             compileFunction();
-            resetZoom(); // Reset Zoom when a config changes so we can see it!
+            resetZoom(); 
         }
 
         // Config Event Listeners
@@ -499,7 +503,9 @@
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { n: 90000, c: 0.024000 };
+        let userBase = { n: 90000, c: 0.024 };
+        let cPrecision = 3; // Core dynamic precision state tracking
+        
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
@@ -515,6 +521,41 @@
             });
         }
 
+        function updateCPrecision() {
+            const code = ui.editor.value.trim();
+            // Check exactly matching 3-digit functions
+            const isStandard3Digit = (
+                code === presets['n2'] || 
+                code === presets['n'] || 
+                code === presets['n3'] || 
+                code === presets['nlog'] || 
+                code === presets['sqrt']
+            );
+            
+            cPrecision = isStandard3Digit ? 3 : 6;
+
+            const step = cPrecision === 6 ? "0.000001" : "0.001";
+            const minVal = cPrecision === 6 ? "0.000001" : "0.001";
+
+            ui.cSlider.step = step;
+            ui.cSlider.min = minVal;
+            ui.cNumber.step = step;
+            ui.cNumber.min = minVal;
+            ui.cAnimMin.step = step;
+            ui.cAnimMax.step = step;
+
+            // Enforce limits with new precision layout
+            let currentC = parseFloat(userBase.c);
+            if (currentC < parseFloat(minVal)) currentC = parseFloat(minVal);
+            
+            userBase.c = currentC;
+            ui.cSlider.value = currentC.toFixed(cPrecision);
+            ui.cNumber.value = currentC.toFixed(cPrecision);
+            
+            ui.cAnimMin.value = parseFloat(ui.cAnimMin.value || 0).toFixed(cPrecision);
+            ui.cAnimMax.value = parseFloat(ui.cAnimMax.value || 2).toFixed(cPrecision);
+        }
+
         function compileFunction() {
             try {
                 const code = ui.editor.value;
@@ -523,6 +564,8 @@
                 activeFunc = testFunc;
                 
                 ui.errorMsg.style.display = 'none';
+                
+                updateCPrecision();
                 
                 if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
             } catch (err) {
@@ -818,8 +861,8 @@
                     const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
                     aC = minC + ((maxC - minC) * pingPong);
 
-                    ui.cSlider.value = aC.toFixed(6);
-                    ui.cNumber.value = aC.toFixed(6);
+                    ui.cSlider.value = aC.toFixed(cPrecision);
+                    ui.cNumber.value = aC.toFixed(cPrecision);
                 }
                 
                 performRender(aN, aC, virtualTime);
@@ -851,10 +894,13 @@
         ui.nNumber.onchange = (e) => updateN(e.target.value, false);
 
         const updateC = (val) => {
-            const v = parseFloat(val);
+            let v = parseFloat(val);
+            const minVal = cPrecision === 6 ? 0.000001 : 0.001;
+            if (v < minVal) v = minVal; 
+            
             userBase.c = v;
-            ui.cSlider.value = v.toFixed(6);
-            ui.cNumber.value = v.toFixed(6);
+            ui.cSlider.value = v.toFixed(cPrecision);
+            ui.cNumber.value = v.toFixed(cPrecision);
             
             if (isPaused) 
             { 
@@ -907,19 +953,29 @@
                 localStorage.setItem('angle_path_presets', JSON.stringify(userPresets));
                 updatePresetDropdown();
                 ui.presetSelect.value = `user:${name}`;
+                compileFunction();
             }
         });
 
         const generateRandom = () => {
+            const funcs = Object.keys(presets);
+            const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
+            ui.presetSelect.value = randFunc;
+            ui.editor.value = presets[randFunc];
+            
+            updateCPrecision(); 
+            
             let logN = 3.0000 + Math.random() * 3.69897; 
-            userBase.n = Math.floor(Math.pow(10.0000, logN))
-            userBase.c = Number((Math.random() * 2.000000).toFixed(6));
-            if(userBase.c < 0.000001) userBase.c = 0.000001;
+            userBase.n = Math.floor(Math.pow(10.0000, logN));
+            
+            const minC = cPrecision === 6 ? 0.000001 : 0.001;
+            let randC = Number((Math.random() * 2.0).toFixed(cPrecision));
+            if(randC < minC) randC = minC;
+            
+            updateC(randC); 
 
             ui.nSlider.value = Math.log10(userBase.n); 
             ui.nNumber.value = userBase.n;
-            ui.cSlider.value = userBase.c.toFixed(6); 
-            ui.cNumber.value = userBase.c.toFixed(6); 
 
             const animChoice = Math.floor(Math.random() * 3);
             ui.nAnim.checked = (animChoice === 1);
@@ -928,11 +984,6 @@
             // Trigger the UI displays for the animated panels
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
-
-            const funcs = Object.keys(presets);
-            const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
-            ui.presetSelect.value = randFunc;
-            ui.editor.value = presets[randFunc];
             
             const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
@@ -1065,7 +1116,7 @@
         ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
 
         // Init
-        updateConfigDropdown(); // Ensure the configuration dropdown gets populated
+        updateConfigDropdown(); 
         updatePresetDropdown();
         compileFunction();
         liveLoop();
