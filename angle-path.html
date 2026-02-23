@@ -165,6 +165,25 @@
             #matrix-wrapper { margin: 0 auto; max-width: 300px; }
             .editor-container { min-height: 300px; }
         }
+
+        /* --- Mobile UI Toggle --- */
+        #ui-toggle-btn { display: none; }
+
+        @media (max-width: 900px) {
+            #ui-toggle-btn { 
+                display: block; position: fixed; top: 10px; left: 10px; 
+                z-index: 1000; background: rgba(17, 17, 17, 0.8); 
+                color: var(--accent); border: 1px solid var(--accent); 
+                border-radius: 4px; padding: 0 12px; height: 32px;
+                font-size: 10px; font-weight: bold; cursor: pointer;
+                text-transform: uppercase; backdrop-filter: blur(5px);
+            }
+            /* Collapse logic for mobile */
+            body.ui-collapsed header, body.ui-collapsed .left-col { display: none; }
+            body.ui-collapsed .right-col { height: 100vh; min-height: 100vh; border-radius: 0; }
+            body.ui-collapsed main { padding: 0; }
+            body.ui-collapsed { height: 100vh; overflow: hidden; }
+        }
     </style>
 </head>
 <body>
@@ -697,68 +716,71 @@
         }
 
         let isDragging = false;
+        let isPanning = false;
         let startX = 0, startY = 0;
+        let startZoomBounds = null;
         let lastPinchDist = null;
 
         canvasContainer.addEventListener('pointerdown', (e) => {
-            if (e.button !== 0 && e.pointerType === 'mouse') return; 
-            const rect = canvasContainer.getBoundingClientRect();
-            startX = e.clientX - rect.left;
-            startY = e.clientY - rect.top;
+            if (e.pointerType === 'mouse' && e.button !== 0) return; 
+            if (e.pointerType === 'touch' && lastPinchDist !== null) return; // Prevent pan if pinching
+
             isDragging = true;
-            selectionBox.style.left = startX + 'px';
-            selectionBox.style.top = startY + 'px';
-            selectionBox.style.width = '0px';
-            selectionBox.style.height = '0px';
-            selectionBox.style.display = 'block';
+            isPanning = false;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // Ensure selection box is hidden (legacy logic cleanup)
+            selectionBox.style.display = 'none';
         });
 
         canvasContainer.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
-            const rect = canvasContainer.getBoundingClientRect();
-            const currentX = e.clientX - rect.left;
-            const currentY = e.clientY - rect.top;
-            
-            const minX = Math.min(startX, currentX);
-            const minY = Math.min(startY, currentY);
-            const width = Math.abs(currentX - startX);
-            const height = Math.abs(currentY - startY);
+            if (e.pointerType === 'touch' && lastPinchDist !== null) return; // Don't pan during a pinch
 
-            selectionBox.style.left = minX + 'px';
-            selectionBox.style.top = minY + 'px';
-            selectionBox.style.width = width + 'px';
-            selectionBox.style.height = height + 'px';
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            const dist = Math.hypot(dx, dy);
+
+            // Initialize panning threshold
+            if (!isPanning && dist > 10) {
+                isPanning = true;
+                if (!isZoomed) {
+                    zoomBounds = calculatePath(userBase.n, userBase.c);
+                    isZoomed = true;
+                    ui.resetZoomBtn.style.display = 'inline-block';
+                }
+                startZoomBounds = { ...zoomBounds };
+            }
+
+            if (isPanning) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                // Convert screen pixel movement to logical coordinate movement
+                const logicalDx = (dx * scaleX) / activeTransform.scale;
+                const logicalDy = (dy * scaleY) / activeTransform.scale;
+
+                // Shift bounds opposite to drag direction to move the "camera"
+                zoomBounds.minX = startZoomBounds.minX - logicalDx;
+                zoomBounds.maxX = startZoomBounds.maxX - logicalDx;
+                zoomBounds.minY = startZoomBounds.minY - logicalDy;
+                zoomBounds.maxY = startZoomBounds.maxY - logicalDy;
+            }
         });
 
         canvasContainer.addEventListener('pointerup', (e) => {
             if (!isDragging) return;
             isDragging = false;
-            selectionBox.style.display = 'none';
 
-            const rect = canvasContainer.getBoundingClientRect();
-            const endX = e.clientX - rect.left;
-            const endY = e.clientY - rect.top;
-
-            const dist = Math.hypot(endX - startX, endY - startY);
-
-            if (dist < 10) {
+            if (!isPanning) {
+                // Quick click/touch to pause
                 isPaused = !isPaused;
                 ui.pauseOverlay.textContent = "PAUSED";
                 ui.pauseOverlay.style.display = isPaused ? 'block' : 'none';
-                return;
             }
-
-            const point1 = screenToLogical(startX + rect.left, startY + rect.top);
-            const point2 = screenToLogical(endX + rect.left, endY + rect.top);
-
-            zoomBounds = {
-                minX: Math.min(point1.x, point2.x),
-                maxX: Math.max(point1.x, point2.x),
-                minY: Math.min(point1.y, point2.y),
-                maxY: Math.max(point1.y, point2.y)
-            };
-            isZoomed = true;
-            ui.resetZoomBtn.style.display = 'inline-block';
+            isPanning = false;
         });
 
         canvasContainer.addEventListener('contextmenu', (e) => {
@@ -786,7 +808,7 @@
         canvasContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 isDragging = false; 
-                selectionBox.style.display = 'none';
+                isPanning = false;
                 lastPinchDist = Math.hypot(
                     e.touches[0].clientX - e.touches[1].clientX,
                     e.touches[0].clientY - e.touches[1].clientY
@@ -814,6 +836,7 @@
                     const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                     const midLogical = screenToLogical(midX, midY);
 
+                    // Zoom naturally towards the exact midpoint of the pinch
                     zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
                     zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
                     zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
@@ -824,7 +847,9 @@
         }, { passive: false });
 
         canvasContainer.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) lastPinchDist = null;
+            if (e.touches.length < 2) {
+                lastPinchDist = null;
+            }
         });
 
         function resetZoom() {
@@ -919,6 +944,21 @@
             if (ui.nAnim.checked) {
                 ui.cAnim.checked = false;
                 ui.cAnimSettings.style.display = 'none';
+                
+                // --- Sync virtualTime to the current N value ---
+                const minN = parseInt(ui.nAnimMin.value) || 1;
+                const maxN = parseInt(ui.nAnimMax.value) || 5000000;
+                // Clamp current N to ensure it falls within the anim bounds
+                let currentN = Math.max(minN, Math.min(maxN, userBase.n));
+                
+                // Reverse the easedProgress math: Math.pow(pingPong, 2)
+                let pingPongSq = (maxN - minN) === 0 ? 0 : (currentN - minN) / (maxN - minN);
+                let pingPong = Math.sqrt(pingPongSq);
+                
+                // Set the cycle to the upward slope phase
+                let cycle = pingPong / 2; 
+                virtualTime = Math.floor(virtualTime / 4) * 4 + (cycle * 4);
+                
             } else {
                 userBase.n = parseInt(ui.nNumber.value);
             }
@@ -929,6 +969,20 @@
             if (ui.cAnim.checked) {
                 ui.nAnim.checked = false;
                 ui.nAnimSettings.style.display = 'none';
+                
+                // --- Sync virtualTime to the current C value ---
+                const minC = parseFloat(ui.cAnimMin.value) || 0;
+                const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
+                // Clamp current C to ensure it falls within the anim bounds
+                let currentC = Math.max(minC, Math.min(maxC, userBase.c));
+                
+                // Reverse the linear pingPong math
+                let pingPong = (maxC - minC) === 0 ? 0 : (currentC - minC) / (maxC - minC);
+                
+                // Set the cycle to the upward slope phase
+                let cycle = pingPong / 2; 
+                virtualTime = Math.floor(virtualTime / 4) * 4 + (cycle * 4);
+                
             } else {
                 userBase.c = parseFloat(ui.cSlider.value);
             }
@@ -1121,6 +1175,22 @@
         updatePresetDropdown();
         compileFunction();
         liveLoop();
+
+        // --- MOBILE UI MINIMIZE LOGIC ---
+        (function() {
+            const toggleBtn = document.createElement('button');
+            toggleBtn.id = 'ui-toggle-btn';
+            toggleBtn.textContent = 'Hide UI';
+            document.body.appendChild(toggleBtn);
+
+            toggleBtn.onclick = () => {
+                const isCollapsed = document.body.classList.toggle('ui-collapsed');
+                toggleBtn.textContent = isCollapsed ? 'Show UI' : 'Hide UI';
+                
+                // Trigger a resize event to ensure canvas centering logic updates
+                window.dispatchEvent(new Event('resize'));
+            };
+        })();
     </script>
 </body>
 </html>
