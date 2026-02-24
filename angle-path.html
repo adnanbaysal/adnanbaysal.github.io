@@ -1052,7 +1052,6 @@
             if (perfectN) {
                 const clampedN = Math.min(perfectN, 5000000);
                 updateN(clampedN, false); // false prevents double-render
-                liveRender();
             }
         }
 
@@ -1068,7 +1067,7 @@
             ui.cSlider.value = v.toFixed(cPrecision);
             ui.cNumber.value = v.toFixed(cPrecision);
 
-            if (ui.autoN.checked) {
+            if (ui.nAutoValue.checked) {
                 applySymmetryLock();
             }
             
