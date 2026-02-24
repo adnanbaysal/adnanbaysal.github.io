@@ -15,32 +15,83 @@
         
         /* --- Header UI --- */
         header { 
-            background: var(--panel); padding: 8px 12px; 
+            background: var(--panel); padding: 10px; 
             border-bottom: 1px solid #333; 
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
-            gap: 8px; z-index: 10;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch;
+            gap: 10px; z-index: 10;
         }
         
         .control-group { 
-            background: #1a1a1a; padding: 6px 10px; border-radius: 6px; 
-            display: flex; flex-direction: column; gap: 4px; border: 1px solid #222;
+            background: #1a1a1a; padding: 10px 12px; border-radius: 6px; 
+            display: flex; flex-direction: column; border: 1px solid #222;
+            min-width: 160px; flex-grow: 1; max-width: 240px;
+        }
+
+        /* --- Rigid 2-Row Toolbar --- */
+        .toolbar-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 buttons per row */
+            grid-template-rows: repeat(2, 34px);    /* 2 fixed rows */
+            gap: 6px;
+            background: #1a1a1a; padding: 10px; border-radius: 6px; border: 1px solid #222;
+            min-width: 240px; align-content: center;
+        }
+
+        .group-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            color: #aaa; font-size: 10px; font-weight: bold; text-transform: uppercase; 
+            margin-bottom: 8px;
+        }
+        
+        .group-header .num-input { width: 75px; text-align: right; padding: 3px 6px; height: auto; }
+        
+        .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .slider-row input[type="range"] { flex-grow: 1; width: 100%; margin: 0; }
+
+        .toggles-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            font-size: 9px; color: var(--accent); font-weight: bold; margin-top: auto;
+            padding-top: 6px; min-height: 14px;
+        }
+        .toggles-row label { display: flex; align-items: center; gap: 4px; cursor: pointer; margin: 0; }
+        .toggles-row input[type="checkbox"] { margin: 0; cursor: pointer; }
+
+        /* --- Animation Settings UI --- */
+        .anim-settings { 
+            /* Override JS inline style to keep container height completely static */
+            display: flex !important; 
+            justify-content: space-between; gap: 8px; 
+            margin-top: 8px; border-top: 1px dashed #333; padding-top: 8px; 
+            transition: opacity 0.2s ease;
+        }
+
+        /* Visually disable Min/Max fields when ANIMATE is unchecked */
+        .control-group:has(input[type="checkbox"][id$="-anim"]:not(:checked)) .anim-settings {
+            opacity: 0.25;
+            pointer-events: none; /* Prevents interaction when disabled */
+        }
+        
+        .control-group:has(input[type="checkbox"][id$="-anim"]:not(:checked)) .anim-settings input {
+            background: #111; border-color: #333; color: #666;
+        }
+
+        .anim-settings label { 
+            font-size: 9px; color: #888; display: flex; flex-direction: column; gap: 4px;
+            font-weight: bold; text-transform: uppercase; flex-grow: 1;
+        }
+        .anim-settings input.num-input { width: 100%; font-size: 10px; box-sizing: border-box; text-align: left; }
+        
+        /* Tweaks for combined groups */
+        .combined-select { width: 100%; height: 26px; margin-bottom: 8px; }
+        .toolbar-group button { 
+            width: 100%; height: 100%; margin: 0; padding: 0 4px;
+            display: flex; align-items: center; justify-content: center;
         }
 
         .label-row { display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 9px; font-weight: bold; text-transform: uppercase; }
         .input-row { display: flex; align-items: center; gap: 8px; }
         .anim-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .anim-unit label { font-size: 7px; color: var(--accent); font-weight: bold; cursor: pointer; }
-
-        /* --- New Animation Settings UI --- */
-        .anim-settings { 
-            display: none; justify-content: space-between; gap: 4px; 
-            margin-top: 4px; border-top: 1px dashed #333; padding-top: 6px; 
-        }
-        .anim-settings label { 
-            font-size: 9px; color: #888; display: flex; align-items: center; 
-            gap: 4px; font-weight: bold; text-transform: uppercase; 
-        }
-        .anim-settings input.num-input { width: 55px; font-size: 10px; }
 
         /* --- Main Layout --- */
         main { 
@@ -112,19 +163,51 @@
 
         /* --- Info Modal --- */
         #info-modal {
-            position: absolute; top: 60px; left: 20px; z-index: 20;
-            background: rgba(17, 17, 17, 0.96); backdrop-filter: blur(12px);
-            border: 1px solid #333; border-radius: 8px;
-            width: 350px; max-height: 80vh; overflow-y: auto;
-            display: none; padding: 25px; font-size: 13px; line-height: 1.6;
+            position: absolute; 
+            top: 20px;            /* Consistent margin from top */
+            bottom: 20px;         /* Consistent margin from bottom */
+            left: 20px; 
+            z-index: 20;
+            background: rgba(17, 17, 17, 0.96); 
+            backdrop-filter: blur(12px);
+            border: 1px solid #333; 
+            border-radius: 8px;
+            width: 350px; 
+            display: none;        /* Controlled by JS */
+            flex-direction: column; /* Allows header to stay fixed if desired, or simple scrolling */
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            overflow: hidden;    /* Clips the inner scrollable area */
         }
+
+        /* Create a scrollable container inside the modal */
+        .info-content {
+            padding: 25px;
+            overflow-y: auto;    /* This ensures the scrollbar is internal */
+            height: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) #222;
+        }
+
         #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;}
         #info-modal h3 { margin: 15px 0 5px 0; font-size: 12px; color: #fff; text-transform: uppercase; }
         #info-modal p { color: #aaa; margin: 0 0 10px 0; }
         #info-modal code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace;}
-        .close-info { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #666; font-size: 18px; }
-        .close-info:hover { color: #fff; }
+        
+        .close-info { 
+            position: absolute; top: 15px; right: 15px; cursor: pointer; 
+            color: #666; font-size: 18px; z-index: 21; background: #111; 
+            width: 24px; height: 24px; display: flex; align-items: center; 
+            justify-content: center; border-radius: 4px;
+        }
+        .close-info:hover { color: #fff; background: #222; }
+
+        /* Mobile adjustment for the info box */
+        @media (max-width: 900px) {
+            #info-modal {
+                width: calc(100% - 40px);
+                top: 60px; /* Leave space for mobile toggle button */
+            }
+        }
 
         /* --- Buttons & Inputs --- */
         button { 
@@ -143,10 +226,20 @@
         .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; margin-top: 2px; }
         .btn-info:hover { color: #fff; border-color: #fff; }
         .btn-icon { padding: 0 8px; font-size: 14px; }
-        #reset-zoom-btn { background: #f39c12; color: #fff; display: none; margin-top: 2px; }
+        #reset-zoom-btn { 
+            background: #444 !important; 
+            color: #777 !important; 
+            cursor: not-allowed; 
+            opacity: 0.5;
+            display: flex !important; 
+        }
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { accent-color: var(--accent); cursor: pointer; }
+        
+        /* New styling for disabled inputs */
+        input:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         input[type="number"].num-input { 
             width: 75px; background: #222; color: #fff; border: 1px solid #444; 
             font-size: 11px; padding: 4px; border-radius: 4px; font-family: monospace; outline: none;
@@ -189,16 +282,17 @@
 <body>
 
     <header id="ui-panel">
-        <button id="info-btn" class="btn-info" title="Information">?</button>
-
         <div class="control-group">
-            <div class="label-row">
+            <div class="group-header">
                 <span>Steps (N)</span>
-                <input type="number" id="n-number" class="num-input" min="1" max="5000000" step="1000" value="90000">
+                <input type="number" id="n-number" class="num-input" min="1" max="5000000" step="1000" value="90000" disabled>
             </div>
-            <div class="input-row">
-                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" style="width: 130px;">
-                <div class="anim-unit"><label for="n-anim">ANIM</label><input type="checkbox" id="n-anim"></div>
+            <div class="slider-row">
+                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" disabled>
+            </div>
+            <div class="toggles-row">
+                <label for="n-anim"><input type="checkbox" id="n-anim"> ANIMATE</label>
+                <label for="n-auto-value" title="Lock Symmetry"><input type="checkbox" id="n-auto-value" checked> AUTO N</label>
             </div>
             <div id="n-anim-settings" class="anim-settings">
                 <label>Min <input type="number" id="n-anim-min" class="num-input" value="1000" min="1"></label>
@@ -207,58 +301,75 @@
         </div>
 
         <div class="control-group">
-            <div class="label-row">
+            <div class="group-header">
                 <span>C Multiplier</span>
-                <input type="number" id="c-number" class="num-input" min="0.001" max="2.000" step="0.001" value="0.024">
+                <input type="number" id="c-number" class="num-input" min="0.001" max="32.000" step="0.001" value="0.024">
             </div>
-            <div class="input-row">
-                <input type="range" id="c-input" min="0.001" max="2.000" step="0.001" value="0.024" style="width: 130px;">
-                <div class="anim-unit"><label for="c-anim">ANIM</label><input type="checkbox" id="c-anim"></div>
+            <div class="slider-row">
+                <input type="range" id="c-input" min="0.001" max="32.000" step="0.001" value="0.024">
+            </div>
+            <div class="toggles-row">
+                <label for="c-anim"><input type="checkbox" id="c-anim"> ANIMATE</label>
             </div>
             <div id="c-anim-settings" class="anim-settings">
                 <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.000" step="0.001"></label>
-                <label>Max <input type="number" id="c-anim-max" class="num-input" value="2.000" step="0.001"></label>
+                <label>Max <input type="number" id="c-anim-max" class="num-input" value="32.000" step="0.001"></label>
             </div>
         </div>
 
         <div class="control-group">
-            <div class="label-row"><span>Speed</span> <span id="spd-val" class="value">5</span></div>
-            <div class="input-row"><input type="range" id="speed-input" min="1" max="10" value="5" style="width: 70px;"></div>
+            <div class="group-header">
+                <span>Line Width</span>
+                <input type="number" id="lw-number" class="num-input" min="0.01" max="10.0" step="0.05" value="1.0" style="width: 50px;">
+            </div>
+            <div class="slider-row" style="margin-bottom: 12px;">
+                <input type="range" id="lw-input" min="0.01" max="10.0" step="0.05" value="1.0">
+            </div>
+            
+            <div class="group-header">
+                <span>Speed</span>
+                <span id="spd-val" style="color: var(--accent); font-family: monospace; font-size: 12px;">5</span>
+            </div>
+            <div class="slider-row" style="margin-bottom: 0;">
+                <input type="range" id="speed-input" min="1" max="10" value="5">
+            </div>
         </div>
 
         <div class="control-group">
-            <div class="label-row"><span>Style</span></div>
-            <select id="style-select" style="height: 24px;">
+            <div class="group-header"><span>Appearance</span></div>
+            <select id="style-select" class="combined-select">
                 <option value="neon">Neon Glow (Dark)</option>
                 <option value="rainbow">Spectrum (Dark)</option>
                 <option value="solid">Solid White (Dark)</option>
                 <option value="light">Solid Black (Light)</option>
                 <option value="light-glow">Neon Glow (Light)</option>
             </select>
-        </div>
-
-        <div class="control-group">
-            <div class="label-row"><span>Configuration</span></div>
-            <div class="input-row">
-                <select id="config-select" style="width: 90px; height: 24px;">
+            
+            <div class="group-header" style="margin-top: 4px;"><span>Configuration</span></div>
+            <div style="display: flex; gap: 4px; align-items: center;">
+                <select id="config-select" style="flex-grow: 1; width: 0; height: 26px;">
                     <option value="">Load...</option>
                     <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
                     <optgroup label="Saved" id="saved-configs-group"></optgroup>
                 </select>
-                <button id="save-config-btn" class="btn-sec btn-icon" title="Save Config">💾</button>
-                <button id="export-config-btn" class="btn-sec btn-icon" title="Export to File">📤</button>
-                <button id="import-config-btn" class="btn-sec btn-icon" title="Import from File">📥</button>
+                <button id="save-config-btn" class="btn-sec btn-icon" title="Save Config" style="height: 26px; padding: 0 6px;">💾</button>
+                <button id="export-config-btn" class="btn-sec btn-icon" title="Export to File" style="height: 26px; padding: 0 6px;">📤</button>
+                <button id="import-config-btn" class="btn-sec btn-icon" title="Import from File" style="height: 26px; padding: 0 6px;">📥</button>
             </div>
+            <input type="file" id="import-file" style="display:none" accept=".json">
         </div>
-        <input type="file" id="import-file" style="display:none" accept=".json">
 
-        <button id="reset-zoom-btn">🔍 Reset Zoom</button>
-        <button id="random-btn" class="btn-rand" style="margin-top: 2px;">🎲 Rand</button>
-        <button id="save-btn" class="btn-util" style="margin-top: 2px;">📸 Canvas</button>
-        <button id="save-svg-btn" class="btn-util" style="margin-top: 2px;">📄 SVG</button>
-        <button id="rec-btn" class="btn-rec" style="margin-top: 2px;">⏺ Record</button>
-        <button id="fs-btn" class="btn-util" style="margin-top: 2px;">⛶ Full</button>
-        <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
+        <div class="toolbar-group">
+            <button id="info-btn" class="btn-info" title="Info" style="border-radius: 50%; width: 26px; height: 26px; padding: 0;">?</button>
+            <button id="reset-zoom-btn">🔍 Reset</button>
+            <button id="random-btn" class="btn-rand">🎲 Rand</button>
+            <button id="fs-btn" class="btn-util">⛶ Full</button>
+            
+            <button id="save-btn" class="btn-util">📸 PNG</button>
+            <button id="save-svg-btn" class="btn-util">📄 SVG</button>
+            <button id="rec-btn" class="btn-rec">⏺ Rec</button>
+            <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
+        </div>
     </header>
 
     <main>
@@ -294,20 +405,27 @@
         </div>
 
         <div class="right-col">
-            <div id="info-modal">
+            <div id="info-modal" style="display: none;">
                 <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
-                <h2>Angle Path Generator</h2>
-                <p>This generator draws a sequence of lines based on a simple mathematical rule, commonly known in turtle graphics.</p>
-                
-                <h3>The Algorithm</h3>
-                <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
-                <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
-                
-                <h3>Custom Function Engine</h3>
-                <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 15 million times per frame.</p>
-                
-                <h3>Centering & Scaling</h3>
-                <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
+                <div class="info-content">
+                    <h2>Angle Path Generator</h2>
+                    <p>This generator draws a sequence of lines based on a simple mathematical rule, commonly known in turtle graphics.</p>
+                    
+                    <h3>The Algorithm</h3>
+                    <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
+                    <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
+                    
+                    <h3>Custom Function Engine</h3>
+                    <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 15 million times per frame.</p>
+                    
+                    <h3>Centering & Scaling</h3>
+                    <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
+                    
+                    <h3>Symmetry Lock (Auto N)</h3>
+                    <p>Checking <strong>Lock Symmetry</strong> automates the calculation of N based on the constant C. It uses the mathematical relation $c \cdot N / m = 180$ to find the smallest number of steps required to complete a rotationally symmetric rosette. This allows you to explore different C values while the shape stays perfectly "closed."</p>
+                    
+                    <p style="margin-top: 20px; font-size: 10px; opacity: 0.5;">End of Documentation</p>
+                </div>
             </div>
 
             <div id="canvas-container">
@@ -333,6 +451,7 @@
             nAnimSettings: document.getElementById('n-anim-settings'),
             nAnimMin: document.getElementById('n-anim-min'),
             nAnimMax: document.getElementById('n-anim-max'),
+            nAutoValue: document.getElementById('n-auto-value'),
 
             cSlider: document.getElementById('c-input'),
             cNumber: document.getElementById('c-number'), 
@@ -343,6 +462,10 @@
 
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
+
+            lwSlider: document.getElementById('lw-input'),
+            lwNumber: document.getElementById('lw-number'),
+
             style: document.getElementById('style-select'), 
             pauseOverlay: document.getElementById('pause-overlay'),
             recBtn: document.getElementById('rec-btn'), 
@@ -409,6 +532,7 @@
                 cAnimMin: parseFloat(ui.cAnimMin.value),
                 cAnimMax: parseFloat(ui.cAnimMax.value),
                 speed: parseInt(ui.speed.value),
+                lineWidth: parseFloat(ui.lwSlider.value),
                 style: ui.style.value,
                 code: ui.editor.value
             };
@@ -445,6 +569,13 @@
 
             ui.speed.value = config.speed || 5;
             ui.spdLabel.textContent = ui.speed.value;
+
+            if (config.lineWidth !== undefined) {
+                updateLineWidth(config.lineWidth);
+            } else {
+                updateLineWidth(1.0); // Default for older configs
+            }
+
             ui.style.value = config.style || 'neon';
 
             compileFunction();
@@ -660,7 +791,9 @@
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             
-            let baseLineWidth = Math.max(0.1, 80000 / N) / scale;
+            let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
+            let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
+            
             if (isZoomed) baseLineWidth *= 1.5;
 
             const MAX_PATH_SIZE = 500000; 
@@ -955,7 +1088,7 @@
                 } 
                 else if (ui.cAnim.checked) {
                     const minC = parseFloat(ui.cAnimMin.value) || 0;
-                    const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
+                    const maxC = parseFloat(ui.cAnimMax.value) || 32.000;
                     aC = minC + ((maxC - minC) * pingPong);
 
                     ui.cSlider.value = aC.toFixed(cPrecision);
@@ -969,6 +1102,46 @@
             animationFrameId = requestAnimationFrame(liveLoop);
         }
 
+        // --- ROSETTE ALGORITHM ---
+        function calculateRosetteN(C) {
+            if (C <= 0) return null;
+            
+            // 1. Find Raw Period
+            let magicUpperBound = 6;  // Seems like magic, I'n not convinced the rationale for this choice
+            let P_raw = 0;
+            for (let u = 1; u <= magicUpperBound; u++) {
+                let val = (180 * u) / C;
+                if (Math.abs(val - Math.round(val)) < 1e-6) {
+                    P_raw = Math.round(val);
+                    break;
+                }
+            }
+            if (P_raw === 0) return null; // Fallback if no clean period is found
+
+            // 2. The Inversion Check
+            let remainder = (C * P_raw * P_raw) % 360;
+            let P_true = P_raw;
+            // Account for float precision
+            if (Math.abs(remainder - 180) < 1e-4 || Math.abs(remainder + 180) < 1e-4) {
+                P_true = P_raw * 2;
+            }
+
+            // 3. Find Sector Angle
+            let p = P_true;
+            let sumAngle = C * p * (p + 1) * (2 * p + 1) / 6;
+            let deltaTheta = Math.round(sumAngle % 360);
+            if (deltaTheta < 0) deltaTheta += 360;
+            if (deltaTheta === 360) deltaTheta = 0;
+
+            // 4. Calculate Petals
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            let m = 360 / gcd(360, deltaTheta);
+
+            // 5. Compute Total N
+            return p * m;
+        }
+        // -------------------------
+
         const updateN = (val, fromSlider = false) => {
             let v;
             if (fromSlider) {
@@ -980,12 +1153,12 @@
             if (isNaN(v)) v = 1000;
             if (v > 5000000) v = 5000000;
 
-            if (v > userBase.n && !ui.nAnim.checked) {
+            if (v > userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 glowStartN = userBase.n;
                 glowEndN = v;
                 glowIntensity = 1.0; 
                 eraseIntensity = 0; // Cancel any active erase to prevent overlap
-            } else if (v < userBase.n && !ui.nAnim.checked) {
+            } else if (v < userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 eraseStartN = v;
                 eraseEndN = userBase.n;
                 eraseIntensity = 1.0;
@@ -999,18 +1172,58 @@
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
+        function applySymmetryLock() {
+            const perfectN = calculateRosetteN(userBase.c);
+            if (perfectN) {
+                const clampedN = Math.min(perfectN, 5000000);
+                updateN(clampedN, false); // false prevents double-render
+            }
+        }
+
         ui.nSlider.oninput = (e) => updateN(e.target.value, true);
         ui.nNumber.onchange = (e) => updateN(e.target.value, false);
 
         const updateC = (val) => {
             let v = parseFloat(val);
             const minVal = cPrecision === 6 ? 0.000001 : 0.001;
-            if (v < minVal) v = minVal; 
             
+            if (v < minVal) v = minVal;
+            if (v > 32.000) v = 32.000;
+
+            if (ui.nAutoValue.checked) {
+                let prevC = parseFloat(userBase.c);
+                let stepDir = v < prevC ? -1 : 1;
+                let stepSize = cPrecision === 6 ? 0.000001 : 0.001;
+
+                let testC = v;
+                let foundPerfectN = calculateRosetteN(testC);
+
+                while (!foundPerfectN) {
+                    testC += stepDir * stepSize;
+                    testC = Number(testC.toFixed(cPrecision)); // Keep exact float to avoid precision drift
+
+                    if (testC < minVal) {
+                        testC = minVal;
+                        break;
+                    }
+                    if (testC > 32.000) {
+                        testC = 32.000;
+                        break;
+                    }
+
+                    foundPerfectN = calculateRosetteN(testC);
+                }
+                v = testC;
+            }
+
             userBase.c = v;
             ui.cSlider.value = v.toFixed(cPrecision);
             ui.cNumber.value = v.toFixed(cPrecision);
-            
+
+            if (ui.nAutoValue.checked) {
+                applySymmetryLock();
+            }
+
             if (isPaused) 
             { 
                 isPaused = false; 
@@ -1020,6 +1233,22 @@
 
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
+
+        const updateLineWidth = (val) => {
+            let v = parseFloat(val);
+            if (v < 0.01) v = 0.01;
+            ui.lwSlider.value = v.toFixed(2);
+            ui.lwNumber.value = v.toFixed(2);
+            
+            // Unpause the canvas to show the updated line thickness immediately
+            if (isPaused) { 
+                isPaused = false; 
+                ui.pauseOverlay.style.display = 'none'; 
+            }
+        };
+
+        ui.lwSlider.oninput = (e) => updateLineWidth(e.target.value);
+        ui.lwNumber.onchange = (e) => updateLineWidth(e.target.value);
 
         // Mutual Exclusivity and Dynamic Min/Max Logic
         ui.nAnim.addEventListener('change', () => {
@@ -1055,7 +1284,7 @@
                 
                 // --- Sync virtualTime to the current C value ---
                 const minC = parseFloat(ui.cAnimMin.value) || 0;
-                const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
+                const maxC = parseFloat(ui.cAnimMax.value) || 32.000;
                 // Clamp current C to ensure it falls within the anim bounds
                 let currentC = Math.max(minC, Math.min(maxC, userBase.c));
                 
@@ -1095,6 +1324,17 @@
             }
         });
 
+        ui.nAutoValue.addEventListener('change', () => {
+            const isAuto = ui.nAutoValue.checked;
+            ui.nSlider.disabled = isAuto;
+            ui.nNumber.disabled = isAuto;
+            
+            if (isAuto) {
+                // Instantly sync the current valid value into view
+                updateC(userBase.c); 
+            }
+        });
+
         const generateRandom = () => {
             const funcs = Object.keys(presets);
             const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
@@ -1107,7 +1347,7 @@
             userBase.n = Math.floor(Math.pow(10.0000, logN));
             
             const minC = cPrecision === 6 ? 0.000001 : 0.001;
-            let randC = Number((Math.random() * 2.0).toFixed(cPrecision));
+            let randC = Number((Math.random() * 4.0).toFixed(cPrecision));
             if(randC < minC) randC = minC;
             
             updateC(randC); 
@@ -1186,7 +1426,8 @@
                     const bbHeight = (bounds.maxY - bounds.minY) + pad * 2;
                     
                     // Base stroke width relative to the raw viewport mapping
-                    let baseLineWidth = Math.max(0.1, 80000 / N);
+                    let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
+                    let baseLineWidth = Math.max(0.1, 80000 / N) * lwMultiplier;
 
                     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${bbWidth} ${bbHeight}" style="background-color: ${bg};">\n`;
 
@@ -1245,7 +1486,10 @@
             }, 100); 
         };
 
-        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
+        ui.infoBtn.onclick = () => {
+            const isHidden = ui.infoModal.style.display === 'none' || ui.infoModal.style.display === '';
+            ui.infoModal.style.display = isHidden ? 'flex' : 'none';
+        };
         document.getElementById('fs-btn').onclick = () => canvasContainer.requestFullscreen();
         document.getElementById('save-btn').onclick = saveImage;
         ui.saveSvgBtn.onclick = saveSVG;
@@ -1257,6 +1501,12 @@
         updateConfigDropdown(); 
         updatePresetDropdown();
         compileFunction();
+        
+        // Process default Auto N immediately on load
+        if (ui.nAutoValue.checked) {
+            applySymmetryLock();
+        }
+        
         liveLoop();
 
         // --- MOBILE UI MINIMIZE LOGIC ---
