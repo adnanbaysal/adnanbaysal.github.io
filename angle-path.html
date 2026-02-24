@@ -47,16 +47,30 @@
         .toggles-row { 
             display: flex; justify-content: space-between; align-items: center; 
             font-size: 9px; color: var(--accent); font-weight: bold; margin-top: auto;
-            padding-top: 6px;
+            padding-top: 6px; min-height: 14px;
         }
         .toggles-row label { display: flex; align-items: center; gap: 4px; cursor: pointer; margin: 0; }
         .toggles-row input[type="checkbox"] { margin: 0; cursor: pointer; }
 
         /* --- Animation Settings UI --- */
         .anim-settings { 
-            display: none; justify-content: space-between; gap: 8px; 
+            /* Override JS inline style to keep container height completely static */
+            display: flex !important; 
+            justify-content: space-between; gap: 8px; 
             margin-top: 8px; border-top: 1px dashed #333; padding-top: 8px; 
+            transition: opacity 0.2s ease;
         }
+
+        /* Visually disable Min/Max fields when ANIMATE is unchecked */
+        .control-group:has(input[type="checkbox"][id$="-anim"]:not(:checked)) .anim-settings {
+            opacity: 0.25;
+            pointer-events: none; /* Prevents interaction when disabled */
+        }
+        
+        .control-group:has(input[type="checkbox"][id$="-anim"]:not(:checked)) .anim-settings input {
+            background: #111; border-color: #333; color: #666;
+        }
+
         .anim-settings label { 
             font-size: 9px; color: #888; display: flex; flex-direction: column; gap: 4px;
             font-weight: bold; text-transform: uppercase; flex-grow: 1;
