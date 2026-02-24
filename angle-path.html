@@ -154,21 +154,53 @@
         .dot { width: 10px; height: 10px; background: #eb4d4b; border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* --- Info Modal --- */
+        * --- Info Modal --- */
         #info-modal {
-            position: absolute; top: 60px; left: 20px; z-index: 20;
-            background: rgba(17, 17, 17, 0.96); backdrop-filter: blur(12px);
-            border: 1px solid #333; border-radius: 8px;
-            width: 350px; max-height: 80vh; overflow-y: auto;
-            display: none; padding: 25px; font-size: 13px; line-height: 1.6;
+            position: absolute; 
+            top: 20px;            /* Consistent margin from top */
+            bottom: 20px;         /* Consistent margin from bottom */
+            left: 20px; 
+            z-index: 20;
+            background: rgba(17, 17, 17, 0.96); 
+            backdrop-filter: blur(12px);
+            border: 1px solid #333; 
+            border-radius: 8px;
+            width: 350px; 
+            display: none;        /* Controlled by JS */
+            flex-direction: column; /* Allows header to stay fixed if desired, or simple scrolling */
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            overflow: hidden;    /* Clips the inner scrollable area */
         }
+
+        /* Create a scrollable container inside the modal */
+        .info-content {
+            padding: 25px;
+            overflow-y: auto;    /* This ensures the scrollbar is internal */
+            height: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) #222;
+        }
+
         #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;}
         #info-modal h3 { margin: 15px 0 5px 0; font-size: 12px; color: #fff; text-transform: uppercase; }
         #info-modal p { color: #aaa; margin: 0 0 10px 0; }
         #info-modal code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace;}
-        .close-info { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #666; font-size: 18px; }
-        .close-info:hover { color: #fff; }
+        
+        .close-info { 
+            position: absolute; top: 15px; right: 15px; cursor: pointer; 
+            color: #666; font-size: 18px; z-index: 21; background: #111; 
+            width: 24px; height: 24px; display: flex; align-items: center; 
+            justify-content: center; border-radius: 4px;
+        }
+        .close-info:hover { color: #fff; background: #222; }
+
+        /* Mobile adjustment for the info box */
+        @media (max-width: 900px) {
+            #info-modal {
+                width: calc(100% - 40px);
+                top: 60px; /* Leave space for mobile toggle button */
+            }
+        }
 
         /* --- Buttons & Inputs --- */
         button { 
@@ -357,21 +389,25 @@
         <div class="right-col">
             <div id="info-modal">
                 <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
-                <h2>Angle Path Generator</h2>
-                <p>This generator draws a sequence of lines based on a simple mathematical rule, commonly known in turtle graphics.</p>
-                
-                <h3>The Algorithm</h3>
-                <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
-                <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
-                
-                <h3>Custom Function Engine</h3>
-                <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 15 million times per frame.</p>
-                
-                <h3>Centering & Scaling</h3>
-                <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
-                
-                <h3>Symmetry Lock (Auto N)</h3>
-                <p>Checking <strong>Lock Symmetry</strong> automates the calculation of N based on the constant C. It uses the mathematical relation $c \cdot N / m = 180$ to find the smallest number of steps required to complete a rotationally symmetric rosette. This allows you to explore different C values while the shape stays perfectly "closed."</p>
+                <div class="info-content">
+                    <h2>Angle Path Generator</h2>
+                    <p>This generator draws a sequence of lines based on a simple mathematical rule, commonly known in turtle graphics.</p>
+                    
+                    <h3>The Algorithm</h3>
+                    <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
+                    <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
+                    
+                    <h3>Custom Function Engine</h3>
+                    <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 15 million times per frame.</p>
+                    
+                    <h3>Centering & Scaling</h3>
+                    <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
+                    
+                    <h3>Symmetry Lock (Auto N)</h3>
+                    <p>Checking <strong>Lock Symmetry</strong> automates the calculation of N based on the constant C. It uses the mathematical relation $c \cdot N / m = 180$ to find the smallest number of steps required to complete a rotationally symmetric rosette. This allows you to explore different C values while the shape stays perfectly "closed."</p>
+                    
+                    <p style="margin-top: 20px; font-size: 10px; opacity: 0.5;">End of Documentation</p>
+                </div>
             </div>
 
             <div id="canvas-container">
@@ -1398,7 +1434,10 @@
             }, 100); 
         };
 
-        ui.infoBtn.onclick = () => ui.infoModal.style.display = (ui.infoModal.style.display === 'block' ? 'none' : 'block');
+        ui.infoBtn.onclick = () => {
+            const isVisible = ui.infoModal.style.display === 'flex';
+            ui.infoModal.style.display = isVisible ? 'none' : 'flex';
+        };
         document.getElementById('fs-btn').onclick = () => canvasContainer.requestFullscreen();
         document.getElementById('save-btn').onclick = saveImage;
         ui.saveSvgBtn.onclick = saveSVG;
