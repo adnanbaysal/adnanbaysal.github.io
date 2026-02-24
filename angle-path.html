@@ -525,6 +525,14 @@
         let animationFrameId;
         let userBase = { n: 90000, c: 0.024 };
         let cPrecision = 3; // Core dynamic precision state tracking
+
+        let glowStartN = 0;
+        let glowEndN = 0;
+        let glowIntensity = 0;
+
+        let eraseStartN = 0;
+        let eraseEndN = 0;
+        let eraseIntensity = 0;
         
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
@@ -697,6 +705,59 @@
                     ctx.stroke();
                 }
             }
+
+            if (glowIntensity > 0 && glowEndN > glowStartN && N >= glowStartN) {
+                ctx.beginPath();
+                
+                // Start 1 step early so it connects seamlessly to the old line
+                const startIdx = Math.max(0, glowStartN - 1);
+                const endIdx = Math.min(N, glowEndN);
+                
+                ctx.moveTo(points[startIdx * 2], points[startIdx * 2 + 1]);
+                for (let j = startIdx + 1; j <= endIdx; j++) {
+                    ctx.lineTo(points[j * 2], points[j * 2 + 1]);
+                }
+
+                // Force composite over everything else so the glow pops
+                ctx.globalCompositeOperation = 'source-over';
+                
+                // 1. Thick colored outer glow
+                ctx.lineWidth = baseLineWidth * 6;
+                ctx.strokeStyle = isLightTheme 
+                    ? `rgba(255, 50, 80, ${glowIntensity * 0.6})`  // Red/Pink for light themes
+                    : `rgba(255, 215, 0, ${glowIntensity * 0.6})`; // Gold/Yellow for dark themes
+                ctx.stroke();
+
+                // 2. Bright inner core
+                ctx.lineWidth = baseLineWidth * 2;
+                ctx.strokeStyle = `rgba(255, 255, 255, ${glowIntensity})`;
+                ctx.stroke();
+            }
+
+            if (eraseIntensity > 0 && eraseEndN > eraseStartN) {
+                ctx.beginPath();
+                
+                const startIdx = Math.max(0, eraseStartN - 1);
+                const endIdx = eraseEndN;
+                
+                // The points array still holds the old math!
+                ctx.moveTo(points[startIdx * 2], points[startIdx * 2 + 1]);
+                for (let j = startIdx + 1; j <= endIdx; j++) {
+                    ctx.lineTo(points[j * 2], points[j * 2 + 1]);
+                }
+
+                ctx.globalCompositeOperation = 'source-over';
+                
+                // 1. Red outer "burn"
+                ctx.lineWidth = baseLineWidth * 4;
+                ctx.strokeStyle = `rgba(255, 50, 50, ${eraseIntensity * 0.8})`;
+                ctx.stroke();
+
+                // 2. Fading core
+                ctx.lineWidth = baseLineWidth;
+                ctx.strokeStyle = `rgba(255, 200, 200, ${eraseIntensity})`;
+                ctx.stroke();
+            }
             
             ctx.restore();
         }
@@ -865,6 +926,16 @@
             const delta = (now - lastRealTime) / 1000;
             lastRealTime = now;
 
+            if (glowIntensity > 0) {
+                glowIntensity -= delta * 1.2; // Fades out in ~0.8 seconds
+                if (glowIntensity < 0) glowIntensity = 0;
+            }
+
+            if (eraseIntensity > 0) {
+                eraseIntensity -= delta * 1.5; // Fades a bit faster (~0.66 seconds)
+                if (eraseIntensity < 0) eraseIntensity = 0;
+            }
+
             if (!isPaused) {
                 virtualTime += delta * Math.pow(2.0, parseInt(ui.speed.value) - 1) * 0.0025; 
                 const cycle = (virtualTime % 4) / 4;
@@ -908,6 +979,18 @@
 
             if (isNaN(v)) v = 1000;
             if (v > 5000000) v = 5000000;
+
+            if (v > userBase.n && !ui.nAnim.checked) {
+                glowStartN = userBase.n;
+                glowEndN = v;
+                glowIntensity = 1.0; 
+                eraseIntensity = 0; // Cancel any active erase to prevent overlap
+            } else if (v < userBase.n && !ui.nAnim.checked) {
+                eraseStartN = v;
+                eraseEndN = userBase.n;
+                eraseIntensity = 1.0;
+                glowIntensity = 0; // Cancel any active glow
+            }
 
             userBase.n = v;
             ui.nNumber.value = v;
