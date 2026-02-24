@@ -236,6 +236,10 @@
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { accent-color: var(--accent); cursor: pointer; }
+        
+        /* New styling for disabled inputs */
+        input:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         input[type="number"].num-input { 
             width: 75px; background: #222; color: #fff; border: 1px solid #444; 
             font-size: 11px; padding: 4px; border-radius: 4px; font-family: monospace; outline: none;
@@ -281,14 +285,14 @@
         <div class="control-group">
             <div class="group-header">
                 <span>Steps (N)</span>
-                <input type="number" id="n-number" class="num-input" min="1" max="5000000" step="1000" value="90000">
+                <input type="number" id="n-number" class="num-input" min="1" max="5000000" step="1000" value="90000" disabled>
             </div>
             <div class="slider-row">
-                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542">
+                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" disabled>
             </div>
             <div class="toggles-row">
                 <label for="n-anim"><input type="checkbox" id="n-anim"> ANIMATE</label>
-                <label for="n-auto-value" title="Lock Symmetry"><input type="checkbox" id="n-auto-value"> AUTO N</label>
+                <label for="n-auto-value" title="Lock Symmetry"><input type="checkbox" id="n-auto-value" checked> AUTO N</label>
             </div>
             <div id="n-anim-settings" class="anim-settings">
                 <label>Min <input type="number" id="n-anim-min" class="num-input" value="1000" min="1"></label>
@@ -299,17 +303,17 @@
         <div class="control-group">
             <div class="group-header">
                 <span>C Multiplier</span>
-                <input type="number" id="c-number" class="num-input" min="0.001" max="2.000" step="0.001" value="0.024">
+                <input type="number" id="c-number" class="num-input" min="0.001" max="32.000" step="0.001" value="0.024">
             </div>
             <div class="slider-row">
-                <input type="range" id="c-input" min="0.001" max="2.000" step="0.001" value="0.024">
+                <input type="range" id="c-input" min="0.001" max="32.000" step="0.001" value="0.024">
             </div>
             <div class="toggles-row">
                 <label for="c-anim"><input type="checkbox" id="c-anim"> ANIMATE</label>
             </div>
             <div id="c-anim-settings" class="anim-settings">
                 <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.000" step="0.001"></label>
-                <label>Max <input type="number" id="c-anim-max" class="num-input" value="2.000" step="0.001"></label>
+                <label>Max <input type="number" id="c-anim-max" class="num-input" value="32.000" step="0.001"></label>
             </div>
         </div>
 
@@ -1084,7 +1088,7 @@
                 } 
                 else if (ui.cAnim.checked) {
                     const minC = parseFloat(ui.cAnimMin.value) || 0;
-                    const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
+                    const maxC = parseFloat(ui.cAnimMax.value) || 32.000;
                     aC = minC + ((maxC - minC) * pingPong);
 
                     ui.cSlider.value = aC.toFixed(cPrecision);
@@ -1149,12 +1153,12 @@
             if (isNaN(v)) v = 1000;
             if (v > 5000000) v = 5000000;
 
-            if (v > userBase.n && !ui.nAnim.checked) {
+            if (v > userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 glowStartN = userBase.n;
                 glowEndN = v;
                 glowIntensity = 1.0; 
                 eraseIntensity = 0; // Cancel any active erase to prevent overlap
-            } else if (v < userBase.n && !ui.nAnim.checked) {
+            } else if (v < userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 eraseStartN = v;
                 eraseEndN = userBase.n;
                 eraseIntensity = 1.0;
@@ -1184,7 +1188,7 @@
             const minVal = cPrecision === 6 ? 0.000001 : 0.001;
             
             if (v < minVal) v = minVal;
-            if (v > 2.000) v = 2.000;
+            if (v > 32.000) v = 32.000;
 
             if (ui.nAutoValue.checked) {
                 let prevC = parseFloat(userBase.c);
@@ -1202,8 +1206,8 @@
                         testC = minVal;
                         break;
                     }
-                    if (testC > 2.000) {
-                        testC = 2.000;
+                    if (testC > 32.000) {
+                        testC = 32.000;
                         break;
                     }
 
@@ -1280,7 +1284,7 @@
                 
                 // --- Sync virtualTime to the current C value ---
                 const minC = parseFloat(ui.cAnimMin.value) || 0;
-                const maxC = parseFloat(ui.cAnimMax.value) || 2.0;
+                const maxC = parseFloat(ui.cAnimMax.value) || 32.000;
                 // Clamp current C to ensure it falls within the anim bounds
                 let currentC = Math.max(minC, Math.min(maxC, userBase.c));
                 
@@ -1320,8 +1324,12 @@
             }
         });
 
-        ui.nAutoValue.addEventListener('click', () => {
-            if (ui.nAutoValue.checked) {
+        ui.nAutoValue.addEventListener('change', () => {
+            const isAuto = ui.nAutoValue.checked;
+            ui.nSlider.disabled = isAuto;
+            ui.nNumber.disabled = isAuto;
+            
+            if (isAuto) {
                 // Instantly sync the current valid value into view
                 updateC(userBase.c); 
             }
@@ -1339,7 +1347,7 @@
             userBase.n = Math.floor(Math.pow(10.0000, logN));
             
             const minC = cPrecision === 6 ? 0.000001 : 0.001;
-            let randC = Number((Math.random() * 2.0).toFixed(cPrecision));
+            let randC = Number((Math.random() * 4.0).toFixed(cPrecision));
             if(randC < minC) randC = minC;
             
             updateC(randC); 
@@ -1493,6 +1501,12 @@
         updateConfigDropdown(); 
         updatePresetDropdown();
         compileFunction();
+        
+        // Process default Auto N immediately on load
+        if (ui.nAutoValue.checked) {
+            applySymmetryLock();
+        }
+        
         liveLoop();
 
         // --- MOBILE UI MINIMIZE LOGIC ---
