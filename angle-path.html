@@ -232,6 +232,16 @@
         </div>
 
         <div class="control-group">
+            <div class="label-row">
+                <span>Line Width</span>
+                <input type="number" id="lw-number" class="num-input" min="0.01" max="10.0" step="0.05" value="1.0">
+            </div>
+            <div class="input-row">
+                <input type="range" id="lw-input" min="0.01" max="10.0" step="0.05" value="1.0" style="width: 130px;">
+            </div>
+        </div>
+
+        <div class="control-group">
             <div class="label-row"><span>Style</span></div>
             <select id="style-select" style="height: 24px;">
                 <option value="neon">Neon Glow (Dark)</option>
@@ -352,6 +362,10 @@
 
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
+
+            lwSlider: document.getElementById('lw-input'),
+            lwNumber: document.getElementById('lw-number'),
+
             style: document.getElementById('style-select'), 
             pauseOverlay: document.getElementById('pause-overlay'),
             recBtn: document.getElementById('rec-btn'), 
@@ -418,6 +432,7 @@
                 cAnimMin: parseFloat(ui.cAnimMin.value),
                 cAnimMax: parseFloat(ui.cAnimMax.value),
                 speed: parseInt(ui.speed.value),
+                lineWidth: parseFloat(ui.lwSlider.value),
                 style: ui.style.value,
                 code: ui.editor.value
             };
@@ -454,6 +469,13 @@
 
             ui.speed.value = config.speed || 5;
             ui.spdLabel.textContent = ui.speed.value;
+
+            if (config.lineWidth !== undefined) {
+                updateLineWidth(config.lineWidth);
+            } else {
+                updateLineWidth(1.0); // Default for older configs
+            }
+
             ui.style.value = config.style || 'neon';
 
             compileFunction();
@@ -669,7 +691,9 @@
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             
-            let baseLineWidth = Math.max(0.1, 80000 / N) / scale;
+            let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
+            let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
+            
             if (isZoomed) baseLineWidth *= 1.5;
 
             const MAX_PATH_SIZE = 500000; 
@@ -1081,6 +1105,22 @@
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
 
+        const updateLineWidth = (val) => {
+            let v = parseFloat(val);
+            if (v < 0.01) v = 0.01;
+            ui.lwSlider.value = v.toFixed(2);
+            ui.lwNumber.value = v.toFixed(2);
+            
+            // Unpause the canvas to show the updated line thickness immediately
+            if (isPaused) { 
+                isPaused = false; 
+                ui.pauseOverlay.style.display = 'none'; 
+            }
+        };
+
+        ui.lwSlider.oninput = (e) => updateLineWidth(e.target.value);
+        ui.lwNumber.onchange = (e) => updateLineWidth(e.target.value);
+
         // Mutual Exclusivity and Dynamic Min/Max Logic
         ui.nAnim.addEventListener('change', () => {
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
@@ -1252,7 +1292,8 @@
                     const bbHeight = (bounds.maxY - bounds.minY) + pad * 2;
                     
                     // Base stroke width relative to the raw viewport mapping
-                    let baseLineWidth = Math.max(0.1, 80000 / N);
+                    let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
+                    let baseLineWidth = Math.max(0.1, 80000 / N) * lwMultiplier;
 
                     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${bbWidth} ${bbHeight}" style="background-color: ${bg};">\n`;
 
