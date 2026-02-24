@@ -192,6 +192,11 @@
         <button id="info-btn" class="btn-info" title="Information">?</button>
 
         <div class="control-group">
+            <div class="label-row" style="margin-top: 4px; border-top: 1px solid #222; padding-top: 4px;">
+                <label for="n-auto-value" style="font-size: 0.7rem; color: var(--accent); cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <input type="checkbox" id="n-auto-value" style="margin:0;"> LOCK SYMMETRY (AUTO N)
+                </label>
+            </div>
             <div class="label-row">
                 <span>Steps (N)</span>
                 <input type="number" id="n-number" class="num-input" min="1" max="5000000" step="1000" value="90000">
@@ -308,6 +313,9 @@
                 
                 <h3>Centering & Scaling</h3>
                 <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
+                
+                <h3>Symmetry Lock (Auto N)</h3>
+                <p>Checking <strong>Lock Symmetry</strong> automates the calculation of N based on the constant C. It uses the mathematical relation $c \cdot N / m = 180$ to find the smallest number of steps required to complete a rotationally symmetric rosette. This allows you to explore different C values while the shape stays perfectly "closed."</p>
             </div>
 
             <div id="canvas-container">
@@ -333,6 +341,7 @@
             nAnimSettings: document.getElementById('n-anim-settings'),
             nAnimMin: document.getElementById('n-anim-min'),
             nAnimMax: document.getElementById('n-anim-max'),
+            nAutoValue: document.getElementById('n-auto-value'),
 
             cSlider: document.getElementById('c-input'),
             cNumber: document.getElementById('c-number'), 
@@ -969,6 +978,45 @@
             animationFrameId = requestAnimationFrame(liveLoop);
         }
 
+        // --- ROSETTE ALGORITHM ---
+        function calculateRosetteN(C) {
+            if (C <= 0) return null;
+            
+            // 1. Find Raw Period
+            let P_raw = 0;
+            for (let u = 1; u <= 10000; u++) {
+                let val = (180 * u) / C;
+                if (Math.abs(val - Math.round(val)) < 1e-6) {
+                    P_raw = Math.round(val);
+                    break;
+                }
+            }
+            if (P_raw === 0) return null; // Fallback if no clean period is found
+
+            // 2. The Inversion Check
+            let remainder = (C * P_raw * P_raw) % 360;
+            let P_true = P_raw;
+            // Account for float precision
+            if (Math.abs(remainder - 180) < 1e-4 || Math.abs(remainder + 180) < 1e-4) {
+                P_true = P_raw * 2;
+            }
+
+            // 3. Find Sector Angle
+            let p = P_true;
+            let sumAngle = C * p * (p + 1) * (2 * p + 1) / 6;
+            let deltaTheta = Math.round(sumAngle % 360);
+            if (deltaTheta < 0) deltaTheta += 360;
+            if (deltaTheta === 360) deltaTheta = 0;
+
+            // 4. Calculate Petals
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            let m = 360 / gcd(360, deltaTheta);
+
+            // 5. Compute Total N
+            return p * m;
+        }
+        // -------------------------
+
         const updateN = (val, fromSlider = false) => {
             let v;
             if (fromSlider) {
@@ -999,6 +1047,15 @@
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
+        function applySymmetryLock() {
+            const perfectN = calculateRosetteN(userBase.c);
+            if (perfectN) {
+                const clampedN = Math.min(perfectN, 5000000);
+                updateN(clampedN, false); // false prevents double-render
+                liveRender();
+            }
+        }
+
         ui.nSlider.oninput = (e) => updateN(e.target.value, true);
         ui.nNumber.onchange = (e) => updateN(e.target.value, false);
 
@@ -1010,6 +1067,10 @@
             userBase.c = v;
             ui.cSlider.value = v.toFixed(cPrecision);
             ui.cNumber.value = v.toFixed(cPrecision);
+
+            if (ui.autoN.checked) {
+                applySymmetryLock();
+            }
             
             if (isPaused) 
             { 
@@ -1092,6 +1153,12 @@
                 updatePresetDropdown();
                 ui.presetSelect.value = `user:${name}`;
                 compileFunction();
+            }
+        });
+
+        ui.nAutoValue.addEventListener('click', () => {
+            if (ui.nAutoValue.checked) {
+                applySymmetryLock();
             }
         });
 
