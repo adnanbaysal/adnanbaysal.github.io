@@ -161,7 +161,7 @@
         .dot { width: 10px; height: 10px; background: #eb4d4b; border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        * --- Info Modal --- */
+        /* --- Info Modal --- */
         #info-modal {
             position: absolute; 
             top: 20px;            /* Consistent margin from top */
@@ -1103,8 +1103,9 @@
             if (C <= 0) return null;
             
             // 1. Find Raw Period
+            let magicUpperBound = 12;  // Seems like magic, I'n not convinced the rationale for this choice
             let P_raw = 0;
-            for (let u = 1; u <= 10000; u++) {
+            for (let u = 1; u <= magicUpperBound; u++) {
                 let val = (180 * u) / C;
                 if (Math.abs(val - Math.round(val)) < 1e-6) {
                     P_raw = Math.round(val);
@@ -1181,8 +1182,36 @@
         const updateC = (val) => {
             let v = parseFloat(val);
             const minVal = cPrecision === 6 ? 0.000001 : 0.001;
-            if (v < minVal) v = minVal; 
             
+            if (v < minVal) v = minVal;
+            if (v > 2.000) v = 2.000;
+
+            if (ui.nAutoValue.checked) {
+                let prevC = parseFloat(userBase.c);
+                let stepDir = v < prevC ? -1 : 1;
+                let stepSize = cPrecision === 6 ? 0.000001 : 0.001;
+
+                let testC = v;
+                let foundPerfectN = calculateRosetteN(testC);
+
+                while (!foundPerfectN) {
+                    testC += stepDir * stepSize;
+                    testC = Number(testC.toFixed(cPrecision)); // Keep exact float to avoid precision drift
+
+                    if (testC < minVal) {
+                        testC = minVal;
+                        break;
+                    }
+                    if (testC > 2.000) {
+                        testC = 2.000;
+                        break;
+                    }
+
+                    foundPerfectN = calculateRosetteN(testC);
+                }
+                v = testC;
+            }
+
             userBase.c = v;
             ui.cSlider.value = v.toFixed(cPrecision);
             ui.cNumber.value = v.toFixed(cPrecision);
@@ -1190,7 +1219,7 @@
             if (ui.nAutoValue.checked) {
                 applySymmetryLock();
             }
-            
+
             if (isPaused) 
             { 
                 isPaused = false; 
@@ -1293,7 +1322,8 @@
 
         ui.nAutoValue.addEventListener('click', () => {
             if (ui.nAutoValue.checked) {
-                applySymmetryLock();
+                // Instantly sync the current valid value into view
+                updateC(userBase.c); 
             }
         });
 
