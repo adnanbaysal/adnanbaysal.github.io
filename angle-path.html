@@ -226,12 +226,25 @@
         .btn-info { background: transparent; border: 1px solid #444; color: #888; width: 34px; padding: 0; font-size: 14px; margin-top: 2px; }
         .btn-info:hover { color: #fff; border-color: #fff; }
         .btn-icon { padding: 0 8px; font-size: 14px; }
-        #reset-zoom-btn { 
-            background: #444 !important; 
-            color: #777 !important; 
-            cursor: not-allowed; 
+        #reset-zoom-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #333;
+            color: #ccc;
+            padding: 0 8px;
+            border: none;
+            border-radius: 4px;
+            height: 28px;
+            cursor: pointer;
+        }
+
+        /* Disabled appearance when there's nothing to reset */
+        #reset-zoom-btn:disabled {
+            cursor: not-allowed;
             opacity: 0.5;
-            display: flex !important; 
+            background: #444;
+            color: #777;
         }
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
@@ -492,6 +505,8 @@
 
             saveSvgBtn: document.getElementById('save-svg-btn')
         };
+
+        ui.resetZoomBtn.disabled = true;
 
         const builtinConfigs = {
             "Default Neon": { n: 90000, c: 0.024, speed: 5, style: "neon", nAnim: false, cAnim: false, code: "return n * n;" },
@@ -939,10 +954,10 @@
             // Initialize panning threshold
             if (!isPanning && dist > 10) {
                 isPanning = true;
-                if (!isZoomed) {
+                    if (!isZoomed) {
                     zoomBounds = calculatePath(userBase.n, userBase.c);
                     isZoomed = true;
-                    ui.resetZoomBtn.style.display = 'inline-block';
+                    ui.resetZoomBtn.disabled = false;
                 }
                 startZoomBounds = { ...zoomBounds };
             }
@@ -987,7 +1002,7 @@
             if (!isZoomed) {
                 zoomBounds = calculatePath(userBase.n, userBase.c);
                 isZoomed = true;
-                ui.resetZoomBtn.style.display = 'inline-block';
+                ui.resetZoomBtn.disabled = false;
             }
 
             const pointerLogical = screenToLogical(e.clientX, e.clientY);
@@ -1022,7 +1037,7 @@
                     if (!isZoomed) {
                         zoomBounds = calculatePath(userBase.n, userBase.c);
                         isZoomed = true;
-                        ui.resetZoomBtn.style.display = 'inline-block';
+                        ui.resetZoomBtn.disabled = false;
                     }
 
                     const zoomFactor = lastPinchDist / currentDist; 
@@ -1048,7 +1063,7 @@
 
         function resetZoom() {
             isZoomed = false;
-            ui.resetZoomBtn.style.display = 'none';
+            ui.resetZoomBtn.disabled = true;
         }
         ui.resetZoomBtn.addEventListener('click', resetZoom);
 
