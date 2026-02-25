@@ -6,18 +6,17 @@
     <title>Adnan Baysal - Portfolio</title>
     <style>
         :root { --bg: #050505; --card-bg: #111; --text: #eee; --accent: #00d4ff; }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: var(--bg); color: var(--text); margin: 0; padding: 0;
             min-height: 100vh; display: flex; flex-direction: column;
         }
 
-        header {
-            padding: 40px 20px 20px 20px; text-align: center; border-bottom: 1px solid #222;
-        }
+        /* --- Header & Nav --- */
+        header { padding: 40px 20px 20px 20px; text-align: center; border-bottom: 1px solid #222; }
         h1 { margin: 0; font-weight: 300; letter-spacing: 2px; }
         p.subtitle { color: #888; font-size: 0.9rem; margin-top: 10px; }
-
         nav { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
         nav a { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         nav a:hover { text-decoration: underline; }
@@ -27,75 +26,55 @@
             color: #aaa; line-height: 1.6; text-align: center; font-size: 1rem;
         }
 
+        /* --- Project Grid (Now a Flex Column) --- */
         main {
-            max-width: 1000px; 
-            margin: 40px auto; 
-            width: 100%; 
-            padding: 0 20px;
-            display: flex; 
-            flex-direction: column;
-            gap: 30px; 
+            max-width: 1000px; margin: 40px auto; width: 100%; padding: 0 20px;
+            display: flex; flex-direction: column; gap: 30px; 
         }
 
+        /* --- The Card --- */
         .card {
-            background: var(--card-bg); 
-            border: 1px solid #222; 
-            border-radius: 8px;
-            padding: 20px; 
-            transition: transform 0.2s, border-color 0.2s;
-            text-decoration: none; 
-            color: inherit; 
-            display: flex; 
-            flex-direction: row; 
-            gap: 25px;
-            align-items: flex-start; 
+            background: var(--card-bg); border: 1px solid #222; border-radius: 8px;
+            padding: 20px; transition: transform 0.2s, border-color 0.2s;
+            text-decoration: none; color: inherit; 
+            display: flex; flex-direction: row; gap: 25px;
+            align-items: stretch; /* Forces content to match image height */
         }
-
         .card:hover { transform: translateY(-5px); border-color: var(--accent); }
 
+        /* --- Image & Content --- */
         .card-img {
-            width: 250px;
-            flex-shrink: 0;
-            aspect-ratio: 1 / 1; 
-            object-fit: cover; 
-            border-radius: 6px;
+            width: 250px; height: 250px; /* Fixed square dimensions */
+            flex-shrink: 0; object-fit: cover; border-radius: 6px;
             background-color: #1a1a1a; 
         }
 
         .card-content {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            height: 100%; 
+            display: flex; flex-direction: column; flex-grow: 1;
+            /* Note: No 'height: 100%' here; flex-grow handles it */
         }
 
         .card-content h2 { margin: 0 0 5px 0; font-size: 1.4rem; color: var(--accent); }
         .card-content small { color: #666; margin-bottom: 12px; display: block; }
-        .card-content p { font-size: 1rem; color: #aaa; line-height: 1.6; margin: 0 0 15px 0; flex-grow: 1; }
-
-        .card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--accent); }
-        .card p { font-size: 0.9rem; color: #aaa; line-height: 1.5; flex-grow: 1; }
+        .card-content p { font-size: 1rem; color: #aaa; line-height: 1.6; margin: 0; }
         
-        .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; /* Pushes tags to the bottom */ }
+        /* --- Tags Aligned at Bottom --- */
+        .tags { 
+            margin-top: auto; /* Pushes tags to the absolute bottom of the card-content */
+            display: flex; gap: 8px; flex-wrap: wrap; 
+            padding-top: 20px; justify-content: flex-start;
+        }
         .tag { font-size: 0.75rem; background: #222; padding: 4px 8px; border-radius: 4px; color: #888; }
 
-        footer { 
-            margin-top: auto; padding: 20px; text-align: center; 
-            font-size: 0.8rem; color: #444; border-top: 1px solid #111; 
-        }
-        
-        #loading { text-align: center; grid-column: 1 / -1; color: #444; }
+        /* --- Footer & UI --- */
+        footer { margin-top: auto; padding: 40px 20px; text-align: center; font-size: 0.8rem; color: #444; border-top: 1px solid #111; }
+        #loading { text-align: center; color: #444; width: 100%; }
 
-        /* Mobile Responsiveness */
+        /* --- Responsive Mobile View --- */
         @media (max-width: 768px) {
-            .card {
-                flex-direction: column;
-                padding: 15px;
-                gap: 15px;
-            }
-            .card-img {
-                width: 100%;
-            }
+            .card { flex-direction: column; padding: 15px; gap: 15px; }
+            .card-img { width: 100%; height: auto; aspect-ratio: 1/1; }
+            .tags { margin-top: 20px; } /* Space on mobile where height is variable */
         }
     </style>
 </head>
