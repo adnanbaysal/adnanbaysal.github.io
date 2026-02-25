@@ -1,2 +1,4 @@
 .DS_Store
 TODOs.md
+_temp_*
+.vscode

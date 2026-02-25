@@ -4,6 +4,7 @@
         "title": "Star Fractal",
         "description": "A recursive star-like fractal generator with animation.",
         "url": "./star-fractal.html",
+        "image": "media/star-fractal.png",
         "tags": [
             "Canvas API",
             "Recursion",
@@ -16,6 +17,7 @@
         "title": "Reflections inside a closed mirror",
         "description": "A circular light wave reflection simulation inside an closed shaped mirror. AVOID IF YOU HAVE EPILEPSY OR SIMILAR DISEASE!",
         "url": "./mirror-sim.html",
+        "image": "media/mirror-sim.png",
         "tags": [
             "Canvas API",
             "Phsical Simulation",
@@ -28,6 +30,7 @@
         "title": "Truchet-Smith Tiling",
         "description": "Smith's version of Truchet tiling with user defined tiling functions.",
         "url": "./truchet.html",
+        "image": "media/truchet.png",
         "tags": [
             "Canvas API",
             "Truchet tiling",
@@ -40,6 +43,7 @@
         "title": "Hexagonal Truchet-Smith Tiling",
         "description": "Hexagonal variant of the Smith's version of Truchet tiling with user defined tiling functions.",
         "url": "./hex-truchet.html",
+        "image": "media/hex-truchet.png",
         "tags": [
             "Canvas API",
             "Truchet tiling",
@@ -52,6 +56,7 @@
         "title": "Chaos with Angle Paths",
         "description": "Drawing angle paths with function based angle rotation that produce chaotic but beautiful patterns.",
         "url": "./angle-path.html",
+        "image": "media/angle-path.png",
         "tags": [
             "Canvas API",
             "Angle Path",
