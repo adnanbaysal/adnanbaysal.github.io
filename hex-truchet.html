@@ -187,7 +187,7 @@
         
         <div class="control-group">
             <div class="label-row"><span>Radius (N)</span> <span id="n-val" class="value">7</span></div>
-            <input type="range" id="param-n" min="1" max="64" step="1" value="6">
+            <input type="range" id="param-n" min="1" max="100" step="1" value="16">
         </div>
 
         <div class="control-group">
@@ -209,7 +209,7 @@
             </select>
             
             <label class="check-group" title="Fill regions">
-                <input type="checkbox" id="check-filled"> Filled
+                <input type="checkbox" id="check-filled" checked="true"> Filled
             </label>
             
             <label class="check-group" title="Show Grid Lines">
@@ -333,10 +333,10 @@
      */
     // N = Internal Radius (0-indexed). 
     // Slider shows N + 1. 
-    // Default 7 on slider => N = 6.
-    let N = 6; 
+    // Default 16 on slider => N = 15.
+    let N = 15; 
     let lineWidth = 2.0;
-    let isFilled = false;
+    let isFilled = true;
     let showGrid = false;
     let isInvertedFill = false;
     let drawMode = 'two-lines'; 

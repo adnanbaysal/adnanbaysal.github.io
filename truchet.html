@@ -182,8 +182,8 @@
         <button id="info-btn" class="btn-sec btn-icon">?</button>
         
         <div class="control-group">
-            <div class="label-row"><span>Grid (N)</span> <span id="n-val" class="value">12</span></div>
-            <input type="range" id="param-n" min="1" max="64" step="1" value="8">
+            <div class="label-row"><span>Grid (N)</span> <span id="n-val" class="value">32</span></div>
+            <input type="range" id="param-n" min="1" max="100" step="1" value="32">
         </div>
 
         <div class="control-group">
@@ -204,7 +204,7 @@
             </select>
             
             <label class="check-group" title="Fill regions with unit width">
-                <input type="checkbox" id="check-filled"> Filled
+                <input type="checkbox" id="check-filled" checked="true"> Filled
             </label>
             
             <label class="check-group" title="Show Grid Lines">
@@ -309,9 +309,9 @@
     /**
      * STATE & CONFIG
      */
-    let N = 12;
+    let N = 32;
     let lineWidth = 2.5;
-    let isFilled = false;
+    let isFilled = true;
     let showGrid = false;
     let isInvertedFill = false;
     let drawMode = 'straight'; 
