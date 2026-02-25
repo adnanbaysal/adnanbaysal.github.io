@@ -35,9 +35,24 @@
         }
 
         .card {
-            background: var(--card-bg); border: 1px solid #222; border-radius: 8px;
-            padding: 20px; transition: transform 0.2s, border-color 0.2s;
-            text-decoration: none; color: inherit; display: flex; flex-direction: column;
+            background: var(--card-bg); 
+            border: 1px solid #222; 
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.2s, border-color 0.2s;
+            text-decoration: none; 
+            color: inherit; 
+            display: flex; 
+            flex-direction: column;
+        }
+
+        .card-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover; 
+            border-radius: 4px; 
+            margin-bottom: 15px;
+            background-color: #1a1a1a;
         }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); }
         .card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--accent); }
@@ -92,8 +107,18 @@
                     const card = document.createElement('a');
                     card.className = 'card';
                     card.href = proj.url;
+
                     let tagsHtml = proj.tags.map(t => `<span class="tag">${t}</span>`).join('');
-                    card.innerHTML = `<h2>${proj.title}</h2><small>${proj.date}</small><p>${proj.description}</p><div class="tags">${tagsHtml}</div>`;
+
+                    let imagePath = proj.image ? proj.image : 'media/default-placeholder.jpg';
+
+                    card.innerHTML = `
+                        <img src="${imagePath}" alt="${proj.title} thumbnail" class="card-img" loading="lazy">
+                        <h2>${proj.title}</h2>
+                        <small style="color: #666; margin-bottom: 10px; display: block;">${proj.date}</small>
+                        <p>${proj.description}</p>
+                        <div class="tags">${tagsHtml}</div>
+                    `;
                     grid.appendChild(card);
                 });
             } catch (e) {
