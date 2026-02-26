@@ -298,10 +298,10 @@
         <div class="control-group">
             <div class="group-header">
                 <span>Steps (N)</span>
-                <input type="number" id="n-number" class="num-input" min="1" max="5000000" step="1000" value="90000" disabled>
+                <input type="number" id="n-number" class="num-input" min="1" max="3600000" step="1000" value="90000" disabled>
             </div>
             <div class="slider-row">
-                <input type="range" id="n-input" min="3" max="6.69897" step="0.0001" value="4.9542" disabled>
+                <input type="range" id="n-input" min="3" max="6.556303" step="0.0001" value="4.9542" disabled>
             </div>
             <div class="toggles-row">
                 <label for="n-anim"><input type="checkbox" id="n-anim"> ANIMATE</label>
@@ -309,24 +309,24 @@
             </div>
             <div id="n-anim-settings" class="anim-settings">
                 <label>Min <input type="number" id="n-anim-min" class="num-input" value="1000" min="1"></label>
-                <label>Max <input type="number" id="n-anim-max" class="num-input" value="5000000" max="5000000"></label>
+                <label>Max <input type="number" id="n-anim-max" class="num-input" value="3600000" max="3600000"></label>
             </div>
         </div>
 
         <div class="control-group">
             <div class="group-header">
                 <span>C Multiplier</span>
-                <input type="number" id="c-number" class="num-input" min="0.001" max="32.000" step="0.001" value="0.024">
+                <input type="number" id="c-number" class="num-input" min="0.00180" max="32.000" step="0.00001" value="0.02400">
             </div>
             <div class="slider-row">
-                <input type="range" id="c-input" min="0.001" max="32.000" step="0.001" value="0.024">
+                <input type="range" id="c-input" min="0.00180" max="32.000" step="0.00001" value="0.02400">
             </div>
             <div class="toggles-row">
                 <label for="c-anim"><input type="checkbox" id="c-anim"> ANIMATE</label>
             </div>
             <div id="c-anim-settings" class="anim-settings">
-                <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.000" step="0.001"></label>
-                <label>Max <input type="number" id="c-anim-max" class="num-input" value="32.000" step="0.001"></label>
+                <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001"></label>
+                <label>Max <input type="number" id="c-anim-max" class="num-input" value="32.00000" step="0.00001"></label>
             </div>
         </div>
 
@@ -670,7 +670,7 @@
         let isPaused = false;
         let animationFrameId;
         let userBase = { n: 90000, c: 0.024 };
-        let cPrecision = 3; // Core dynamic precision state tracking
+        let cPrecision = 5; // Core dynamic precision state tracking
 
         let glowStartN = 0;
         let glowEndN = 0;
@@ -683,7 +683,8 @@
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
-        let points = new Float32Array((5000000 + 1) * 2);
+        const MAX_N = 3600000;
+        let points = new Float32Array((MAX_N + 1) * 2);
 
         function updatePresetDropdown() {
             ui.userGroup.innerHTML = '';
@@ -698,7 +699,7 @@
         function updateCPrecision() {
             const code = ui.editor.value.trim();
             // Check exactly matching 3-digit functions
-            const isStandard3Digit = (
+            const isStandard5Digit = (
                 code === presets['n2'] || 
                 code === presets['n'] || 
                 code === presets['n3'] || 
@@ -706,10 +707,10 @@
                 code === presets['sqrt']
             );
             
-            cPrecision = isStandard3Digit ? 3 : 6;
+            cPrecision = isStandard5Digit ? 5 : 6;
 
-            const step = cPrecision === 6 ? "0.000001" : "0.001";
-            const minVal = cPrecision === 6 ? "0.000001" : "0.001";
+            const step = cPrecision === 6 ? "0.000001" : "0.00001";
+            const minVal = cPrecision === 6 ? "0.000001" : "0.00001";
 
             ui.cSlider.step = step;
             ui.cSlider.min = minVal;
@@ -1095,7 +1096,7 @@
                 if (ui.nAnim.checked) {
                     const easedProgress = Math.pow(pingPong, 2); 
                     const minN = parseInt(ui.nAnimMin.value) || 1;
-                    const maxN = parseInt(ui.nAnimMax.value) || 5000000;
+                    const maxN = parseInt(ui.nAnimMax.value) || MAX_N;
                     aN = Math.floor(minN + (maxN - minN) * easedProgress);
                     
                     ui.nNumber.value = aN;
@@ -1166,7 +1167,7 @@
             }
 
             if (isNaN(v)) v = 1000;
-            if (v > 5000000) v = 5000000;
+            if (v > MAX_N) v = MAX_N;
 
             if (v > userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 glowStartN = userBase.n;
@@ -1190,7 +1191,7 @@
         function applySymmetryLock() {
             const perfectN = calculateRosetteN(userBase.c);
             if (perfectN) {
-                const clampedN = Math.min(perfectN, 5000000);
+                const clampedN = Math.min(perfectN, MAX_N);
                 updateN(clampedN, false); // false prevents double-render
             }
         }
@@ -1200,7 +1201,7 @@
 
         const updateC = (val) => {
             let v = parseFloat(val);
-            const minVal = cPrecision === 6 ? 0.000001 : 0.001;
+            const minVal = cPrecision === 6 ? 0.000001 : 0.00001;
             
             if (v < minVal) v = minVal;
             if (v > 32.000) v = 32.000;
@@ -1208,7 +1209,7 @@
             if (ui.nAutoValue.checked) {
                 let prevC = parseFloat(userBase.c);
                 let stepDir = v < prevC ? -1 : 1;
-                let stepSize = cPrecision === 6 ? 0.000001 : 0.001;
+                let stepSize = cPrecision === 6 ? 0.000001 : 0.00001;
 
                 let testC = v;
                 let foundPerfectN = calculateRosetteN(testC);
@@ -1274,7 +1275,7 @@
                 
                 // --- Sync virtualTime to the current N value ---
                 const minN = parseInt(ui.nAnimMin.value) || 1;
-                const maxN = parseInt(ui.nAnimMax.value) || 5000000;
+                const maxN = parseInt(ui.nAnimMax.value) || MAX_N;
                 // Clamp current N to ensure it falls within the anim bounds
                 let currentN = Math.max(minN, Math.min(maxN, userBase.n));
                 
@@ -1361,7 +1362,7 @@
             let logN = 3.0000 + Math.random() * 3.69897; 
             userBase.n = Math.floor(Math.pow(10.0000, logN));
             
-            const minC = cPrecision === 6 ? 0.000001 : 0.001;
+            const minC = cPrecision === 6 ? 0.000001 : 0.00001;
             let randC = Number((Math.random() * 4.0).toFixed(cPrecision));
             if(randC < minC) randC = minC;
             
