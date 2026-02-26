@@ -698,6 +698,35 @@
         const MAX_N = 3600000;
         let points = new Float32Array((MAX_N + 1) * 2);
 
+        // --- HELPER FUNCTION FOR LINE WIDTH ---
+        function getIdealLineWidth(n) {
+            const table = [
+                [1, 0.01], [10, 0.01], [100, 0.03], [1000, 0.06],
+                [10000, 0.6], [100000, 1.5], [180000, 2.6], [250000, 3.0],
+                [320000, 3.5], [576000, 4.1], [675000, 5.3], [720000, 5.8],
+                [1125000, 6.5]
+            ];
+            
+            if (n <= table[0][0]) return table[0][1];
+            
+            if (n >= table[table.length - 1][0]) {
+                const last = table[table.length - 1];
+                const prev = table[table.length - 2];
+                const slope = (last[1] - prev[1]) / (last[0] - prev[0]);
+                let extrapolated = last[1] + slope * (n - last[0]);
+                return Math.min(extrapolated, 10.0); // Cap at max UI slider value
+            }
+            
+            // Linear Interpolation (LERP) between provided bounds
+            for (let i = 0; i < table.length - 1; i++) {
+                if (n >= table[i][0] && n <= table[i+1][0]) {
+                    const ratio = (n - table[i][0]) / (table[i+1][0] - table[i][0]);
+                    return table[i][1] + ratio * (table[i+1][1] - table[i][1]);
+                }
+            }
+            return 1.0;
+        }
+
         function updatePresetDropdown() {
             ui.userGroup.innerHTML = '';
             Object.keys(userPresets).forEach(name => {
@@ -1113,6 +1142,11 @@
                     
                     ui.nNumber.value = aN;
                     ui.nSlider.value = Math.log10(Math.max(1, aN)); // Keep it above 0 to prevent log issues
+                    
+                    // Sync the Line Width slider dynamically with the animated N
+                    const autoLw = getIdealLineWidth(aN);
+                    ui.lwSlider.value = autoLw.toFixed(2);
+                    ui.lwNumber.value = autoLw.toFixed(2);
                 } 
                 else if (ui.cAnim.checked) {
                     const minC = parseFloat(ui.cAnimMin.value) || 0;
@@ -1196,6 +1230,9 @@
             userBase.n = v;
             ui.nNumber.value = v;
             ui.nSlider.value = Math.log10(v).toFixed(5);
+
+            // Automatically sync the line width bounds to the new N value
+            updateLineWidth(getIdealLineWidth(v));
 
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
@@ -1402,6 +1439,9 @@
 
             ui.nSlider.value = Math.log10(userBase.n); 
             ui.nNumber.value = userBase.n;
+            
+            // Sync Line Width immediately
+            updateLineWidth(getIdealLineWidth(userBase.n));
 
             const animChoice = Math.floor(Math.random() * 3);
             ui.nAnim.checked = (animChoice === 1);
