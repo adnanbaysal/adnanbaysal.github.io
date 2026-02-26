@@ -298,7 +298,11 @@
         <div class="control-group">
             <div class="group-header">
                 <span>Steps (N)</span>
-                <input type="number" id="n-number" class="num-input" min="1" max="3600000" step="1000" value="90000" disabled>
+                <div style="display: flex; gap: 3px; align-items: center;">
+                    <button id="n-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease N" disabled>-</button>
+                    <input type="number" id="n-number" class="num-input" min="1" max="3600000" step="1000" value="90000" disabled style="margin: 0;">
+                    <button id="n-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase N" disabled>+</button>
+                </div>
             </div>
             <div class="slider-row">
                 <input type="range" id="n-input" min="3" max="6.556303" step="0.0001" value="4.9542" disabled>
@@ -316,7 +320,11 @@
         <div class="control-group">
             <div class="group-header">
                 <span>C Multiplier</span>
-                <input type="number" id="c-number" class="num-input" min="0.00180" max="32.000" step="0.00001" value="0.02400">
+                <div style="display: flex; gap: 3px; align-items: center;">
+                    <button id="c-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease C">-</button>
+                    <input type="number" id="c-number" class="num-input" min="0.00180" max="32.000" step="0.00001" value="0.02400" style="margin: 0;">
+                    <button id="c-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase C">+</button>
+                </div>
             </div>
             <div class="slider-row">
                 <input type="range" id="c-input" min="0.00180" max="32.000" step="0.00001" value="0.02400">
@@ -465,6 +473,8 @@
             nAnimMin: document.getElementById('n-anim-min'),
             nAnimMax: document.getElementById('n-anim-max'),
             nAutoValue: document.getElementById('n-auto-value'),
+            nIncrBtn: document.getElementById('n-inc-btn'),
+            nDecrBtn: document.getElementById('n-dec-btn'),
 
             cSlider: document.getElementById('c-input'),
             cNumber: document.getElementById('c-number'), 
@@ -472,6 +482,8 @@
             cAnimSettings: document.getElementById('c-anim-settings'),
             cAnimMin: document.getElementById('c-anim-min'),
             cAnimMax: document.getElementById('c-anim-max'),
+            cIncrBtn: document.getElementById('c-inc-btn'),
+            cDecrBtn: document.getElementById('c-dec-btn'),
 
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
@@ -1250,6 +1262,24 @@
         ui.cSlider.oninput = (e) => updateC(e.target.value);
         ui.cNumber.onchange = (e) => updateC(e.target.value);
 
+        ui.cDecrBtn.addEventListener('click', () => {
+            const step = parseFloat(ui.cNumber.step);
+            updateC((parseFloat(userBase.c) - step).toFixed(cPrecision));
+        });
+
+        ui.cIncrBtn.addEventListener('click', () => {
+            const step = parseFloat(ui.cNumber.step);
+            updateC((parseFloat(userBase.c) + step).toFixed(cPrecision));
+        });
+
+        ui.nDecrBtn.addEventListener('click', () => {
+            updateN((parseInt(userBase.n) - 1));
+        });
+
+        ui.nIncrBtn.addEventListener('click', () => {
+            updateN((parseInt(userBase.n) + 1));
+        });
+
         const updateLineWidth = (val) => {
             let v = parseFloat(val);
             if (v < 0.01) v = 0.01;
@@ -1344,6 +1374,8 @@
             const isAuto = ui.nAutoValue.checked;
             ui.nSlider.disabled = isAuto;
             ui.nNumber.disabled = isAuto;
+            ui.nDecrBtn.disabled = isAuto;
+            ui.nIncrBtn.disabled = isAuto;
             
             if (isAuto) {
                 // Instantly sync the current valid value into view
