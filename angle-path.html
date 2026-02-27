@@ -322,29 +322,29 @@
                 <span>C Multiplier</span>
                 <div style="display: flex; gap: 3px; align-items: center;">
                     <button id="c-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease C">-</button>
-                    <input type="number" id="c-number" class="num-input" min="0.00180" max="32.000" step="0.00001" value="0.02400" style="margin: 0;">
+                    <input type="number" id="c-number" class="num-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="margin: 0;">
                     <button id="c-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase C">+</button>
                 </div>
             </div>
             <div class="slider-row">
-                <input type="range" id="c-input" min="0.00180" max="32.000" step="0.00001" value="0.02400">
+                <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400">
             </div>
             <div class="toggles-row">
                 <label for="c-anim"><input type="checkbox" id="c-anim"> ANIMATE</label>
             </div>
             <div id="c-anim-settings" class="anim-settings">
                 <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001"></label>
-                <label>Max <input type="number" id="c-anim-max" class="num-input" value="32.00000" step="0.00001"></label>
+                <label>Max <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001"></label>
             </div>
         </div>
 
         <div class="control-group">
             <div class="group-header">
                 <span>Line Width</span>
-                <input type="number" id="lw-number" class="num-input" min="0.01" max="10.0" step="0.05" value="1.0" style="width: 50px;">
+                <input type="number" id="lw-number" class="num-input" min="0.01" max="50.0" step="0.01" value="1.0" style="width: 50px;">
             </div>
             <div class="slider-row" style="margin-bottom: 12px;">
-                <input type="range" id="lw-input" min="0.01" max="10.0" step="0.05" value="1.0">
+                <input type="range" id="lw-input" min="0.01" max="50.0" step="0.01" value="1.0">
             </div>
             
             <div class="group-header">
@@ -404,7 +404,7 @@
                         <option value="n3">Cube (n³)</option>
                         <option value="nlog">n * log(n)</option>
                         <option value="nsin">n * sin(n)</option>
-                        <option value="sqrt">Square Root (√n)</option>
+                        <option value="sinn2">sin(n²)</option>
                     </optgroup>
                     <optgroup label="User Saved" id="user-presets-group">
                     </optgroup>
@@ -673,7 +673,7 @@
             'n3': 'return n * n * n;',
             'nlog': 'return n * Math.log(n);',
             'nsin': 'return n * Math.sin(n);',
-            'sqrt': 'return Math.sqrt(n);'
+            'sinn2': 'return Math.sin(n * n);'
         };
 
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
@@ -696,10 +696,15 @@
         let mediaRecorder, recordedChunks = [], recStartTime;
 
         const MAX_N = 3600000;
+        const MAX_C = 100.00000;
         let points = new Float32Array((MAX_N + 1) * 2);
 
-        // --- HELPER FUNCTION FOR LINE WIDTH ---
+        // --- HELPER FUNCTION FOR LINE WIDTH FOR N^2 FUNCTION ---
         function getIdealLineWidth(n) {
+            if (ui.editor.value.trim() !== presets['n2']) {
+                return parseFloat(ui.lwSlider.value);
+            }
+            
             const table = [
                 [1, 0.01], [10, 0.01], [100, 0.03], [1000, 0.06],
                 [10000, 0.6], [100000, 1.5], [180000, 2.6], [250000, 3.0],
@@ -1150,7 +1155,7 @@
                 } 
                 else if (ui.cAnim.checked) {
                     const minC = parseFloat(ui.cAnimMin.value) || 0;
-                    const maxC = parseFloat(ui.cAnimMax.value) || 32.000;
+                    const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
                     aC = minC + ((maxC - minC) * pingPong);
 
                     ui.cSlider.value = aC.toFixed(cPrecision);
@@ -1181,10 +1186,13 @@
             if (P_raw === 0) return null; // Fallback if no clean period is found
 
             // 2. The Inversion Check
-            let remainder = (C * P_raw * P_raw) % 360;
+            // Snap to the guaranteed integer to eliminate float drift
+            let totalAngle = Math.round(C * P_raw * P_raw); 
+            let remainder = totalAngle % 360;
+
             let P_true = P_raw;
-            // Account for float precision
-            if (Math.abs(remainder - 180) < 1e-4 || Math.abs(remainder + 180) < 1e-4) {
+            // Exact integer comparison is now safe
+            if (remainder === 180 || remainder === -180) {
                 P_true = P_raw * 2;
             }
 
@@ -1253,7 +1261,7 @@
             const minVal = cPrecision === 6 ? 0.000001 : 0.00001;
             
             if (v < minVal) v = minVal;
-            if (v > 32.000) v = 32.000;
+            if (v > MAX_C) v = MAX_C;
 
             if (ui.nAutoValue.checked) {
                 let prevC = parseFloat(userBase.c);
@@ -1271,8 +1279,8 @@
                         testC = minVal;
                         break;
                     }
-                    if (testC > 32.000) {
-                        testC = 32.000;
+                    if (testC > MAX_C) {
+                        testC = MAX_C;
                         break;
                     }
 
@@ -1367,7 +1375,7 @@
                 
                 // --- Sync virtualTime to the current C value ---
                 const minC = parseFloat(ui.cAnimMin.value) || 0;
-                const maxC = parseFloat(ui.cAnimMax.value) || 32.000;
+                const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
                 // Clamp current C to ensure it falls within the anim bounds
                 let currentC = Math.max(minC, Math.min(maxC, userBase.c));
                 
@@ -1460,20 +1468,41 @@
         const toggleRec = () => {
             if (mediaRecorder && mediaRecorder.state === "recording") {
                 mediaRecorder.stop();
-                ui.recBtn.textContent = "⏺ Record"; ui.recInd.style.display = 'none';
+                ui.recBtn.textContent = "⏺ Record"; 
+                ui.recInd.style.display = 'none';
             } else {
                 recordedChunks = [];
-                const stream = canvas.captureStream(60);
-                try { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' }); } 
-                catch (e) { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); }
+                // Capture at 60fps
+                const stream = canvas.captureStream(60); 
+
+                const options = { 
+                    mimeType: 'video/webm;codecs=vp9',
+                    videoBitsPerSecond: 8000000 // 8 Mbps
+                };
+
+                try { 
+                    mediaRecorder = new MediaRecorder(stream, options); 
+                } catch (e) { 
+                    // Fallback for browsers that don't support VP9
+                    mediaRecorder = new MediaRecorder(stream, { 
+                        mimeType: 'video/webm',
+                        videoBitsPerSecond: 8000000
+                    }); 
+                }
+
                 mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
                 mediaRecorder.onstop = () => {
                     const b = new Blob(recordedChunks, { type: 'video/webm' });
-                    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `anglepath-${Date.now()}.webm`; a.click();
+                    const a = document.createElement('a'); 
+                    a.href = URL.createObjectURL(b); 
+                    a.download = `anglepath-${Date.now()}.webm`; 
+                    a.click();
                 };
+
                 recStartTime = performance.now();
                 mediaRecorder.start();
-                ui.recBtn.textContent = "⏹ Stop"; ui.recInd.style.display = 'flex';
+                ui.recBtn.textContent = "⏹ Stop"; 
+                ui.recInd.style.display = 'flex';
             }
         };
 
