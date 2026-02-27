@@ -1515,7 +1515,8 @@
                     
                     // Base stroke width relative to the raw viewport mapping
                     let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
-                    let baseLineWidth = Math.max(0.1, 80000 / N) * lwMultiplier;
+                    const scale = Math.min(1600 / (bbWidth || 1), 1600 / (bbHeight || 1)) * 0.90;
+                    let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
 
                     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${bbWidth} ${bbHeight}" style="background-color: ${bg};">\n`;
 
