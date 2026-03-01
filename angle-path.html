@@ -1042,6 +1042,15 @@
             if (config.cAnimMax !== undefined) ui.cAnimMax.value = parseFloat(config.cAnimMax).toFixed(cPrecision);
 
             ui.nAnim.checked = !!config.nAnim;
+
+            if (ui.nAnim.checked) {
+                ui.nAutoValue.checked = false;
+                ui.nSlider.disabled = false;
+                ui.nNumber.disabled = false;
+                ui.nDecrBtn.disabled = false;
+                ui.nIncrBtn.disabled = false;
+            }
+
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
 
             ui.cAnim.checked = !!config.cAnim;
@@ -1753,6 +1762,13 @@
             }
         });
 
+        ui.nAnim.addEventListener('change', () => {
+            if (ui.nAnim.checked) {
+                ui.nAutoValue.checked = false;
+                ui.nAutoValue.dispatchEvent(new Event('change'));
+            }
+        });
+
         ui.cAnim.addEventListener('change', () => {
             if (ui.cAnim.checked) {
                 ui.nAnim.checked = false;
@@ -1792,14 +1808,16 @@
 
         ui.nAutoValue.addEventListener('change', () => {
             const isAuto = ui.nAutoValue.checked;
+            
+            if (isAuto) ui.nAnim.checked = false;
+
             ui.nSlider.disabled = isAuto;
             ui.nNumber.disabled = isAuto;
             ui.nDecrBtn.disabled = isAuto;
             ui.nIncrBtn.disabled = isAuto;
-            
             if (isAuto) {
-                if(userBase.mode === 'rational') applySymmetryLock(); 
-                else updateC(userBase.c); // Retrigger Decimal auto finding
+                if(userBase.mode === 'rational') applySymmetryLock();
+                else updateC(userBase.c); 
             }
         });
 
