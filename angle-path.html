@@ -29,9 +29,17 @@
             border-bottom: 1px solid #333; 
             display: flex; 
             flex-wrap: wrap; 
-            align-items: flex-start;
+            justify-content: center;
+            align-items: stretch;
             gap: 10px; 
             z-index: 10;
+        }
+
+        /* --- Advanced Toggle Button --- */
+        #adv-toggle-btn {
+            display: none; /* Hidden on desktop */
+            margin-top: 10px; 
+            width: 100%;
         }
         
         .control-group { 
@@ -49,8 +57,8 @@
         #advanced-controls {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 10px;
-            flex-grow: 1;
         }
 
         .collapsed {
@@ -630,6 +638,9 @@
                 height: 55vh; 
                 min-height: 350px; 
             }
+            #adv-toggle-btn {
+                display: block;
+            }
         }
     </style>
 </head>
@@ -658,7 +669,7 @@
                 <span>Simplified (r/s):</span>
                 <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
             </div>
-            <button id="adv-toggle-btn" class="btn-sec" style="margin-top: 10px; width: 100%;">⚙️ Advanced Options</button>
+            <button id="adv-toggle-btn" class="btn-sec">⚙️ Advanced Options</button>
         </div>
 
         <div id="advanced-controls">
