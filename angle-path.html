@@ -130,7 +130,8 @@
             margin: 0; 
         }
 
-        .toggles-row input[type="checkbox"] { 
+        .toggles-row input[type="checkbox"],
+        .toggles-row input[type="radio"] { 
             margin: 0; 
             cursor: pointer; 
         }
@@ -173,6 +174,21 @@
             font-size: 10px; 
             box-sizing: border-box; 
             text-align: left; 
+        }
+
+        /* Decimal Inline specific layout overrides */
+        #decimal-controls .anim-settings {
+            flex-direction: row;
+            align-items: center;
+        }
+        #decimal-controls .anim-settings label {
+            flex-direction: row;
+            align-items: center;
+            flex-grow: 0;
+        }
+        #decimal-controls .anim-settings input.num-input {
+            width: 50px;
+            margin-left: 4px;
         }
         
         .combined-select { 
@@ -649,26 +665,61 @@
     <header id="ui-panel">
         
         <div class="control-group">
-            <div class="group-header">
-                <span>R (π Multiplier)</span>
-                <div style="display: flex; gap: 3px; align-items: center;">
-                    <button id="r-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease R">-</button>
-                    <input type="number" id="r-number" class="num-input" min="1" step="1" value="1" style="margin: 0;">
-                    <button id="r-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase R">+</button>
+            <div class="toggles-row" style="margin-top: 0; margin-bottom: 12px; justify-content: flex-start; gap: 15px;">
+                <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational (r/s)</label>
+                <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal (C)</label>
+            </div>
+
+            <div id="rational-controls">
+                <div class="group-header">
+                    <span>R (π Multiplier)</span>
+                    <div style="display: flex; gap: 3px; align-items: center;">
+                        <button id="r-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease R">-</button>
+                        <input type="number" id="r-number" class="num-input" min="1" step="1" value="1" style="margin: 0;">
+                        <button id="r-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase R">+</button>
+                    </div>
+                </div>
+                <div class="group-header" style="margin-top: 5px; margin-bottom: 2px;">
+                    <span>S (π Divider)</span>
+                    <div style="display: flex; gap: 3px; align-items: center;">
+                        <button id="s-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease S">-</button>
+                        <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500" style="margin: 0;">
+                        <button id="s-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase S">+</button>
+                    </div>
+                </div>
+                <div class="toggles-row" style="margin-top: 6px;">
+                    <span>Simplified (r/s):</span>
+                    <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
                 </div>
             </div>
-            <div class="group-header" style="margin-top: 5px; margin-bottom: 2px;">
-                <span>S (π Divider)</span>
-                <div style="display: flex; gap: 3px; align-items: center;">
-                    <button id="s-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease S">-</button>
-                    <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500" style="margin: 0;">
-                    <button id="s-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase S">+</button>
+
+            <div id="decimal-controls" style="display: none;">
+                <div class="group-header" style="margin-bottom: 8px;">
+                    <span>C Multiplier</span>
+                    <div style="display: flex; gap: 3px; align-items: center;">
+                        <button id="c-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease C">-</button>
+                        <input type="number" id="c-number" class="num-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="margin: 0;">
+                        <button id="c-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase C">+</button>
+                    </div>
+                </div>
+                <div class="slider-row" style="margin-bottom: 0px;">
+                    <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400">
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px dashed #333; padding-top: 8px;">
+                    
+                    <label style="color: var(--accent); font-size: 9px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <input type="checkbox" id="c-anim"> ANIM
+                    </label>
+                    
+                    <div id="c-anim-settings" class="anim-settings" style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001"></label>
+                        <label>Max <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001"></label>
+                    </div>
+                    
                 </div>
             </div>
-            <div class="toggles-row" style="margin-top: auto;">
-                <span>Simplified (r/s):</span>
-                <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
-            </div>
+
             <button id="adv-toggle-btn" class="btn-sec">⚙️ Advanced Options</button>
         </div>
 
@@ -790,17 +841,16 @@
                 <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
                 <div class="info-content">
                     <h2>Angle Path Generator</h2>
-                    <p>This generator draws a sequence of lines based on a simple mathematical rule, commonly known in turtle graphics.</p>
+                    <p>This generator draws a sequence of lines based on a simple mathematical rule.</p>
                     
-                    <h3>The Algorithm</h3>
-                    <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
-                    <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (r / s &times; f(n) &times; &pi;)</code></p>
-                    
-                    <h3>Rational Angles & Precision</h3>
-                    <p>To eliminate chaotic floating-point drift, this model represents angles using two integers, <code>r</code> (multiplier) and <code>s</code> (divider). If your math formula produces exact integers (like n²), the engine tracks the phase entirely using integer modular arithmetic ensuring 100% symmetric stability indefinitely.</p>
+                    <h3>Rational Mode (r/s)</h3>
+                    <p>To eliminate chaotic floating-point drift, this mode represents angles using two integers, <code>r</code> (multiplier) and <code>s</code> (divider). <code>Angle = Previous + (r/s * f(n) * &pi;)</code>. If your math formula produces exact integers, the engine uses integer modular arithmetic ensuring 100% symmetric stability indefinitely.</p>
+
+                    <h3>Decimal Mode (C)</h3>
+                    <p>Useful for progressive animations. <code>Angle = Previous + (C * f(n) * &pi;/180)</code>. Offers smooth scaling of the multiplier.</p>
 
                     <h3>Symmetry Lock (Auto N)</h3>
-                    <p>Checking <strong>Lock Symmetry</strong> calculates the precise step sequence <code>N</code> required to perfectly close a rotational rosette. This relies on the period of integer sequences modulo <code>2*s</code>, discovering shapes the eye can never manually find.</p>
+                    <p>Checking <strong>Lock Symmetry</strong> calculates the precise step sequence required to perfectly close a rotational rosette in either mode.</p>
                     
                     <p style="margin-top: 20px; font-size: 10px; opacity: 0.5;">End of Documentation</p>
                 </div>
@@ -823,6 +873,10 @@
         const selectionBox = document.getElementById('selection-box');
         
         const ui = {
+            modeRadios: document.getElementsByName('multiplier-mode'),
+            rationalControls: document.getElementById('rational-controls'),
+            decimalControls: document.getElementById('decimal-controls'),
+
             nSlider: document.getElementById('n-input'),
             nNumber: document.getElementById('n-number'), 
             nAnim: document.getElementById('n-anim'),
@@ -840,8 +894,16 @@
             sNumber: document.getElementById('s-number'), 
             sIncrBtn: document.getElementById('s-inc-btn'),
             sDecrBtn: document.getElementById('s-dec-btn'),
-            
             coprimeDisplay: document.getElementById('co-prime-display'),
+
+            cSlider: document.getElementById('c-input'),
+            cNumber: document.getElementById('c-number'), 
+            cAnim: document.getElementById('c-anim'),
+            cAnimSettings: document.getElementById('c-anim-settings'),
+            cAnimMin: document.getElementById('c-anim-min'),
+            cAnimMax: document.getElementById('c-anim-max'),
+            cIncrBtn: document.getElementById('c-inc-btn'),
+            cDecrBtn: document.getElementById('c-dec-btn'),
 
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
@@ -884,25 +946,27 @@
 
         const builtinConfigs = {
             "Default Neon": { 
-                n: 30000, r: 1, s: 7500, speed: 5, style: "neon", nAnim: false, code: "return n * n;" 
+                mode: "rational", n: 30000, r: 1, s: 7500, c: 0.024, speed: 5, style: "neon", nAnim: false, code: "return n * n;" 
             },
             "Light Glow Core": { 
-                n: 250000, r: 1, s: 1200, speed: 6, style: "light-glow", nAnim: false, code: "return n * Math.log(n);" 
+                mode: "rational", n: 250000, r: 1, s: 1200, speed: 6, style: "light-glow", nAnim: false, code: "return n * Math.log(n);" 
             },
             "Rainbow Web": { 
-                n: 120000, r: 179, s: 360, speed: 4, style: "rainbow", nAnim: false, code: "return n;" 
+                mode: "rational", n: 120000, r: 179, s: 360, speed: 4, style: "rainbow", nAnim: false, code: "return n;" 
             },
             "Sine Petals (Light)": { 
-                n: 50000, r: 1, s: 180, speed: 5, style: "light", nAnim: false, code: "return n * Math.sin(n);" 
+                mode: "rational", n: 50000, r: 1, s: 180, speed: 5, style: "light", nAnim: false, code: "return n * Math.sin(n);" 
             }
         };
         
         let savedConfigs = JSON.parse(localStorage.getItem('angle_path_configs') || '{}');
         let currentRenderState = { 
-            N: 0, 
+            N: 0,
+            mode: 'rational',
             r: 1, 
             s: 7500, 
-            time: 0, 
+            c: 0.024, 
+            time: 0,
             bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 } 
         };
 
@@ -926,12 +990,17 @@
 
         function getCurrentConfig() {
             return {
+                mode: userBase.mode,
                 n: userBase.n,
                 r: userBase.r,
                 s: userBase.s,
+                c: userBase.c,
                 nAnim: ui.nAnim.checked,
                 nAnimMin: parseInt(ui.nAnimMin.value),
                 nAnimMax: parseInt(ui.nAnimMax.value),
+                cAnim: ui.cAnim.checked,
+                cAnimMin: parseFloat(ui.cAnimMin.value),
+                cAnimMax: parseFloat(ui.cAnimMax.value),
                 speed: parseInt(ui.speed.value),
                 lineWidth: parseFloat(ui.lwSlider.value),
                 style: ui.style.value,
@@ -940,37 +1009,42 @@
         }
 
         function loadConfig(config) {
-            if (!config) {
-                return;
-            }
+            if (!config) return;
             
             ui.nAnim.checked = false;
+            ui.cAnim.checked = false;
 
             if (config.code) {
                 ui.editor.value = config.code;
             }
 
-            if (config.c !== undefined && config.r === undefined) {
-                config.r = Math.round(config.c * 1000);
-                config.s = 180000;
+            if (config.mode) {
+                userBase.mode = config.mode;
+            } else if (config.c !== undefined && config.r === undefined) {
+                userBase.mode = 'decimal';
+            } else {
+                userBase.mode = 'rational';
             }
 
-            updateRS(config.r || 1, config.s || 7500);
+            document.querySelector(`input[name="multiplier-mode"][value="${userBase.mode}"]`).checked = true;
+            ui.rationalControls.style.display = userBase.mode === 'rational' ? 'block' : 'none';
+            ui.decimalControls.style.display = userBase.mode === 'decimal' ? 'block' : 'none';
+
+            compileFunction(); // Also updates cPrecision
+
+            if (config.c !== undefined) updateC(config.c);
+            if (config.r !== undefined && config.s !== undefined) updateRS(config.r, config.s);
             updateN(config.n, false);
 
-            if (config.nAnimMin !== undefined) {
-                ui.nAnimMin.value = config.nAnimMin;
-            }
-            if (config.nAnimMax !== undefined) {
-                ui.nAnimMax.value = config.nAnimMax;
-            }
+            if (config.nAnimMin !== undefined) ui.nAnimMin.value = config.nAnimMin;
+            if (config.nAnimMax !== undefined) ui.nAnimMax.value = config.nAnimMax;
+            if (config.cAnimMin !== undefined) ui.cAnimMin.value = parseFloat(config.cAnimMin).toFixed(cPrecision);
+            if (config.cAnimMax !== undefined) ui.cAnimMax.value = parseFloat(config.cAnimMax).toFixed(cPrecision);
 
             ui.nAnim.checked = !!config.nAnim;
-            if (ui.nAnim.checked) {
-                ui.nAnimSettings.style.display = 'flex';
-            } else {
-                ui.nAnimSettings.style.display = 'none';
-            }
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+
+            ui.cAnim.checked = !!config.cAnim;
 
             ui.speed.value = config.speed || 5;
             ui.spdLabel.textContent = ui.speed.value;
@@ -983,24 +1057,16 @@
 
             ui.style.value = config.style || 'neon';
 
-            compileFunction();
             resetZoom(); 
         }
 
         ui.configSelect.addEventListener('change', (e) => {
             const val = e.target.value;
-            if (!val) {
-                return;
-            }
+            if (!val) return;
             let cfg = null;
-            if (val.startsWith('builtin:')) {
-                cfg = builtinConfigs[val.split(':')[1]];
-            } else if (val.startsWith('saved:')) {
-                cfg = savedConfigs[val.split(':')[1]];
-            }
-            if (cfg) {
-                loadConfig(cfg);
-            }
+            if (val.startsWith('builtin:')) cfg = builtinConfigs[val.split(':')[1]];
+            else if (val.startsWith('saved:')) cfg = savedConfigs[val.split(':')[1]];
+            if (cfg) loadConfig(cfg);
         });
 
         ui.saveConfigBtn.addEventListener('click', () => {
@@ -1024,15 +1090,11 @@
             URL.revokeObjectURL(url);
         });
 
-        ui.importConfigBtn.addEventListener('click', () => {
-            ui.importFile.click();
-        });
+        ui.importConfigBtn.addEventListener('click', () => ui.importFile.click());
 
         ui.importFile.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (!file) {
-                return;
-            }
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = (ev) => {
                 try {
@@ -1047,20 +1109,17 @@
             ui.importFile.value = ''; 
         });
 
-        // --- UI Advanced Toggle Logic ---
         ui.advToggleBtn.addEventListener('click', () => {
             ui.advControls.classList.toggle('collapsed');
             ui.advEditor.classList.toggle('collapsed');
             window.dispatchEvent(new Event('resize'));
         });
 
-        // Initialize collapsed state for mobile devices
         if (window.innerWidth <= 900) {
             ui.advControls.classList.add('collapsed');
             ui.advEditor.classList.add('collapsed');
         }
 
-        // --- ZOOM STATE ---
         let isZoomed = false;
         let zoomBounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
         let activeTransform = { scale: 1, cx: 0, cy: 0 }; 
@@ -1077,67 +1136,41 @@
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
         let activeFunc = (n) => n * n;
         let isFuncStrictlyInteger = true;
+        let cPrecision = 5;
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { n: 30000, r: 1, s: 7500 };
+        let userBase = { mode: 'rational', n: 30000, r: 1, s: 7500, c: 0.024 };
 
-        let glowStartN = 0;
-        let glowEndN = 0;
-        let glowIntensity = 0;
-
-        let eraseStartN = 0;
-        let eraseEndN = 0;
-        let eraseIntensity = 0;
+        let glowStartN = 0, glowEndN = 0, glowIntensity = 0;
+        let eraseStartN = 0, eraseEndN = 0, eraseIntensity = 0;
         
-        let virtualTime = 0;
-        let lastRealTime = performance.now();
-        let mediaRecorder;
-        let recordedChunks = [];
-        let recStartTime;
+        let virtualTime = 0, lastRealTime = performance.now();
+        let mediaRecorder, recordedChunks = [], recStartTime;
 
         const MAX_N = 3600000;
+        const MAX_C = 100.00000;
         let points = new Float32Array((MAX_N + 1) * 2);
 
         function gcd(a, b) {
             a = Math.abs(a);
             b = Math.abs(b);
-            while (b) {
-                let t = b;
-                b = a % b;
-                a = t;
-            }
+            while (b) { let t = b; b = a % b; a = t; }
             return a;
         }
 
         function getIdealLineWidth(n) {
-            if (ui.editor.value.trim() !== presets['n2']) {
-                return parseFloat(ui.lwSlider.value);
-            }
+            if (ui.editor.value.trim() !== presets['n2']) return parseFloat(ui.lwSlider.value);
             const table = [
-                [1, 0.01], 
-                [10, 0.01], 
-                [100, 0.03], 
-                [1000, 0.06],
-                [10000, 0.6], 
-                [100000, 1.5], 
-                [180000, 2.6], 
-                [250000, 3.0],
-                [320000, 3.5], 
-                [576000, 4.1], 
-                [675000, 5.3], 
-                [720000, 5.8],
-                [1125000, 6.5]
+                [1, 0.01], [10, 0.01], [100, 0.03], [1000, 0.06], [10000, 0.6], 
+                [100000, 1.5], [180000, 2.6], [250000, 3.0], [320000, 3.5], 
+                [576000, 4.1], [675000, 5.3], [720000, 5.8], [1125000, 6.5]
             ];
-            
-            if (n <= table[0][0]) {
-                return table[0][1];
-            }
+            if (n <= table[0][0]) return table[0][1];
             if (n >= table[table.length - 1][0]) {
                 const last = table[table.length - 1];
                 const prev = table[table.length - 2];
-                const slope = (last[1] - prev[1]) / (last[0] - prev[0]);
-                return Math.min(last[1] + slope * (n - last[0]), 10.0);
+                return Math.min(last[1] + ((last[1] - prev[1]) / (last[0] - prev[0])) * (n - last[0]), 10.0);
             }
             for (let i = 0; i < table.length - 1; i++) {
                 if (n >= table[i][0] && n <= table[i+1][0]) {
@@ -1158,6 +1191,29 @@
             });
         }
 
+        function updateCPrecision() {
+            const code = ui.editor.value.trim();
+            const isStandard5Digit = (code === presets['n2'] || code === presets['n'] || code === presets['n3'] || code === presets['nlog'] || code === presets['sqrt']);
+            cPrecision = isStandard5Digit ? 5 : 6;
+            const step = cPrecision === 6 ? "0.000001" : "0.00001";
+            const minVal = cPrecision === 6 ? "0.000001" : "0.00001";
+
+            ui.cSlider.step = step;
+            ui.cSlider.min = minVal;
+            ui.cNumber.step = step;
+            ui.cNumber.min = minVal;
+            ui.cAnimMin.step = step;
+            ui.cAnimMax.step = step;
+
+            let currentC = parseFloat(userBase.c);
+            if (currentC < parseFloat(minVal)) currentC = parseFloat(minVal);
+            userBase.c = currentC;
+            ui.cSlider.value = currentC.toFixed(cPrecision);
+            ui.cNumber.value = currentC.toFixed(cPrecision);
+            ui.cAnimMin.value = parseFloat(ui.cAnimMin.value || 0).toFixed(cPrecision);
+            ui.cAnimMax.value = parseFloat(ui.cAnimMax.value || 2).toFixed(cPrecision);
+        }
+
         function compileFunction() {
             try {
                 const code = ui.editor.value;
@@ -1165,94 +1221,77 @@
                 
                 isFuncStrictlyInteger = true;
                 for (let i = 1; i <= 10; i++) {
-                    if (!Number.isInteger(testFunc(i))) { 
-                        isFuncStrictlyInteger = false; 
-                        break; 
-                    }
+                    if (!Number.isInteger(testFunc(i))) { isFuncStrictlyInteger = false; break; }
                 }
 
                 activeFunc = testFunc;
                 ui.errorMsg.style.display = 'none';
                 
-                if (isPaused) { 
-                    isPaused = false; 
-                    ui.pauseOverlay.style.display = 'none'; 
-                }
+                updateCPrecision();
+
+                if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
             } catch (err) {
                 ui.errorMsg.textContent = "Error: " + err.message;
                 ui.errorMsg.style.display = 'block';
             }
         }
 
-        function calculatePath(N, r, s) {
-            let x = 0;
-            let y = 0;
-            let minX = 0;
-            let maxX = 0;
-            let minY = 0;
-            let maxY = 0;
-            
-            points[0] = 0; 
-            points[1] = 0;
+        function calculatePath(N, mode, r, s, c_val) {
+            let x = 0, y = 0, minX = 0, maxX = 0, minY = 0, maxY = 0;
+            points[0] = 0; points[1] = 0;
 
-            if (isFuncStrictlyInteger && Number.isInteger(r) && Number.isInteger(s)) {
-                let phaseNum = 0;
-                const doubleS = 2 * s;
-                const pi_div_s = Math.PI / s;
+            if (mode === 'rational') {
+                if (isFuncStrictlyInteger && Number.isInteger(r) && Number.isInteger(s)) {
+                    let phaseNum = 0;
+                    const doubleS = 2 * s;
+                    const pi_div_s = Math.PI / s;
 
-                for (let n = 1; n <= N; n++) {
-                    let stepAngle = activeFunc(n);
-                    
-                    phaseNum = (phaseNum + (stepAngle * r) % doubleS) % doubleS;
-                    if (phaseNum < 0) {
-                        phaseNum += doubleS; 
+                    for (let n = 1; n <= N; n++) {
+                        let stepAngle = activeFunc(n);
+                        phaseNum = (phaseNum + (stepAngle * r) % doubleS) % doubleS;
+                        if (phaseNum < 0) phaseNum += doubleS; 
+                        
+                        let angle = phaseNum * pi_div_s;
+                        x += Math.cos(angle);
+                        y += Math.sin(angle);
+
+                        if (x < minX) minX = x; else if (x > maxX) maxX = x;
+                        if (y < minY) minY = y; else if (y > maxY) maxY = y;
+
+                        points[n * 2] = x;
+                        points[n * 2 + 1] = y;
                     }
-                    
-                    let angle = phaseNum * pi_div_s;
-                    x += Math.cos(angle);
-                    y += Math.sin(angle);
+                } else {
+                    let angle = 0;
+                    const C_rad = (r / s) * Math.PI;
+                    const twoPi = 2 * Math.PI;
 
-                    if (x < minX) {
-                        minX = x;
-                    } else if (x > maxX) {
-                        maxX = x;
+                    for (let n = 1; n <= N; n++) {
+                        let stepAngle = activeFunc(n);
+                        angle = (angle + stepAngle * C_rad) % twoPi;
+                        if (angle < 0) angle += twoPi;
+                        
+                        x += Math.cos(angle);
+                        y += Math.sin(angle);
+
+                        if (x < minX) minX = x; else if (x > maxX) maxX = x;
+                        if (y < minY) minY = y; else if (y > maxY) maxY = y;
+
+                        points[n * 2] = x;
+                        points[n * 2 + 1] = y;
                     }
-
-                    if (y < minY) {
-                        minY = y;
-                    } else if (y > maxY) {
-                        maxY = y;
-                    }
-
-                    points[n * 2] = x;
-                    points[n * 2 + 1] = y;
                 }
             } else {
                 let angle = 0;
-                const C_rad = (r / s) * Math.PI;
-                const twoPi = 2 * Math.PI;
-
+                const c = c_val * (Math.PI / 180); 
                 for (let n = 1; n <= N; n++) {
                     let stepAngle = activeFunc(n);
-                    angle = (angle + stepAngle * C_rad) % twoPi;
-                    if (angle < 0) {
-                        angle += twoPi;
-                    }
-                    
+                    angle += stepAngle * c;
                     x += Math.cos(angle);
                     y += Math.sin(angle);
 
-                    if (x < minX) {
-                        minX = x;
-                    } else if (x > maxX) {
-                        maxX = x;
-                    }
-
-                    if (y < minY) {
-                        minY = y;
-                    } else if (y > maxY) {
-                        maxY = y;
-                    }
+                    if (x < minX) minX = x; else if (x > maxX) maxX = x;
+                    if (y < minY) minY = y; else if (y > maxY) maxY = y;
 
                     points[n * 2] = x;
                     points[n * 2 + 1] = y;
@@ -1262,14 +1301,14 @@
             return { minX, maxX, minY, maxY };
         }
 
-        function performRender(N, r, s, time) {
+        function performRender(N, mode, r, s, c_val, time) {
             const style = ui.style.value;
             const isLightTheme = style === 'light' || style === 'light-glow';
             
-            const geoBounds = calculatePath(N, r, s);
+            const geoBounds = calculatePath(N, mode, r, s, c_val);
             let renderBounds = isZoomed ? zoomBounds : geoBounds;
             
-            currentRenderState = { N, r, s, time, bounds: renderBounds };
+            currentRenderState = { N, mode, r, s, c: c_val, time, bounds: renderBounds };
             
             ctx.fillStyle = isLightTheme ? '#ffffff' : '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1288,13 +1327,9 @@
             ctx.scale(scale, scale);
             ctx.translate(-bbCenterX, -bbCenterY);
 
-            if (style === 'neon') {
-                ctx.globalCompositeOperation = 'lighter';
-            } else if (style === 'light-glow') {
-                ctx.globalCompositeOperation = 'multiply';
-            } else {
-                ctx.globalCompositeOperation = 'source-over';
-            }
+            if (style === 'neon') ctx.globalCompositeOperation = 'lighter';
+            else if (style === 'light-glow') ctx.globalCompositeOperation = 'multiply';
+            else ctx.globalCompositeOperation = 'source-over';
             
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
@@ -1302,9 +1337,7 @@
             let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
             let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
             
-            if (isZoomed) {
-                baseLineWidth *= 1.5;
-            }
+            if (isZoomed) baseLineWidth *= 1.5;
 
             const MAX_PATH_SIZE = 500000; 
             const numChunks = Math.ceil(N / MAX_PATH_SIZE);
@@ -1315,10 +1348,7 @@
 
                 ctx.beginPath();
                 ctx.moveTo(points[start * 2], points[start * 2 + 1]);
-                
-                for (let j = start + 1; j <= end; j++) {
-                    ctx.lineTo(points[j * 2], points[j * 2 + 1]);
-                }
+                for (let j = start + 1; j <= end; j++) { ctx.lineTo(points[j * 2], points[j * 2 + 1]); }
 
                 if (style === 'rainbow') {
                     ctx.lineWidth = baseLineWidth * 1.5;
@@ -1355,17 +1385,11 @@
                 const endIdx = Math.min(N, glowEndN);
                 
                 ctx.moveTo(points[startIdx * 2], points[startIdx * 2 + 1]);
-                for (let j = startIdx + 1; j <= endIdx; j++) {
-                    ctx.lineTo(points[j * 2], points[j * 2 + 1]);
-                }
+                for (let j = startIdx + 1; j <= endIdx; j++) { ctx.lineTo(points[j * 2], points[j * 2 + 1]); }
 
                 ctx.globalCompositeOperation = 'source-over';
                 ctx.lineWidth = baseLineWidth * 6;
-                if (isLightTheme) {
-                    ctx.strokeStyle = `rgba(255, 50, 80, ${glowIntensity * 0.6})`;
-                } else {
-                    ctx.strokeStyle = `rgba(255, 215, 0, ${glowIntensity * 0.6})`;
-                }
+                ctx.strokeStyle = isLightTheme ? `rgba(255, 50, 80, ${glowIntensity * 0.6})` : `rgba(255, 215, 0, ${glowIntensity * 0.6})`;
                 ctx.stroke();
 
                 ctx.lineWidth = baseLineWidth * 2;
@@ -1379,9 +1403,7 @@
                 const endIdx = eraseEndN;
                 
                 ctx.moveTo(points[startIdx * 2], points[startIdx * 2 + 1]);
-                for (let j = startIdx + 1; j <= endIdx; j++) {
-                    ctx.lineTo(points[j * 2], points[j * 2 + 1]);
-                }
+                for (let j = startIdx + 1; j <= endIdx; j++) { ctx.lineTo(points[j * 2], points[j * 2 + 1]); }
 
                 ctx.globalCompositeOperation = 'source-over';
                 ctx.lineWidth = baseLineWidth * 4;
@@ -1396,6 +1418,7 @@
             ctx.restore();
         }
 
+        // --- Interaction & Zoom ---
         function screenToLogical(screenX, screenY) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -1405,48 +1428,29 @@
 
             const logicalX = (x - canvas.width / 2) / activeTransform.scale + activeTransform.cx;
             const logicalY = (y - canvas.height / 2) / activeTransform.scale + activeTransform.cy;
-            
             return { x: logicalX, y: logicalY };
         }
 
-        let isDragging = false;
-        let isPanning = false;
-        let startX = 0;
-        let startY = 0;
-        let startZoomBounds = null;
-        let lastPinchDist = null;
+        let isDragging = false, isPanning = false, startX = 0, startY = 0, startZoomBounds = null, lastPinchDist = null;
 
         canvasContainer.addEventListener('pointerdown', (e) => {
-            if (e.pointerType === 'mouse' && e.button !== 0) {
-                return; 
-            }
-            if (e.pointerType === 'touch' && lastPinchDist !== null) {
-                return;
-            }
-
-            isDragging = true;
-            isPanning = false;
-            startX = e.clientX;
-            startY = e.clientY;
+            if (e.pointerType === 'mouse' && e.button !== 0) return; 
+            if (e.pointerType === 'touch' && lastPinchDist !== null) return;
+            isDragging = true; isPanning = false; startX = e.clientX; startY = e.clientY;
             selectionBox.style.display = 'none';
         });
 
         canvasContainer.addEventListener('pointermove', (e) => {
-            if (!isDragging) {
-                return;
-            }
-            if (e.pointerType === 'touch' && lastPinchDist !== null) {
-                return; 
-            }
+            if (!isDragging) return;
+            if (e.pointerType === 'touch' && lastPinchDist !== null) return; 
 
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
-            const dist = Math.hypot(dx, dy);
 
-            if (!isPanning && dist > 10) {
+            if (!isPanning && Math.hypot(dx, dy) > 10) {
                 isPanning = true;
                 if (!isZoomed) {
-                    zoomBounds = calculatePath(userBase.n, userBase.r, userBase.s);
+                    zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c);
                     isZoomed = true;
                     ui.resetZoomBtn.disabled = false;
                 }
@@ -1457,7 +1461,6 @@
                 const rect = canvas.getBoundingClientRect();
                 const logicalDx = (dx * (canvas.width / rect.width)) / activeTransform.scale;
                 const logicalDy = (dy * (canvas.height / rect.height)) / activeTransform.scale;
-
                 zoomBounds.minX = startZoomBounds.minX - logicalDx;
                 zoomBounds.maxX = startZoomBounds.maxX - logicalDx;
                 zoomBounds.minY = startZoomBounds.minY - logicalDy;
@@ -1466,39 +1469,27 @@
         });
 
         canvasContainer.addEventListener('pointerup', (e) => {
-            if (!isDragging) {
-                return;
-            }
+            if (!isDragging) return;
             isDragging = false;
-
             if (!isPanning) {
                 isPaused = !isPaused;
                 ui.pauseOverlay.textContent = "PAUSED";
-                if (isPaused) {
-                    ui.pauseOverlay.style.display = 'block';
-                } else {
-                    ui.pauseOverlay.style.display = 'none';
-                }
+                ui.pauseOverlay.style.display = isPaused ? 'block' : 'none';
             }
             isPanning = false;
         });
 
-        canvasContainer.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            resetZoom();
-        });
+        canvasContainer.addEventListener('contextmenu', (e) => { e.preventDefault(); resetZoom(); });
 
         canvasContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
             if (!isZoomed) {
-                zoomBounds = calculatePath(userBase.n, userBase.r, userBase.s);
+                zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c);
                 isZoomed = true;
                 ui.resetZoomBtn.disabled = false;
             }
-
             const pointerLogical = screenToLogical(e.clientX, e.clientY);
             const zoomFactor = e.deltaY > 0 ? 1.2 : 0.8; 
-
             zoomBounds.minX = pointerLogical.x - (pointerLogical.x - zoomBounds.minX) * zoomFactor;
             zoomBounds.maxX = pointerLogical.x + (zoomBounds.maxX - pointerLogical.x) * zoomFactor;
             zoomBounds.minY = pointerLogical.y - (pointerLogical.y - zoomBounds.minY) * zoomFactor;
@@ -1507,36 +1498,23 @@
 
         canvasContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
-                isDragging = false; 
-                isPanning = false;
-                lastPinchDist = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
+                isDragging = false; isPanning = false;
+                lastPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
             }
         }, { passive: false });
 
         canvasContainer.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2) {
                 e.preventDefault();
-                const currentDist = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-
+                const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 if (lastPinchDist) {
                     if (!isZoomed) {
-                        zoomBounds = calculatePath(userBase.n, userBase.r, userBase.s);
+                        zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c);
                         isZoomed = true;
                         ui.resetZoomBtn.disabled = false;
                     }
-
                     const zoomFactor = lastPinchDist / currentDist; 
-                    const midLogical = screenToLogical(
-                        (e.touches[0].clientX + e.touches[1].clientX) / 2,
-                        (e.touches[0].clientY + e.touches[1].clientY) / 2
-                    );
-
+                    const midLogical = screenToLogical((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2);
                     zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
                     zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
                     zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
@@ -1546,17 +1524,12 @@
             }
         }, { passive: false });
 
-        canvasContainer.addEventListener('touchend', (e) => { 
-            if (e.touches.length < 2) {
-                lastPinchDist = null; 
-            }
-        });
+        canvasContainer.addEventListener('touchend', (e) => { if (e.touches.length < 2) lastPinchDist = null; });
 
         function resetZoom() {
             isZoomed = false;
             ui.resetZoomBtn.disabled = true;
         }
-
         ui.resetZoomBtn.addEventListener('click', resetZoom);
 
         function liveLoop() {
@@ -1564,19 +1537,8 @@
             const delta = (now - lastRealTime) / 1000;
             lastRealTime = now;
 
-            if (glowIntensity > 0) {
-                glowIntensity -= delta * 1.2; 
-                if (glowIntensity < 0) {
-                    glowIntensity = 0;
-                }
-            }
-
-            if (eraseIntensity > 0) {
-                eraseIntensity -= delta * 1.5; 
-                if (eraseIntensity < 0) {
-                    eraseIntensity = 0;
-                }
-            }
+            if (glowIntensity > 0) { glowIntensity -= delta * 1.2; if (glowIntensity < 0) glowIntensity = 0; }
+            if (eraseIntensity > 0) { eraseIntensity -= delta * 1.5; if (eraseIntensity < 0) eraseIntensity = 0; }
 
             if (!isPaused) {
                 virtualTime += delta * Math.pow(2.0, parseInt(ui.speed.value) - 1) * 0.0025; 
@@ -1584,6 +1546,7 @@
                 const pingPong = 1 - Math.abs(2 * cycle - 1);
 
                 let aN = userBase.n;
+                let aC = userBase.c;
                 
                 if (ui.nAnim.checked) {
                     const easedProgress = Math.pow(pingPong, 2); 
@@ -1597,76 +1560,98 @@
                     const autoLw = getIdealLineWidth(aN);
                     ui.lwSlider.value = autoLw.toFixed(2);
                     ui.lwNumber.value = autoLw.toFixed(2);
-                } 
+                } else if (userBase.mode === 'decimal' && ui.cAnim.checked) {
+                    const minC = parseFloat(ui.cAnimMin.value) || 0;
+                    const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
+                    aC = minC + ((maxC - minC) * pingPong);
+
+                    ui.cSlider.value = aC.toFixed(cPrecision);
+                    ui.cNumber.value = aC.toFixed(cPrecision);
+                }
                 
-                performRender(aN, userBase.r, userBase.s, virtualTime);
+                performRender(aN, userBase.mode, userBase.r, userBase.s, aC, virtualTime);
             }
             
             updateRecTimer();
             animationFrameId = requestAnimationFrame(liveLoop);
         }
 
-        // --- Exact Rational Symmetry Logic ---
-        function calculateRosetteN(r, s) {
-            if (r <= 0 || s <= 0) {
-                return null;
-            }
-            
+        // --- Symmetry Calculation ---
+        function calculateRosetteNRational(r, s) {
+            if (r <= 0 || s <= 0) return null;
             let g = gcd(r, s);
-            let r_co = r / g;
-            let s_co = s / g;
-
+            let r_co = r / g, s_co = s / g;
             let P_raw = s_co;
             let remainder = (180 * r_co * s_co) % 360;
-            let P_true = P_raw;
-            
-            if (Math.abs(remainder) === 180) {
-                P_true = P_raw * 2;
-            }
-
+            let P_true = Math.abs(remainder) === 180 ? P_raw * 2 : P_raw;
             let p = P_true;
             let p_div_s = p / s_co; 
-            
             let sumAngle = 30 * r_co * p_div_s * (p + 1) * (2 * p + 1);
             let deltaTheta = sumAngle % 360;
-            
-            if (deltaTheta < 0) {
-                deltaTheta += 360;
-            }
-            if (deltaTheta === 360) {
-                deltaTheta = 0;
-            }
-
-            let m = 360 / gcd(360, deltaTheta);
-
-            return p * m;
+            if (deltaTheta < 0) deltaTheta += 360;
+            if (deltaTheta === 360) deltaTheta = 0;
+            return p * (360 / gcd(360, deltaTheta));
         }
 
-        const updateN = (val, fromSlider = false) => {
-            let v;
-            if (fromSlider) {
-                v = Math.round(Math.pow(10, parseFloat(val)));
-            } else {
-                v = parseInt(val);
+        function calculateRosetteNDecimal(C) {
+            if (C <= 0) return null;
+            let magicUpperBound = 6;  
+            let P_raw = 0;
+            for (let u = 1; u <= magicUpperBound; u++) {
+                let val = (180 * u) / C;
+                if (Math.abs(val - Math.round(val)) < 1e-6) { P_raw = Math.round(val); break; }
             }
+            if (P_raw === 0) return null; 
 
-            if (isNaN(v)) {
-                v = 1000;
+            let totalAngle = Math.round(C * P_raw * P_raw); 
+            let remainder = totalAngle % 360;
+            let P_true = (remainder === 180 || remainder === -180) ? P_raw * 2 : P_raw;
+            
+            let p = P_true;
+            let sumAngle = C * p * (p + 1) * (2 * p + 1) / 6;
+            let deltaTheta = Math.round(sumAngle % 360);
+            if (deltaTheta < 0) deltaTheta += 360;
+            if (deltaTheta === 360) deltaTheta = 0;
+            return p * (360 / gcd(360, deltaTheta));
+        }
+
+        function applySymmetryLock() {
+            let perfectN;
+            if (userBase.mode === 'decimal') perfectN = calculateRosetteNDecimal(userBase.c);
+            else perfectN = calculateRosetteNRational(userBase.r, userBase.s);
+
+            if (perfectN) {
+                const clampedN = Math.min(perfectN, MAX_N);
+                updateN(clampedN, false); 
             }
-            if (v > MAX_N) {
-                v = MAX_N;
-            }
+        }
+
+        // --- Event Listeners & Input Handlers ---
+        ui.modeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                userBase.mode = e.target.value;
+                if (userBase.mode === 'rational') {
+                    ui.rationalControls.style.display = 'block';
+                    ui.decimalControls.style.display = 'none';
+                    if (ui.nAutoValue.checked) applySymmetryLock();
+                } else {
+                    ui.rationalControls.style.display = 'none';
+                    ui.decimalControls.style.display = 'block';
+                    if (ui.nAutoValue.checked) updateC(userBase.c); // Re-trigger snapping logic for C
+                }
+                if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+            });
+        });
+
+        const updateN = (val, fromSlider = false) => {
+            let v = fromSlider ? Math.round(Math.pow(10, parseFloat(val))) : parseInt(val);
+            if (isNaN(v)) v = 1000;
+            if (v > MAX_N) v = MAX_N;
 
             if (v > userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
-                glowStartN = userBase.n; 
-                glowEndN = v; 
-                glowIntensity = 1.0; 
-                eraseIntensity = 0;
+                glowStartN = userBase.n; glowEndN = v; glowIntensity = 1.0; eraseIntensity = 0;
             } else if (v < userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
-                eraseStartN = v; 
-                eraseEndN = userBase.n; 
-                eraseIntensity = 1.0; 
-                glowIntensity = 0;
+                eraseStartN = v; eraseEndN = userBase.n; eraseIntensity = 1.0; glowIntensity = 0;
             }
 
             userBase.n = v;
@@ -1674,147 +1659,125 @@
             ui.nSlider.value = Math.log10(v).toFixed(5);
             updateLineWidth(getIdealLineWidth(v));
 
-            if (isPaused) { 
-                isPaused = false; 
-                ui.pauseOverlay.style.display = 'none'; 
-            }
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
-        function applySymmetryLock() {
-            const perfectN = calculateRosetteN(userBase.r, userBase.s);
-            if (perfectN) {
-                const clampedN = Math.min(perfectN, MAX_N);
-                updateN(clampedN, false); 
-            }
-        }
-
-        ui.nSlider.addEventListener('input', (e) => {
-            updateN(e.target.value, true);
-        });
-
-        ui.nNumber.addEventListener('change', (e) => {
-            updateN(e.target.value, false);
-        });
+        ui.nSlider.addEventListener('input', (e) => updateN(e.target.value, true));
+        ui.nNumber.addEventListener('change', (e) => updateN(e.target.value, false));
 
         const updateRS = (rVal, sVal) => {
             let r = parseInt(rVal) || 1;
             let s = parseInt(sVal) || 1;
-            
-            if (r < 1) {
-                r = 1;
-            }
-            if (s < 1) {
-                s = 1;
-            }
+            if (r < 1) r = 1; if (s < 1) s = 1;
 
-            userBase.r = r;
-            userBase.s = s;
-            
-            ui.rNumber.value = r;
-            ui.sNumber.value = s;
+            userBase.r = r; userBase.s = s;
+            ui.rNumber.value = r; ui.sNumber.value = s;
 
             let g = gcd(r, s);
             ui.coprimeDisplay.textContent = `${r / g} / ${s / g}`;
 
-            if (ui.nAutoValue.checked) {
-                applySymmetryLock();
-            }
-
-            if (isPaused) { 
-                isPaused = false; 
-                ui.pauseOverlay.style.display = 'none'; 
-            }
+            if (ui.nAutoValue.checked && userBase.mode === 'rational') applySymmetryLock();
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
-        ui.rNumber.addEventListener('change', (e) => {
-            updateRS(e.target.value, userBase.s);
-        });
+        ui.rNumber.addEventListener('change', (e) => updateRS(e.target.value, userBase.s));
+        ui.sNumber.addEventListener('change', (e) => updateRS(userBase.r, e.target.value));
+        ui.rDecrBtn.addEventListener('click', () => updateRS(userBase.r - 1, userBase.s));
+        ui.rIncrBtn.addEventListener('click', () => updateRS(userBase.r + 1, userBase.s));
+        ui.sDecrBtn.addEventListener('click', () => updateRS(userBase.r, userBase.s - 1));
+        ui.sIncrBtn.addEventListener('click', () => updateRS(userBase.r, userBase.s + 1));
 
-        ui.sNumber.addEventListener('change', (e) => {
-            updateRS(userBase.r, e.target.value);
-        });
+        const updateC = (val) => {
+            let v = parseFloat(val);
+            const minVal = cPrecision === 6 ? 0.000001 : 0.00001;
+            if (v < minVal) v = minVal;
+            if (v > MAX_C) v = MAX_C;
 
-        ui.rDecrBtn.addEventListener('click', () => {
-            updateRS(userBase.r - 1, userBase.s);
-        });
+            if (ui.nAutoValue.checked && userBase.mode === 'decimal') {
+                let prevC = parseFloat(userBase.c);
+                let stepDir = v < prevC ? -1 : 1;
+                let stepSize = cPrecision === 6 ? 0.000001 : 0.00001;
+                let testC = v;
+                let foundPerfectN = calculateRosetteNDecimal(testC);
 
-        ui.rIncrBtn.addEventListener('click', () => {
-            updateRS(userBase.r + 1, userBase.s);
-        });
+                while (!foundPerfectN) {
+                    testC += stepDir * stepSize;
+                    testC = Number(testC.toFixed(cPrecision));
+                    if (testC < minVal) { testC = minVal; break; }
+                    if (testC > MAX_C) { testC = MAX_C; break; }
+                    foundPerfectN = calculateRosetteNDecimal(testC);
+                }
+                v = testC;
+            }
 
-        ui.sDecrBtn.addEventListener('click', () => {
-            updateRS(userBase.r, userBase.s - 1);
-        });
+            userBase.c = v;
+            ui.cSlider.value = v.toFixed(cPrecision);
+            ui.cNumber.value = v.toFixed(cPrecision);
 
-        ui.sIncrBtn.addEventListener('click', () => {
-            updateRS(userBase.r, userBase.s + 1);
-        });
+            if (ui.nAutoValue.checked && userBase.mode === 'decimal') applySymmetryLock();
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+        };
 
-        ui.nDecrBtn.addEventListener('click', () => {
-            updateN(parseInt(userBase.n) - 1);
-        });
+        ui.cSlider.addEventListener('input', (e) => updateC(e.target.value));
+        ui.cNumber.addEventListener('change', (e) => updateC(e.target.value));
+        ui.cDecrBtn.addEventListener('click', () => updateC((parseFloat(userBase.c) - parseFloat(ui.cNumber.step)).toFixed(cPrecision)));
+        ui.cIncrBtn.addEventListener('click', () => updateC((parseFloat(userBase.c) + parseFloat(ui.cNumber.step)).toFixed(cPrecision)));
 
-        ui.nIncrBtn.addEventListener('click', () => {
-            updateN(parseInt(userBase.n) + 1);
-        });
+        ui.nDecrBtn.addEventListener('click', () => updateN(parseInt(userBase.n) - 1));
+        ui.nIncrBtn.addEventListener('click', () => updateN(parseInt(userBase.n) + 1));
 
         const updateLineWidth = (val) => {
             let v = parseFloat(val);
-            if (v < 0.01) {
-                v = 0.01;
-            }
+            if (v < 0.01) v = 0.01;
             ui.lwSlider.value = v.toFixed(2);
             ui.lwNumber.value = v.toFixed(2);
-            if (isPaused) { 
-                isPaused = false; 
-                ui.pauseOverlay.style.display = 'none'; 
-            }
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
-        ui.lwSlider.addEventListener('input', (e) => {
-            updateLineWidth(e.target.value);
-        });
+        ui.lwSlider.addEventListener('input', (e) => updateLineWidth(e.target.value));
+        ui.lwNumber.addEventListener('change', (e) => updateLineWidth(e.target.value));
 
-        ui.lwNumber.addEventListener('change', (e) => {
-            updateLineWidth(e.target.value);
-        });
-
+        // Sync Animations
         ui.nAnim.addEventListener('change', () => {
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             if (ui.nAnim.checked) {
-                ui.nAnimSettings.style.display = 'flex';
-                
+                ui.cAnim.checked = false;
                 const minN = parseInt(ui.nAnimMin.value) || 1;
                 const maxN = parseInt(ui.nAnimMax.value) || MAX_N;
                 let currentN = Math.max(minN, Math.min(maxN, userBase.n));
-                
                 let pingPongSq = (maxN - minN) === 0 ? 0 : (currentN - minN) / (maxN - minN);
                 let cycle = Math.sqrt(pingPongSq) / 2; 
                 virtualTime = Math.floor(virtualTime / 4) * 4 + (cycle * 4);
             } else {
-                ui.nAnimSettings.style.display = 'none';
                 userBase.n = parseInt(ui.nNumber.value);
+            }
+        });
+
+        ui.cAnim.addEventListener('change', () => {
+            if (ui.cAnim.checked) {
+                ui.nAnim.checked = false;
+                ui.nAnimSettings.style.display = 'none';
+
+                const minC = parseFloat(ui.cAnimMin.value) || 0;
+                const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
+                let currentC = Math.max(minC, Math.min(maxC, userBase.c));
+                let pingPong = (maxC - minC) === 0 ? 0 : (currentC - minC) / (maxC - minC);
+                let cycle = pingPong / 2; 
+                virtualTime = Math.floor(virtualTime / 4) * 4 + (cycle * 4);
+            } else {
+                userBase.c = parseFloat(ui.cSlider.value);
             }
         });
 
         ui.presetSelect.addEventListener('change', (e) => {
             const val = e.target.value;
-            if (val.startsWith('user:')) {
-                ui.editor.value = userPresets[val.split(':')[1]];
-            } else if (presets[val]) {
-                ui.editor.value = presets[val];
-            }
+            if (val.startsWith('user:')) ui.editor.value = userPresets[val.split(':')[1]];
+            else if (presets[val]) ui.editor.value = presets[val];
             compileFunction(); 
         });
 
-        ui.runBtn.addEventListener('click', () => {
-            compileFunction();
-        });
-
-        ui.editor.addEventListener('keydown', (e) => { 
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                compileFunction(); 
-            }
-        });
+        ui.runBtn.addEventListener('click', () => compileFunction());
+        ui.editor.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') compileFunction(); });
 
         ui.savePresetBtn.addEventListener('click', () => {
             const name = prompt("Name your function:");
@@ -1835,21 +1798,36 @@
             ui.nIncrBtn.disabled = isAuto;
             
             if (isAuto) {
-                applySymmetryLock(); 
+                if(userBase.mode === 'rational') applySymmetryLock(); 
+                else updateC(userBase.c); // Retrigger Decimal auto finding
             }
         });
 
         const generateRandom = () => {
             const funcs = Object.keys(presets);
             const randFunc = funcs[Math.floor(Math.random() * funcs.length)];
-            
             ui.presetSelect.value = randFunc;
             ui.editor.value = presets[randFunc];
             
-            let randR = Math.floor(Math.random() * 200) + 1;
-            let randS = Math.floor(Math.random() * 10000) + 1;
-            
-            updateRS(randR, randS); 
+            // Randomize active mode too
+            userBase.mode = Math.random() > 0.5 ? 'rational' : 'decimal';
+            document.querySelector(`input[name="multiplier-mode"][value="${userBase.mode}"]`).checked = true;
+
+            if (userBase.mode === 'rational') {
+                ui.rationalControls.style.display = 'block';
+                ui.decimalControls.style.display = 'none';
+                let randR = Math.floor(Math.random() * 200) + 1;
+                let randS = Math.floor(Math.random() * 10000) + 1;
+                updateRS(randR, randS); 
+            } else {
+                ui.rationalControls.style.display = 'none';
+                ui.decimalControls.style.display = 'block';
+                updateCPrecision(); 
+                const minC = cPrecision === 6 ? 0.000001 : 0.00001;
+                let randC = Number((Math.random() * 4.0).toFixed(cPrecision));
+                if(randC < minC) randC = minC;
+                updateC(randC); 
+            }
 
             let logN = 3.0 + Math.random() * 3.6; 
             userBase.n = Math.floor(Math.pow(10.0, logN));
@@ -1858,12 +1836,11 @@
             ui.nNumber.value = userBase.n;
             updateLineWidth(getIdealLineWidth(userBase.n));
 
-            ui.nAnim.checked = (Math.random() > 0.8);
-            if (ui.nAnim.checked) {
-                ui.nAnimSettings.style.display = 'flex';
-            } else {
-                ui.nAnimSettings.style.display = 'none';
-            }
+            const animChoice = Math.floor(Math.random() * 3);
+            ui.nAnim.checked = (animChoice === 1);
+            ui.cAnim.checked = (animChoice === 2 && userBase.mode === 'decimal');
+
+            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             
             const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
@@ -1880,26 +1857,11 @@
                 recordedChunks = [];
                 const stream = canvas.captureStream(60); 
 
-                const options = { 
-                    mimeType: 'video/webm;codecs=vp9', 
-                    videoBitsPerSecond: 8000000 
-                };
-                
-                try { 
-                    mediaRecorder = new MediaRecorder(stream, options); 
-                } catch (e) { 
-                    mediaRecorder = new MediaRecorder(stream, { 
-                        mimeType: 'video/webm', 
-                        videoBitsPerSecond: 8000000 
-                    }); 
-                }
+                const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 };
+                try { mediaRecorder = new MediaRecorder(stream, options); } 
+                catch (e) { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 8000000 }); }
 
-                mediaRecorder.ondataavailable = e => { 
-                    if (e.data.size > 0) {
-                        recordedChunks.push(e.data); 
-                    }
-                };
-                
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
                 mediaRecorder.onstop = () => {
                     const b = new Blob(recordedChunks, { type: 'video/webm' });
                     const a = document.createElement('a'); 
@@ -2002,46 +1964,22 @@
                 }
 
                 isPaused = wasPaused;
-                if (!isPaused) {
-                    ui.pauseOverlay.style.display = 'none';
-                } else {
-                    ui.pauseOverlay.textContent = "PAUSED";
-                }
+                if (!isPaused) ui.pauseOverlay.style.display = 'none';
+                else ui.pauseOverlay.textContent = "PAUSED";
             }, 100); 
         };
 
         ui.infoBtn.addEventListener('click', () => {
             const isHidden = ui.infoModal.style.display === 'none' || ui.infoModal.style.display === '';
-            if (isHidden) {
-                ui.infoModal.style.display = 'flex';
-            } else {
-                ui.infoModal.style.display = 'none';
-            }
+            ui.infoModal.style.display = isHidden ? 'flex' : 'none';
         });
 
-        document.getElementById('fs-btn').addEventListener('click', () => {
-            canvasContainer.requestFullscreen();
-        });
-
-        document.getElementById('save-btn').addEventListener('click', () => {
-            saveImage();
-        });
-
-        ui.saveSvgBtn.addEventListener('click', () => {
-            saveSVG();
-        });
-
-        document.getElementById('rec-btn').addEventListener('click', () => {
-            toggleRec();
-        });
-
-        document.getElementById('random-btn').addEventListener('click', () => {
-            generateRandom();
-        });
-
-        ui.speed.addEventListener('input', () => {
-            ui.spdLabel.textContent = ui.speed.value;
-        });
+        document.getElementById('fs-btn').addEventListener('click', () => canvasContainer.requestFullscreen());
+        document.getElementById('save-btn').addEventListener('click', () => saveImage());
+        ui.saveSvgBtn.addEventListener('click', () => saveSVG());
+        document.getElementById('rec-btn').addEventListener('click', () => toggleRec());
+        document.getElementById('random-btn').addEventListener('click', () => generateRandom());
+        ui.speed.addEventListener('input', () => ui.spdLabel.textContent = ui.speed.value);
 
         updateConfigDropdown(); 
         updatePresetDropdown();
