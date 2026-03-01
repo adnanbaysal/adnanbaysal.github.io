@@ -30,8 +30,8 @@
         /* --- Rigid 2-Row Toolbar --- */
         .toolbar-group {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 buttons per row */
-            grid-template-rows: repeat(2, 34px);    /* 2 fixed rows */
+            grid-template-columns: repeat(4, 1fr); 
+            grid-template-rows: repeat(2, 34px);    
             gap: 6px;
             background: #1a1a1a; padding: 10px; border-radius: 6px; border: 1px solid #222;
             min-width: 240px; align-content: center;
@@ -58,17 +58,14 @@
 
         /* --- Animation Settings UI --- */
         .anim-settings { 
-            /* Override JS inline style to keep container height completely static */
             display: flex !important; 
             justify-content: space-between; gap: 8px; 
             margin-top: 8px; border-top: 1px dashed #333; padding-top: 8px; 
             transition: opacity 0.2s ease;
         }
 
-        /* Visually disable Min/Max fields when ANIMATE is unchecked */
         .control-group:has(input[type="checkbox"][id$="-anim"]:not(:checked)) .anim-settings {
-            opacity: 0.25;
-            pointer-events: none; /* Prevents interaction when disabled */
+            opacity: 0.25; pointer-events: none;
         }
         
         .control-group:has(input[type="checkbox"][id$="-anim"]:not(:checked)) .anim-settings input {
@@ -81,7 +78,6 @@
         }
         .anim-settings input.num-input { width: 100%; font-size: 10px; box-sizing: border-box; text-align: left; }
         
-        /* Tweaks for combined groups */
         .combined-select { width: 100%; height: 26px; margin-bottom: 8px; }
         .toolbar-group button { 
             width: 100%; height: 100%; margin: 0; padding: 0 4px;
@@ -103,21 +99,18 @@
         .left-col { display: flex; flex-direction: column; width: 320px; gap: 10px; flex-shrink: 0; }
         .right-col { flex-grow: 1; display: flex; flex-direction: column; position: relative; border-radius: 6px; overflow: hidden; touch-action: none;}
 
-        /* --- Canvas Area --- */
         #canvas-container { position: relative; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; }
         canvas { 
             background: transparent; border-radius: 4px; cursor: crosshair;
             max-height: 100%; max-width: 100%; object-fit: contain;
         }
 
-        /* --- Selection Box Overlay --- */
         #selection-box {
             position: absolute; border: 1px dashed var(--accent);
             background: rgba(0, 210, 255, 0.15); pointer-events: none;
             display: none; z-index: 10;
         }
 
-        /* --- Code Editor --- */
         .editor-container {
             flex-grow: 1; display: flex; flex-direction: column;
             background: var(--panel); border: 1px solid #333; border-radius: 6px;
@@ -143,7 +136,6 @@
         textarea:focus { border-color: var(--accent); color: #fff; }
         .editor-actions { display: flex; gap: 8px; }
 
-        /* --- Overlays --- */
         #pause-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.7); color: var(--accent); padding: 15px 30px;
@@ -161,11 +153,10 @@
         .dot { width: 10px; height: 10px; background: #eb4d4b; border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* --- Info Modal --- */
         #info-modal {
-            position: absolute; 
-            top: 20px;            /* Consistent margin from top */
-            bottom: 20px;         /* Consistent margin from bottom */
+            position: absolute;
+            top: 20px;
+            bottom: 20px; 
             left: 20px; 
             z-index: 20;
             background: rgba(17, 17, 17, 0.96); 
@@ -173,24 +164,21 @@
             border: 1px solid #333; 
             border-radius: 8px;
             width: 350px; 
-            display: none;        /* Controlled by JS */
-            flex-direction: column; /* Allows header to stay fixed if desired, or simple scrolling */
+            display: none; 
+            flex-direction: column; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            overflow: hidden;    /* Clips the inner scrollable area */
+            overflow: hidden;
         }
-
-        /* Create a scrollable container inside the modal */
-        .info-content {
+        .info-content { 
             padding: 25px;
-            overflow-y: auto;    /* This ensures the scrollbar is internal */
+            overflow-y: auto; 
             height: 100%;
             scrollbar-width: thin;
             scrollbar-color: var(--accent) #222;
         }
-
         #info-modal h2 { margin-top: 0; color: var(--accent); font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;}
         #info-modal h3 { margin: 15px 0 5px 0; font-size: 12px; color: #fff; text-transform: uppercase; }
-        #info-modal p { color: #aaa; margin: 0 0 10px 0; }
+        #info-modal p { color: #aaa; margin: 0 0 10px 0; font-size: 13px; line-height: 1.4;}
         #info-modal code { background: #222; padding: 2px 4px; border-radius: 3px; color: var(--accent); font-family: monospace;}
         
         .close-info { 
@@ -201,15 +189,13 @@
         }
         .close-info:hover { color: #fff; background: #222; }
 
-        /* Mobile adjustment for the info box */
         @media (max-width: 900px) {
             #info-modal {
                 width: calc(100% - 40px);
-                top: 60px; /* Leave space for mobile toggle button */
+                top: 60px;
             }
         }
 
-        /* --- Buttons & Inputs --- */
         button { 
             border: none; padding: 0 12px; border-radius: 4px; 
             font-weight: bold; cursor: pointer; transition: 0.2s; 
@@ -238,8 +224,6 @@
             height: 28px;
             cursor: pointer;
         }
-
-        /* Disabled appearance when there's nothing to reset */
         #reset-zoom-btn:disabled {
             cursor: not-allowed;
             opacity: 0.5;
@@ -249,8 +233,6 @@
 
         span.value { color: #fff; font-size: 12px; font-family: monospace; }
         input[type="range"] { accent-color: var(--accent); cursor: pointer; }
-        
-        /* New styling for disabled inputs */
         input:disabled { opacity: 0.5; cursor: not-allowed; }
         
         input[type="number"].num-input { 
@@ -261,20 +243,15 @@
         select { background: #222; color: #fff; border: 1px solid #444; font-size: 11px; padding: 4px; border-radius: 4px; outline: none; cursor: pointer;}
         select:hover { border-color: #666; }
 
-        /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 900px) {
             body { height: auto; overflow-y: auto; }
             header { height: auto; padding: 10px; justify-content: center; gap: 15px; }
             main { flex-direction: column; height: auto; overflow: visible; }
             .left-col { width: 100%; order: 2; }
             .right-col { width: 100%; order: 1; height: 55vh; min-height: 350px; }
-            #matrix-wrapper { margin: 0 auto; max-width: 300px; }
-            .editor-container { min-height: 300px; }
         }
 
-        /* --- Mobile UI Toggle --- */
         #ui-toggle-btn { display: none; }
-
         @media (max-width: 900px) {
             #ui-toggle-btn { 
                 display: block; position: fixed; top: 10px; left: 10px; 
@@ -284,7 +261,6 @@
                 font-size: 10px; font-weight: bold; cursor: pointer;
                 text-transform: uppercase; backdrop-filter: blur(5px);
             }
-            /* Collapse logic for mobile */
             body.ui-collapsed header, body.ui-collapsed .left-col { display: none; }
             body.ui-collapsed .right-col { height: 100vh; min-height: 100vh; border-radius: 0; }
             body.ui-collapsed main { padding: 0; }
@@ -319,22 +295,24 @@
 
         <div class="control-group">
             <div class="group-header">
-                <span>C Multiplier</span>
+                <span>R (π Multiplier)</span>
                 <div style="display: flex; gap: 3px; align-items: center;">
-                    <button id="c-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease C">-</button>
-                    <input type="number" id="c-number" class="num-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="margin: 0;">
-                    <button id="c-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase C">+</button>
+                    <button id="r-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease R">-</button>
+                    <input type="number" id="r-number" class="num-input" min="1" step="1" value="1" style="margin: 0;">
+                    <button id="r-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase R">+</button>
                 </div>
             </div>
-            <div class="slider-row">
-                <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400">
+            <div class="group-header" style="margin-top: 5px; margin-bottom: 2px;">
+                <span>S (π Divider)</span>
+                <div style="display: flex; gap: 3px; align-items: center;">
+                    <button id="s-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease S">-</button>
+                    <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500" style="margin: 0;">
+                    <button id="s-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase S">+</button>
+                </div>
             </div>
-            <div class="toggles-row">
-                <label for="c-anim"><input type="checkbox" id="c-anim"> ANIMATE</label>
-            </div>
-            <div id="c-anim-settings" class="anim-settings">
-                <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001"></label>
-                <label>Max <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001"></label>
+            <div class="toggles-row" style="margin-top: auto;">
+                <span>Simplified (r/s):</span>
+                <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
             </div>
         </div>
 
@@ -434,16 +412,13 @@
                     
                     <h3>The Algorithm</h3>
                     <p>Starting at the origin, a line of unit length is drawn. At each step <code>n</code>, the angle of the line changes by a function <code>f(n)</code>. The new line is then appended to the previous one.</p>
-                    <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (c &times; f(n) &times; &pi;/180)</code></p>
+                    <p><code>Angle<sub>n</sub> = Angle<sub>n-1</sub> + (r / s &times; f(n) &times; &pi;)</code></p>
                     
-                    <h3>Custom Function Engine</h3>
-                    <p>You can write custom JavaScript to dictate the curve behavior. The compiler parses the code and executes it natively up to 15 million times per frame.</p>
-                    
-                    <h3>Centering & Scaling</h3>
-                    <p>To ensure the pattern remains perfectly visible regardless of the parameters, the code calculates the exact bounding box of the geometry on every frame and dynamically scales it to fit the screen.</p>
-                    
+                    <h3>Rational Angles & Precision</h3>
+                    <p>To eliminate chaotic floating-point drift, this model represents angles using two integers, <code>r</code> (multiplier) and <code>s</code> (divider). If your math formula produces exact integers (like n²), the engine tracks the phase entirely using integer modular arithmetic ensuring 100% symmetric stability indefinitely.</p>
+
                     <h3>Symmetry Lock (Auto N)</h3>
-                    <p>Checking <strong>Lock Symmetry</strong> automates the calculation of N based on the constant C. It uses the mathematical relation $c \cdot N / m = 180$ to find the smallest number of steps required to complete a rotationally symmetric rosette. This allows you to explore different C values while the shape stays perfectly "closed."</p>
+                    <p>Checking <strong>Lock Symmetry</strong> calculates the precise step sequence <code>N</code> required to perfectly close a rotational rosette. This relies on the period of integer sequences modulo <code>2*s</code>, discovering shapes the eye can never manually find.</p>
                     
                     <p style="margin-top: 20px; font-size: 10px; opacity: 0.5;">End of Documentation</p>
                 </div>
@@ -476,14 +451,15 @@
             nIncrBtn: document.getElementById('n-inc-btn'),
             nDecrBtn: document.getElementById('n-dec-btn'),
 
-            cSlider: document.getElementById('c-input'),
-            cNumber: document.getElementById('c-number'), 
-            cAnim: document.getElementById('c-anim'),
-            cAnimSettings: document.getElementById('c-anim-settings'),
-            cAnimMin: document.getElementById('c-anim-min'),
-            cAnimMax: document.getElementById('c-anim-max'),
-            cIncrBtn: document.getElementById('c-inc-btn'),
-            cDecrBtn: document.getElementById('c-dec-btn'),
+            rNumber: document.getElementById('r-number'), 
+            rIncrBtn: document.getElementById('r-inc-btn'),
+            rDecrBtn: document.getElementById('r-dec-btn'),
+
+            sNumber: document.getElementById('s-number'), 
+            sIncrBtn: document.getElementById('s-inc-btn'),
+            sDecrBtn: document.getElementById('s-dec-btn'),
+            
+            coprimeDisplay: document.getElementById('co-prime-display'),
 
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
@@ -521,14 +497,14 @@
         ui.resetZoomBtn.disabled = true;
 
         const builtinConfigs = {
-            "Default Neon": { n: 90000, c: 0.024, speed: 5, style: "neon", nAnim: false, cAnim: false, code: "return n * n;" },
-            "Light Glow Core": { n: 250000, c: 0.150000, speed: 6, style: "light-glow", nAnim: false, cAnim: false, code: "return n * Math.log(n);" },
-            "Rainbow Web": { n: 120000, c: 89.500000, speed: 4, style: "rainbow", nAnim: false, cAnim: false, code: "return n;" },
-            "Sine Petals (Light)": { n: 50000, c: 1.000000, speed: 5, style: "light", nAnim: false, cAnim: false, code: "return n * Math.sin(n);" }
+            "Default Neon": { n: 30000, r: 1, s: 7500, speed: 5, style: "neon", nAnim: false, code: "return n * n;" },
+            "Light Glow Core": { n: 250000, r: 1, s: 1200, speed: 6, style: "light-glow", nAnim: false, code: "return n * Math.log(n);" },
+            "Rainbow Web": { n: 120000, r: 179, s: 360, speed: 4, style: "rainbow", nAnim: false, code: "return n;" },
+            "Sine Petals (Light)": { n: 50000, r: 1, s: 180, speed: 5, style: "light", nAnim: false, code: "return n * Math.sin(n);" }
         };
         
         let savedConfigs = JSON.parse(localStorage.getItem('angle_path_configs') || '{}');
-        let currentRenderState = { N: 0, c: 0, time: 0, bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 } };
+        let currentRenderState = { N: 0, r: 1, s: 7500, time: 0, bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 } };
 
         function updateConfigDropdown() {
             ui.builtinConfigGroup.innerHTML = '';
@@ -551,13 +527,11 @@
         function getCurrentConfig() {
             return {
                 n: userBase.n,
-                c: userBase.c,
+                r: userBase.r,
+                s: userBase.s,
                 nAnim: ui.nAnim.checked,
-                cAnim: ui.cAnim.checked,
                 nAnimMin: parseInt(ui.nAnimMin.value),
                 nAnimMax: parseInt(ui.nAnimMax.value),
-                cAnimMin: parseFloat(ui.cAnimMin.value),
-                cAnimMax: parseFloat(ui.cAnimMax.value),
                 speed: parseInt(ui.speed.value),
                 lineWidth: parseFloat(ui.lwSlider.value),
                 style: ui.style.value,
@@ -568,31 +542,27 @@
         function loadConfig(config) {
             if (!config) return;
             
-            // Uncheck animations to safely set values
             ui.nAnim.checked = false;
-            ui.cAnim.checked = false;
 
             if (config.code) {
                 ui.editor.value = config.code;
             }
-            
-            // Determine and enforce precision for loaded code before updating C values
-            updateCPrecision();
 
+            // Fallback for older saved configs that used float 'c'
+            if (config.c !== undefined && config.r === undefined) {
+                // Approximate c to an r/s fraction assuming old degree format
+                config.r = Math.round(config.c * 1000);
+                config.s = 180000;
+            }
+
+            updateRS(config.r || 1, config.s || 7500);
             updateN(config.n, false);
-            updateC(config.c);
 
-            // Set Min/Max limits if they exist in config
             if (config.nAnimMin !== undefined) ui.nAnimMin.value = config.nAnimMin;
             if (config.nAnimMax !== undefined) ui.nAnimMax.value = config.nAnimMax;
-            if (config.cAnimMin !== undefined) ui.cAnimMin.value = parseFloat(config.cAnimMin).toFixed(cPrecision);
-            if (config.cAnimMax !== undefined) ui.cAnimMax.value = parseFloat(config.cAnimMax).toFixed(cPrecision);
 
-            // Re-apply animations if specified and trigger UI expand
             ui.nAnim.checked = !!config.nAnim;
-            ui.cAnim.checked = !!config.cAnim;
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
-            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
 
             ui.speed.value = config.speed || 5;
             ui.spdLabel.textContent = ui.speed.value;
@@ -600,7 +570,7 @@
             if (config.lineWidth !== undefined) {
                 updateLineWidth(config.lineWidth);
             } else {
-                updateLineWidth(1.0); // Default for older configs
+                updateLineWidth(1.0); 
             }
 
             ui.style.value = config.style || 'neon';
@@ -609,16 +579,14 @@
             resetZoom(); 
         }
 
-        // Config Event Listeners
         ui.configSelect.addEventListener('change', (e) => {
             const val = e.target.value;
             if (!val) return;
             let cfg = null;
-            if (val.startsWith('builtin:')) {
+            if (val.startsWith('builtin:'))
                 cfg = builtinConfigs[val.split(':')[1]];
-            } else if (val.startsWith('saved:')) {
+            else if (val.startsWith('saved:'))
                 cfg = savedConfigs[val.split(':')[1]];
-            }
             if (cfg) loadConfig(cfg);
         });
 
@@ -678,33 +646,36 @@
 
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
         let activeFunc = (n) => n * n;
+        let isFuncStrictlyInteger = true;
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { n: 90000, c: 0.024 };
-        let cPrecision = 5; // Core dynamic precision state tracking
+        let userBase = { n: 30000, r: 1, s: 7500 };
 
-        let glowStartN = 0;
-        let glowEndN = 0;
-        let glowIntensity = 0;
-
-        let eraseStartN = 0;
-        let eraseEndN = 0;
-        let eraseIntensity = 0;
+        let glowStartN = 0, glowEndN = 0, glowIntensity = 0;
+        let eraseStartN = 0, eraseEndN = 0, eraseIntensity = 0;
         
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
         const MAX_N = 3600000;
-        const MAX_C = 100.00000;
         let points = new Float32Array((MAX_N + 1) * 2);
 
-        // --- HELPER FUNCTION FOR LINE WIDTH FOR N^2 FUNCTION ---
+        function gcd(a, b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            while(b) {
+                let t = b;
+                b = a % b;
+                a = t;
+            }
+            return a;
+        }
+
         function getIdealLineWidth(n) {
             if (ui.editor.value.trim() !== presets['n2']) {
                 return parseFloat(ui.lwSlider.value);
             }
-            
             const table = [
                 [1, 0.01], [10, 0.01], [100, 0.03], [1000, 0.06],
                 [10000, 0.6], [100000, 1.5], [180000, 2.6], [250000, 3.0],
@@ -713,16 +684,12 @@
             ];
             
             if (n <= table[0][0]) return table[0][1];
-            
             if (n >= table[table.length - 1][0]) {
                 const last = table[table.length - 1];
                 const prev = table[table.length - 2];
                 const slope = (last[1] - prev[1]) / (last[0] - prev[0]);
-                let extrapolated = last[1] + slope * (n - last[0]);
-                return Math.min(extrapolated, 10.0); // Cap at max UI slider value
+                return Math.min(last[1] + slope * (n - last[0]), 100.0);
             }
-            
-            // Linear Interpolation (LERP) between provided bounds
             for (let i = 0; i < table.length - 1; i++) {
                 if (n >= table[i][0] && n <= table[i+1][0]) {
                     const ratio = (n - table[i][0]) / (table[i+1][0] - table[i][0]);
@@ -742,51 +709,23 @@
             });
         }
 
-        function updateCPrecision() {
-            const code = ui.editor.value.trim();
-            // Check exactly matching 3-digit functions
-            const isStandard5Digit = (
-                code === presets['n2'] || 
-                code === presets['n'] || 
-                code === presets['n3'] || 
-                code === presets['nlog'] || 
-                code === presets['sqrt']
-            );
-            
-            cPrecision = isStandard5Digit ? 5 : 6;
-
-            const step = cPrecision === 6 ? "0.000001" : "0.00001";
-            const minVal = cPrecision === 6 ? "0.000001" : "0.00001";
-
-            ui.cSlider.step = step;
-            ui.cSlider.min = minVal;
-            ui.cNumber.step = step;
-            ui.cNumber.min = minVal;
-            ui.cAnimMin.step = step;
-            ui.cAnimMax.step = step;
-
-            // Enforce limits with new precision layout
-            let currentC = parseFloat(userBase.c);
-            if (currentC < parseFloat(minVal)) currentC = parseFloat(minVal);
-            
-            userBase.c = currentC;
-            ui.cSlider.value = currentC.toFixed(cPrecision);
-            ui.cNumber.value = currentC.toFixed(cPrecision);
-            
-            ui.cAnimMin.value = parseFloat(ui.cAnimMin.value || 0).toFixed(cPrecision);
-            ui.cAnimMax.value = parseFloat(ui.cAnimMax.value || 2).toFixed(cPrecision);
-        }
-
         function compileFunction() {
             try {
                 const code = ui.editor.value;
                 const testFunc = new Function('n', code);
-                testFunc(1); 
+                
+                // Heuristic test to see if we can use exact integer optimization
+                isFuncStrictlyInteger = true;
+                for(let i=1; i<=50; i++){
+                    let randInt = Math.round(Math.random() * 1_000_000)
+                    if(!Number.isInteger(testFunc(randInt))) { 
+                        isFuncStrictlyInteger = false; 
+                        break; 
+                    }
+                }
+
                 activeFunc = testFunc;
-                
                 ui.errorMsg.style.display = 'none';
-                
-                updateCPrecision();
                 
                 if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
             } catch (err) {
@@ -795,39 +734,66 @@
             }
         }
 
-        function calculatePath(N, c_val) {
-            let x = 0, y = 0, angle = 0;
-            const c = c_val * (Math.PI / 180); 
+        function calculatePath(N, r, s) {
+            let x = 0, y = 0;
             let minX = 0, maxX = 0, minY = 0, maxY = 0;
-            
-            points[0] = 0; 
-            points[1] = 0;
+            points[0] = 0; points[1] = 0;
 
-            for (let n = 1; n <= N; n++) {
-                let stepAngle = activeFunc(n);
-                angle += stepAngle * c;
-                x += Math.cos(angle);
-                y += Math.sin(angle);
+            if (isFuncStrictlyInteger && Number.isInteger(r) && Number.isInteger(s)) {
+                // Exact Rational Modulo phase tracking - immunity from floating-point drift over millions of steps
+                let phaseNum = 0;
+                const doubleS = 2 * s;
+                const pi_div_s = Math.PI / s;
 
-                if (x < minX) minX = x; else if (x > maxX) maxX = x;
-                if (y < minY) minY = y; else if (y > maxY) maxY = y;
+                for (let n = 1; n <= N; n++) {
+                    let stepAngle = activeFunc(n);
+                    
+                    phaseNum = (phaseNum + (stepAngle * r) % doubleS) % doubleS;
+                    if (phaseNum < 0) phaseNum += doubleS; 
+                    
+                    let angle = phaseNum * pi_div_s;
+                    x += Math.cos(angle);
+                    y += Math.sin(angle);
 
-                points[n * 2] = x;
-                points[n * 2 + 1] = y;
+                    if (x < minX) minX = x; else if (x > maxX) maxX = x;
+                    if (y < minY) minY = y; else if (y > maxY) maxY = y;
+
+                    points[n * 2] = x;
+                    points[n * 2 + 1] = y;
+                }
+            } else {
+                // Float accumulation for non-integer sequences
+                let angle = 0;
+                const C_rad = (r / s) * Math.PI;
+                const twoPi = 2 * Math.PI;
+
+                for (let n = 1; n <= N; n++) {
+                    let stepAngle = activeFunc(n);
+                    angle = (angle + stepAngle * C_rad) % twoPi;
+                    if (angle < 0) angle += twoPi;
+                    
+                    x += Math.cos(angle);
+                    y += Math.sin(angle);
+
+                    if (x < minX) minX = x; else if (x > maxX) maxX = x;
+                    if (y < minY) minY = y; else if (y > maxY) maxY = y;
+
+                    points[n * 2] = x;
+                    points[n * 2 + 1] = y;
+                }
             }
             
             return { minX, maxX, minY, maxY };
         }
 
-        function performRender(N, c_val, time) {
+        function performRender(N, r, s, time) {
             const style = ui.style.value;
             const isLightTheme = style === 'light' || style === 'light-glow';
             
-            const geoBounds = calculatePath(N, c_val);
+            const geoBounds = calculatePath(N, r, s);
             let renderBounds = isZoomed ? zoomBounds : geoBounds;
             
-            // Store the currently rendered properties for SVG export
-            currentRenderState = { N, c: c_val, time, bounds: renderBounds };
+            currentRenderState = { N, r, s, time, bounds: renderBounds };
             
             ctx.fillStyle = isLightTheme ? '#ffffff' : '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -903,8 +869,6 @@
 
             if (glowIntensity > 0 && glowEndN > glowStartN && N >= glowStartN) {
                 ctx.beginPath();
-                
-                // Start 1 step early so it connects seamlessly to the old line
                 const startIdx = Math.max(0, glowStartN - 1);
                 const endIdx = Math.min(N, glowEndN);
                 
@@ -913,17 +877,11 @@
                     ctx.lineTo(points[j * 2], points[j * 2 + 1]);
                 }
 
-                // Force composite over everything else so the glow pops
                 ctx.globalCompositeOperation = 'source-over';
-                
-                // 1. Thick colored outer glow
                 ctx.lineWidth = baseLineWidth * 6;
-                ctx.strokeStyle = isLightTheme 
-                    ? `rgba(255, 50, 80, ${glowIntensity * 0.6})`  // Red/Pink for light themes
-                    : `rgba(255, 215, 0, ${glowIntensity * 0.6})`; // Gold/Yellow for dark themes
+                ctx.strokeStyle = isLightTheme ? `rgba(255, 50, 80, ${glowIntensity * 0.6})` : `rgba(255, 215, 0, ${glowIntensity * 0.6})`;
                 ctx.stroke();
 
-                // 2. Bright inner core
                 ctx.lineWidth = baseLineWidth * 2;
                 ctx.strokeStyle = `rgba(255, 255, 255, ${glowIntensity})`;
                 ctx.stroke();
@@ -931,24 +889,19 @@
 
             if (eraseIntensity > 0 && eraseEndN > eraseStartN) {
                 ctx.beginPath();
-                
                 const startIdx = Math.max(0, eraseStartN - 1);
                 const endIdx = eraseEndN;
                 
-                // The points array still holds the old math!
                 ctx.moveTo(points[startIdx * 2], points[startIdx * 2 + 1]);
                 for (let j = startIdx + 1; j <= endIdx; j++) {
                     ctx.lineTo(points[j * 2], points[j * 2 + 1]);
                 }
 
                 ctx.globalCompositeOperation = 'source-over';
-                
-                // 1. Red outer "burn"
                 ctx.lineWidth = baseLineWidth * 4;
                 ctx.strokeStyle = `rgba(255, 50, 50, ${eraseIntensity * 0.8})`;
                 ctx.stroke();
 
-                // 2. Fading core
                 ctx.lineWidth = baseLineWidth;
                 ctx.strokeStyle = `rgba(255, 200, 200, ${eraseIntensity})`;
                 ctx.stroke();
@@ -957,12 +910,10 @@
             ctx.restore();
         }
 
-        // --- ZOOM & INPUT HANDLERS ---
         function screenToLogical(screenX, screenY) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            
             const x = (screenX - rect.left) * scaleX;
             const y = (screenY - rect.top) * scaleY;
 
@@ -979,30 +930,27 @@
 
         canvasContainer.addEventListener('pointerdown', (e) => {
             if (e.pointerType === 'mouse' && e.button !== 0) return; 
-            if (e.pointerType === 'touch' && lastPinchDist !== null) return; // Prevent pan if pinching
+            if (e.pointerType === 'touch' && lastPinchDist !== null) return;
 
             isDragging = true;
             isPanning = false;
             startX = e.clientX;
             startY = e.clientY;
-            
-            // Ensure selection box is hidden (legacy logic cleanup)
             selectionBox.style.display = 'none';
         });
 
         canvasContainer.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
-            if (e.pointerType === 'touch' && lastPinchDist !== null) return; // Don't pan during a pinch
+            if (e.pointerType === 'touch' && lastPinchDist !== null) return; 
 
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
             const dist = Math.hypot(dx, dy);
 
-            // Initialize panning threshold
             if (!isPanning && dist > 10) {
                 isPanning = true;
-                    if (!isZoomed) {
-                    zoomBounds = calculatePath(userBase.n, userBase.c);
+                if (!isZoomed) {
+                    zoomBounds = calculatePath(userBase.n, userBase.r, userBase.s);
                     isZoomed = true;
                     ui.resetZoomBtn.disabled = false;
                 }
@@ -1011,14 +959,9 @@
 
             if (isPanning) {
                 const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                
-                // Convert screen pixel movement to logical coordinate movement
-                const logicalDx = (dx * scaleX) / activeTransform.scale;
-                const logicalDy = (dy * scaleY) / activeTransform.scale;
+                const logicalDx = (dx * (canvas.width / rect.width)) / activeTransform.scale;
+                const logicalDy = (dy * (canvas.height / rect.height)) / activeTransform.scale;
 
-                // Shift bounds opposite to drag direction to move the "camera"
                 zoomBounds.minX = startZoomBounds.minX - logicalDx;
                 zoomBounds.maxX = startZoomBounds.maxX - logicalDx;
                 zoomBounds.minY = startZoomBounds.minY - logicalDy;
@@ -1031,7 +974,6 @@
             isDragging = false;
 
             if (!isPanning) {
-                // Quick click/touch to pause
                 isPaused = !isPaused;
                 ui.pauseOverlay.textContent = "PAUSED";
                 ui.pauseOverlay.style.display = isPaused ? 'block' : 'none';
@@ -1047,7 +989,7 @@
         canvasContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
             if (!isZoomed) {
-                zoomBounds = calculatePath(userBase.n, userBase.c);
+                zoomBounds = calculatePath(userBase.n, userBase.r, userBase.s);
                 isZoomed = true;
                 ui.resetZoomBtn.disabled = false;
             }
@@ -1082,17 +1024,17 @@
 
                 if (lastPinchDist) {
                     if (!isZoomed) {
-                        zoomBounds = calculatePath(userBase.n, userBase.c);
+                        zoomBounds = calculatePath(userBase.n, userBase.r, userBase.s);
                         isZoomed = true;
                         ui.resetZoomBtn.disabled = false;
                     }
 
                     const zoomFactor = lastPinchDist / currentDist; 
-                    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                    const midLogical = screenToLogical(midX, midY);
+                    const midLogical = screenToLogical(
+                        (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                        (e.touches[0].clientY + e.touches[1].clientY) / 2
+                    );
 
-                    // Zoom naturally towards the exact midpoint of the pinch
                     zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
                     zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
                     zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
@@ -1102,11 +1044,7 @@
             }
         }, { passive: false });
 
-        canvasContainer.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) {
-                lastPinchDist = null;
-            }
-        });
+        canvasContainer.addEventListener('touchend', (e) => { if (e.touches.length < 2) lastPinchDist = null; });
 
         function resetZoom() {
             isZoomed = false;
@@ -1114,20 +1052,18 @@
         }
         ui.resetZoomBtn.addEventListener('click', resetZoom);
 
-        // --- END ZOOM HANDLERS ---
-
         function liveLoop() {
             const now = performance.now();
             const delta = (now - lastRealTime) / 1000;
             lastRealTime = now;
 
             if (glowIntensity > 0) {
-                glowIntensity -= delta * 1.2; // Fades out in ~0.8 seconds
+                glowIntensity -= delta * 1.2; 
                 if (glowIntensity < 0) glowIntensity = 0;
             }
 
             if (eraseIntensity > 0) {
-                eraseIntensity -= delta * 1.5; // Fades a bit faster (~0.66 seconds)
+                eraseIntensity -= delta * 1.5; 
                 if (eraseIntensity < 0) eraseIntensity = 0;
             }
 
@@ -1137,7 +1073,6 @@
                 const pingPong = 1 - Math.abs(2 * cycle - 1);
 
                 let aN = userBase.n;
-                let aC = userBase.c;
                 
                 if (ui.nAnim.checked) {
                     const easedProgress = Math.pow(pingPong, 2); 
@@ -1146,258 +1081,155 @@
                     aN = Math.floor(minN + (maxN - minN) * easedProgress);
                     
                     ui.nNumber.value = aN;
-                    ui.nSlider.value = Math.log10(Math.max(1, aN)); // Keep it above 0 to prevent log issues
+                    ui.nSlider.value = Math.log10(Math.max(1, aN));
                     
-                    // Sync the Line Width slider dynamically with the animated N
                     const autoLw = getIdealLineWidth(aN);
                     ui.lwSlider.value = autoLw.toFixed(2);
                     ui.lwNumber.value = autoLw.toFixed(2);
                 } 
-                else if (ui.cAnim.checked) {
-                    const minC = parseFloat(ui.cAnimMin.value) || 0;
-                    const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
-                    aC = minC + ((maxC - minC) * pingPong);
-
-                    ui.cSlider.value = aC.toFixed(cPrecision);
-                    ui.cNumber.value = aC.toFixed(cPrecision);
-                }
                 
-                performRender(aN, aC, virtualTime);
+                performRender(aN, userBase.r, userBase.s, virtualTime);
             }
             
             updateRecTimer();
             animationFrameId = requestAnimationFrame(liveLoop);
         }
 
-        // --- ROSETTE ALGORITHM ---
-        function calculateRosetteN(C) {
-            if (C <= 0) return null;
+        // --- Exact Rational Symmetry Logic ---
+        function calculateRosetteN(r, s) {
+            if (r <= 0 || s <= 0) return null;
             
-            // 1. Find Raw Period
-            let magicUpperBound = 6;  // Seems like magic, I'n not convinced the rationale for this choice
-            let P_raw = 0;
-            for (let u = 1; u <= magicUpperBound; u++) {
-                let val = (180 * u) / C;
-                if (Math.abs(val - Math.round(val)) < 1e-6) {
-                    P_raw = Math.round(val);
-                    break;
-                }
-            }
-            if (P_raw === 0) return null; // Fallback if no clean period is found
+            let g = gcd(r, s);
+            let r_co = r / g;
+            let s_co = s / g;
 
-            // 2. The Inversion Check
-            // Snap to the guaranteed integer to eliminate float drift
-            let totalAngle = Math.round(C * P_raw * P_raw); 
-            let remainder = totalAngle % 360;
-
+            // Using pure rational properties equivalent to the original geometry math
+            let P_raw = s_co;
+            let remainder = (180 * r_co * s_co) % 360;
             let P_true = P_raw;
-            // Exact integer comparison is now safe
-            if (remainder === 180 || remainder === -180) {
+            
+            if (Math.abs(remainder) === 180) {
                 P_true = P_raw * 2;
             }
 
-            // 3. Find Sector Angle
             let p = P_true;
-            let sumAngle = C * p * (p + 1) * (2 * p + 1) / 6;
-            let deltaTheta = Math.round(sumAngle % 360);
+            let p_div_s = p / s_co; // strictly integer
+            
+            // Formula to detect phase closing offset
+            let sumAngle = 30 * r_co * p_div_s * (p + 1) * (2 * p + 1);
+            let deltaTheta = sumAngle % 360;
             if (deltaTheta < 0) deltaTheta += 360;
             if (deltaTheta === 360) deltaTheta = 0;
 
-            // 4. Calculate Petals
-            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
             let m = 360 / gcd(360, deltaTheta);
 
-            // 5. Compute Total N
             return p * m;
         }
-        // -------------------------
 
         const updateN = (val, fromSlider = false) => {
-            let v;
-            if (fromSlider) {
-                v = Math.round(Math.pow(10, parseFloat(val)));
-            } else {
-                v = parseInt(val);
-            }
-
+            let v = fromSlider ? Math.round(Math.pow(10, parseFloat(val))) : parseInt(val);
             if (isNaN(v)) v = 1000;
             if (v > MAX_N) v = MAX_N;
 
             if (v > userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 glowStartN = userBase.n;
                 glowEndN = v;
-                glowIntensity = 1.0; 
-                eraseIntensity = 0; // Cancel any active erase to prevent overlap
+                glowIntensity = 1.0;
+                eraseIntensity = 0;
             } else if (v < userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 eraseStartN = v;
                 eraseEndN = userBase.n;
                 eraseIntensity = 1.0;
-                glowIntensity = 0; // Cancel any active glow
+                glowIntensity = 0;
             }
 
             userBase.n = v;
             ui.nNumber.value = v;
             ui.nSlider.value = Math.log10(v).toFixed(5);
-
-            // Automatically sync the line width bounds to the new N value
             updateLineWidth(getIdealLineWidth(v));
 
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
         function applySymmetryLock() {
-            const perfectN = calculateRosetteN(userBase.c);
+            const perfectN = calculateRosetteN(userBase.r, userBase.s);
             if (perfectN) {
                 const clampedN = Math.min(perfectN, MAX_N);
-                updateN(clampedN, false); // false prevents double-render
+                updateN(clampedN, false); 
             }
         }
 
         ui.nSlider.oninput = (e) => updateN(e.target.value, true);
         ui.nNumber.onchange = (e) => updateN(e.target.value, false);
 
-        const updateC = (val) => {
-            let v = parseFloat(val);
-            const minVal = cPrecision === 6 ? 0.000001 : 0.00001;
+        const updateRS = (rVal, sVal) => {
+            let r = parseInt(rVal) || 1;
+            let s = parseInt(sVal) || 1;
             
-            if (v < minVal) v = minVal;
-            if (v > MAX_C) v = MAX_C;
+            if (r < 1) r = 1;
+            if (s < 1) s = 1;
 
-            if (ui.nAutoValue.checked) {
-                let prevC = parseFloat(userBase.c);
-                let stepDir = v < prevC ? -1 : 1;
-                let stepSize = cPrecision === 6 ? 0.000001 : 0.00001;
-
-                let testC = v;
-                let foundPerfectN = calculateRosetteN(testC);
-
-                while (!foundPerfectN) {
-                    testC += stepDir * stepSize;
-                    testC = Number(testC.toFixed(cPrecision)); // Keep exact float to avoid precision drift
-
-                    if (testC < minVal) {
-                        testC = minVal;
-                        break;
-                    }
-                    if (testC > MAX_C) {
-                        testC = MAX_C;
-                        break;
-                    }
-
-                    foundPerfectN = calculateRosetteN(testC);
-                }
-                v = testC;
-            }
-
-            userBase.c = v;
-            ui.cSlider.value = v.toFixed(cPrecision);
-            ui.cNumber.value = v.toFixed(cPrecision);
-
-            if (ui.nAutoValue.checked) {
-                applySymmetryLock();
-            }
-
-            if (isPaused) 
-            { 
-                isPaused = false; 
-                ui.pauseOverlay.style.display = 'none'; 
-            }
-        };
-
-        ui.cSlider.oninput = (e) => updateC(e.target.value);
-        ui.cNumber.onchange = (e) => updateC(e.target.value);
-
-        ui.cDecrBtn.addEventListener('click', () => {
-            const step = parseFloat(ui.cNumber.step);
-            updateC((parseFloat(userBase.c) - step).toFixed(cPrecision));
-        });
-
-        ui.cIncrBtn.addEventListener('click', () => {
-            const step = parseFloat(ui.cNumber.step);
-            updateC((parseFloat(userBase.c) + step).toFixed(cPrecision));
-        });
-
-        ui.nDecrBtn.addEventListener('click', () => {
-            updateN((parseInt(userBase.n) - 1));
-        });
-
-        ui.nIncrBtn.addEventListener('click', () => {
-            updateN((parseInt(userBase.n) + 1));
-        });
-
-        const updateLineWidth = (val) => {
-            let v = parseFloat(val);
-            if (v < 0.01) v = 0.01;
-            ui.lwSlider.value = v.toFixed(2);
-            ui.lwNumber.value = v.toFixed(2);
+            userBase.r = r;
+            userBase.s = s;
             
-            // Unpause the canvas to show the updated line thickness immediately
+            ui.rNumber.value = r;
+            ui.sNumber.value = s;
+
+            let g = gcd(r, s);
+            ui.coprimeDisplay.textContent = `${r/g} / ${s/g}`;
+
+            if (ui.nAutoValue.checked) applySymmetryLock();
+
             if (isPaused) { 
                 isPaused = false; 
                 ui.pauseOverlay.style.display = 'none'; 
             }
         };
 
+        ui.rNumber.onchange = (e) => updateRS(e.target.value, userBase.s);
+        ui.sNumber.onchange = (e) => updateRS(userBase.r, e.target.value);
+
+        ui.rDecrBtn.addEventListener('click', () => updateRS(userBase.r - 1, userBase.s));
+        ui.rIncrBtn.addEventListener('click', () => updateRS(userBase.r + 1, userBase.s));
+        ui.sDecrBtn.addEventListener('click', () => updateRS(userBase.r, userBase.s - 1));
+        ui.sIncrBtn.addEventListener('click', () => updateRS(userBase.r, userBase.s + 1));
+
+        ui.nDecrBtn.addEventListener('click', () => updateN(parseInt(userBase.n) - 1));
+        ui.nIncrBtn.addEventListener('click', () => updateN(parseInt(userBase.n) + 1));
+
+        const updateLineWidth = (val) => {
+            let v = parseFloat(val);
+            if (v < 0.01) v = 0.01;
+            ui.lwSlider.value = v.toFixed(2);
+            ui.lwNumber.value = v.toFixed(2);
+            if (isPaused) {
+                isPaused = false;
+                ui.pauseOverlay.style.display = 'none';
+            }
+        };
+
         ui.lwSlider.oninput = (e) => updateLineWidth(e.target.value);
         ui.lwNumber.onchange = (e) => updateLineWidth(e.target.value);
 
-        // Mutual Exclusivity and Dynamic Min/Max Logic
         ui.nAnim.addEventListener('change', () => {
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             if (ui.nAnim.checked) {
-                ui.cAnim.checked = false;
-                ui.cAnimSettings.style.display = 'none';
-                
-                // --- Sync virtualTime to the current N value ---
                 const minN = parseInt(ui.nAnimMin.value) || 1;
                 const maxN = parseInt(ui.nAnimMax.value) || MAX_N;
-                // Clamp current N to ensure it falls within the anim bounds
                 let currentN = Math.max(minN, Math.min(maxN, userBase.n));
                 
-                // Reverse the easedProgress math: Math.pow(pingPong, 2)
                 let pingPongSq = (maxN - minN) === 0 ? 0 : (currentN - minN) / (maxN - minN);
-                let pingPong = Math.sqrt(pingPongSq);
-                
-                // Set the cycle to the upward slope phase
-                let cycle = pingPong / 2; 
+                let cycle = Math.sqrt(pingPongSq) / 2; 
                 virtualTime = Math.floor(virtualTime / 4) * 4 + (cycle * 4);
-                
             } else {
                 userBase.n = parseInt(ui.nNumber.value);
             }
         });
 
-        ui.cAnim.addEventListener('change', () => {
-            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
-            if (ui.cAnim.checked) {
-                ui.nAnim.checked = false;
-                ui.nAnimSettings.style.display = 'none';
-                
-                // --- Sync virtualTime to the current C value ---
-                const minC = parseFloat(ui.cAnimMin.value) || 0;
-                const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
-                // Clamp current C to ensure it falls within the anim bounds
-                let currentC = Math.max(minC, Math.min(maxC, userBase.c));
-                
-                // Reverse the linear pingPong math
-                let pingPong = (maxC - minC) === 0 ? 0 : (currentC - minC) / (maxC - minC);
-                
-                // Set the cycle to the upward slope phase
-                let cycle = pingPong / 2; 
-                virtualTime = Math.floor(virtualTime / 4) * 4 + (cycle * 4);
-                
-            } else {
-                userBase.c = parseFloat(ui.cSlider.value);
-            }
-        });
-
         ui.presetSelect.addEventListener('change', (e) => {
             const val = e.target.value;
-            if (val.startsWith('user:')) {
-                ui.editor.value = userPresets[val.split(':')[1]];
-            } else if (presets[val]) {
-                ui.editor.value = presets[val];
-            }
+            if (val.startsWith('user:')) ui.editor.value = userPresets[val.split(':')[1]];
+            else if (presets[val]) ui.editor.value = presets[val];
             compileFunction(); 
         });
 
@@ -1421,11 +1253,7 @@
             ui.nNumber.disabled = isAuto;
             ui.nDecrBtn.disabled = isAuto;
             ui.nIncrBtn.disabled = isAuto;
-            
-            if (isAuto) {
-                // Instantly sync the current valid value into view
-                updateC(userBase.c); 
-            }
+            if (isAuto) applySymmetryLock(); 
         });
 
         const generateRandom = () => {
@@ -1434,30 +1262,19 @@
             ui.presetSelect.value = randFunc;
             ui.editor.value = presets[randFunc];
             
-            updateCPrecision(); 
-            
-            let logN = 3.0000 + Math.random() * 3.69897; 
-            userBase.n = Math.floor(Math.pow(10.0000, logN));
-            
-            const minC = cPrecision === 6 ? 0.000001 : 0.00001;
-            let randC = Number((Math.random() * 4.0).toFixed(cPrecision));
-            if(randC < minC) randC = minC;
-            
-            updateC(randC); 
+            let randR = Math.floor(Math.random() * 200) + 1;
+            let randS = Math.floor(Math.random() * 10000) + 1;
+            updateRS(randR, randS); 
+
+            let logN = 3.0 + Math.random() * 3.6; 
+            userBase.n = Math.floor(Math.pow(10.0, logN));
 
             ui.nSlider.value = Math.log10(userBase.n); 
             ui.nNumber.value = userBase.n;
-            
-            // Sync Line Width immediately
             updateLineWidth(getIdealLineWidth(userBase.n));
 
-            const animChoice = Math.floor(Math.random() * 3);
-            ui.nAnim.checked = (animChoice === 1);
-            ui.cAnim.checked = (animChoice === 2);
-
-            // Trigger the UI displays for the animated panels
+            ui.nAnim.checked = (Math.random() > 0.8);
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
-            ui.cAnimSettings.style.display = ui.cAnim.checked ? 'flex' : 'none';
             
             const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
@@ -1472,23 +1289,11 @@
                 ui.recInd.style.display = 'none';
             } else {
                 recordedChunks = [];
-                // Capture at 60fps
                 const stream = canvas.captureStream(60); 
 
-                const options = { 
-                    mimeType: 'video/webm;codecs=vp9',
-                    videoBitsPerSecond: 8000000 // 8 Mbps
-                };
-
-                try { 
-                    mediaRecorder = new MediaRecorder(stream, options); 
-                } catch (e) { 
-                    // Fallback for browsers that don't support VP9
-                    mediaRecorder = new MediaRecorder(stream, { 
-                        mimeType: 'video/webm',
-                        videoBitsPerSecond: 8000000
-                    }); 
-                }
+                const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 };
+                try { mediaRecorder = new MediaRecorder(stream, options); } 
+                catch (e) { mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 8000000 }); }
 
                 mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
                 mediaRecorder.onstop = () => {
@@ -1526,8 +1331,6 @@
             ui.pauseOverlay.innerHTML = "Building SVG<br><span style='font-size: 10px; color: #fff;'>Please wait...</span>";
             ui.pauseOverlay.style.display = 'block';
 
-            // Use a short timeout to let the browser paint the "Paused/Building" UI 
-            // before the synchronous SVG creation locks up the main thread momentarily
             setTimeout(() => {
                 try {
                     const { N, time, bounds } = currentRenderState;
@@ -1535,14 +1338,12 @@
                     const isLightTheme = style === 'light' || style === 'light-glow';
                     const bg = isLightTheme ? '#ffffff' : '#050505';
                     
-                    // Add padding to bounds so lines aren't cut off on the edges
                     const pad = Math.max(0.1, 80000 / N) * 5;
                     const minX = bounds.minX - pad;
                     const minY = bounds.minY - pad;
                     const bbWidth = (bounds.maxX - bounds.minX) + pad * 2;
                     const bbHeight = (bounds.maxY - bounds.minY) + pad * 2;
                     
-                    // Base stroke width relative to the raw viewport mapping
                     let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
                     const scale = Math.min(1600 / (bbWidth || 1), 1600 / (bbHeight || 1)) * 0.90;
                     let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
@@ -1594,13 +1395,9 @@
                     alert("Could not export SVG. The current step count may be too large to generate a vector path string.");
                 }
 
-                // Restore previous state
                 isPaused = wasPaused;
-                if (!isPaused) {
-                    ui.pauseOverlay.style.display = 'none';
-                } else {
-                    ui.pauseOverlay.textContent = "PAUSED";
-                }
+                if (!isPaused) ui.pauseOverlay.style.display = 'none';
+                else ui.pauseOverlay.textContent = "PAUSED";
             }, 100); 
         };
 
@@ -1615,19 +1412,13 @@
         document.getElementById('random-btn').onclick = generateRandom;
         ui.speed.oninput = () => ui.spdLabel.textContent = ui.speed.value;
 
-        // Init
         updateConfigDropdown(); 
         updatePresetDropdown();
         compileFunction();
         
-        // Process default Auto N immediately on load
-        if (ui.nAutoValue.checked) {
-            applySymmetryLock();
-        }
-        
+        if (ui.nAutoValue.checked) applySymmetryLock();
         liveLoop();
 
-        // --- MOBILE UI MINIMIZE LOGIC ---
         (function() {
             const toggleBtn = document.createElement('button');
             toggleBtn.id = 'ui-toggle-btn';
@@ -1637,8 +1428,6 @@
             toggleBtn.onclick = () => {
                 const isCollapsed = document.body.classList.toggle('ui-collapsed');
                 toggleBtn.textContent = isCollapsed ? 'Show UI' : 'Hide UI';
-                
-                // Trigger a resize event to ensure canvas centering logic updates
                 window.dispatchEvent(new Event('resize'));
             };
         })();
