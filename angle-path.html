@@ -775,8 +775,8 @@
                     <option value="light-glow">Neon Glow (Light)</option>
                     <option value="matrix">Matrix (Dark)</option>
                     <option value="blueprint">Blueprint (Dark)</option>
-                    <option value="density">Density Heatmap (Dark)</option>
                     <option value="distance">Distance Radial (Dark)</option>
+                    <option value="distance-inferno">Distance Inferno (Dark)</option>
                 </select>
                 
                 <div class="group-header" style="margin-top: 4px;"><span>Configuration</span></div>
@@ -1333,21 +1333,28 @@
             ctx.fillStyle = bgFill;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            const bbWidth = renderBounds.maxX - renderBounds.minX;
-            const bbHeight = renderBounds.maxY - renderBounds.minY;
-            
-            const scale = Math.min(canvas.width / (bbWidth || 1), canvas.height / (bbHeight || 1)) * 0.90;
-            const bbCenterX = (renderBounds.maxX + renderBounds.minX) / 2;
-            const bbCenterY = (renderBounds.maxY + renderBounds.minY) / 2;
+            // Geographic metrics for consistent coloring regardless of zoom
+            const geoWidth = geoBounds.maxX - geoBounds.minX;
+            const geoHeight = geoBounds.maxY - geoBounds.minY;
+            const geoCenterX = (geoBounds.maxX + geoBounds.minX) / 2;
+            const geoCenterY = (geoBounds.maxY + geoBounds.minY) / 2;
+            const geoMaxR = Math.hypot(geoWidth, geoHeight) / 2;
 
-            activeTransform = { scale, cx: bbCenterX, cy: bbCenterY };
+            // Viewport metrics for screen scaling
+            const viewWidth = renderBounds.maxX - renderBounds.minX;
+            const viewHeight = renderBounds.maxY - renderBounds.minY;
+            const viewCenterX = (renderBounds.maxX + renderBounds.minX) / 2;
+            const viewCenterY = (renderBounds.maxY + renderBounds.minY) / 2;
+
+            const scale = Math.min(canvas.width / (viewWidth || 1), canvas.height / (viewHeight || 1)) * 0.90;
+            activeTransform = { scale, cx: viewCenterX, cy: viewCenterY };
 
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.scale(scale, scale);
-            ctx.translate(-bbCenterX, -bbCenterY);
+            ctx.translate(-viewCenterX, -viewCenterY);
 
-            if (style === 'neon' || style === 'density' || style === 'distance') ctx.globalCompositeOperation = 'lighter';
+            if (style === 'neon' || style === 'distance' || style === 'distance-inferno') ctx.globalCompositeOperation = 'lighter';
             else if (style === 'light-glow') ctx.globalCompositeOperation = 'multiply';
             else ctx.globalCompositeOperation = 'source-over';
             
@@ -1364,12 +1371,18 @@
 
             let distGradient = null;
             if (style === 'distance') {
-                const maxR = Math.hypot(bbWidth, bbHeight) / 2;
-                distGradient = ctx.createRadialGradient(bbCenterX, bbCenterY, 0, bbCenterX, bbCenterY, maxR || 1);
+                distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
                 distGradient.addColorStop(0, `hsl(${((time * 50) % 360)}, 100%, 70%)`);
                 distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 100%, 60%)`);
                 distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`);
                 distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`);
+            } else if (style === 'distance-inferno') {
+                distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
+                distGradient.addColorStop(0, `hsl(60, 100%, 70%)`);     // Yellow center
+                distGradient.addColorStop(0.2, `hsl(30, 100%, 60%)`);    // Orange
+                distGradient.addColorStop(0.5, `hsl(0, 100%, 50%)`);     // Red
+                distGradient.addColorStop(0.8, `hsl(280, 100%, 40%)`);   // Deep Purple
+                distGradient.addColorStop(1, `hsl(240, 100%, 20%)`);     // Dark Blue
             }
 
             for (let i = 0; i < numChunks; i++) {
@@ -1413,11 +1426,7 @@
                     ctx.lineWidth = baseLineWidth * 0.2;
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
                     ctx.stroke();
-                } else if (style === 'density') {
-                    ctx.lineWidth = baseLineWidth * 3.0;
-                    ctx.strokeStyle = `rgba(255, 60, 10, 0.08)`;
-                    ctx.stroke();
-                } else if (style === 'distance') {
+                } else if (style === 'distance' || style === 'distance-inferno') {
                     ctx.lineWidth = baseLineWidth * 0.8;
                     ctx.strokeStyle = distGradient;
                     ctx.stroke();
@@ -1565,7 +1574,7 @@
                     const zoomFactor = lastPinchDist / currentDist; 
                     const midLogical = screenToLogical((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2);
                     zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
-                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
+                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - pointerLogical.x) * zoomFactor;
                     zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
                     zoomBounds.maxY = midLogical.y + (zoomBounds.maxY - midLogical.y) * zoomFactor;
                 }
@@ -1900,7 +1909,7 @@
 
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             
-            const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'density', 'distance'];
+            const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'distance', 'distance-inferno'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
@@ -1971,30 +1980,45 @@
                     const pad = Math.max(0.1, 80000 / N) * 5;
                     const minX = bounds.minX - pad;
                     const minY = bounds.minY - pad;
-                    const bbWidth = (bounds.maxX - bounds.minX) + pad * 2;
-                    const bbHeight = (bounds.maxY - bounds.minY) + pad * 2;
+                    const viewWidth = (bounds.maxX - bounds.minX) + pad * 2;
+                    const viewHeight = (bounds.maxY - bounds.minY) + pad * 2;
+
+                    // Geo bounds logic repeated for SVG export
+                    const rawGeoBounds = calculatePath(N, currentRenderState.mode, currentRenderState.r, currentRenderState.s, currentRenderState.c);
+                    const geoWidth = rawGeoBounds.maxX - rawGeoBounds.minX;
+                    const geoHeight = rawGeoBounds.maxY - rawGeoBounds.minY;
+                    const geoCenterX = (rawGeoBounds.maxX + rawGeoBounds.minX) / 2;
+                    const geoCenterY = (rawGeoBounds.maxY + rawGeoBounds.minY) / 2;
+                    const geoMaxR = Math.hypot(geoWidth, geoHeight) / 2;
                     
                     let lwMultiplier = parseFloat(ui.lwSlider.value) || 1.0;
-                    const scale = Math.min(1600 / (bbWidth || 1), 1600 / (bbHeight || 1)) * 0.90;
+                    const scale = Math.min(1600 / (viewWidth || 1), 1600 / (viewHeight || 1)) * 0.90;
                     let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
 
-                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${bbWidth} ${bbHeight}" style="background-color: ${bg};">\n`;
+                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${viewWidth} ${viewHeight}" style="background-color: ${bg};">\n`;
 
                     if (style === 'distance') {
-                        const cx = (bounds.maxX + bounds.minX) / 2;
-                        const cy = (bounds.maxY + bounds.minY) / 2;
-                        const maxR = Math.hypot(bbWidth, bbHeight) / 2;
                         const col0 = `hsl(${((time * 50) % 360)}, 100%, 70%)`;
                         const col1 = `hsl(${(((time * 50) + 60) % 360)}, 100%, 60%)`;
                         const col2 = `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`;
                         const col3 = `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`;
 
                         svg += `<defs>
-                            <radialGradient id="distGrad" cx="${cx}" cy="${cy}" r="${maxR}" gradientUnits="userSpaceOnUse">
+                            <radialGradient id="distGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">
                                 <stop offset="0%" stop-color="${col0}" />
                                 <stop offset="30%" stop-color="${col1}" />
                                 <stop offset="70%" stop-color="${col2}" />
                                 <stop offset="100%" stop-color="${col3}" />
+                            </radialGradient>
+                        </defs>\n`;
+                    } else if (style === 'distance-inferno') {
+                        svg += `<defs>
+                            <radialGradient id="infernoGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="hsl(60, 100%, 70%)" />
+                                <stop offset="20%" stop-color="hsl(30, 100%, 60%)" />
+                                <stop offset="50%" stop-color="hsl(0, 100%, 50%)" />
+                                <stop offset="80%" stop-color="hsl(280, 100%, 40%)" />
+                                <stop offset="100%" stop-color="hsl(240, 100%, 20%)" />
                             </radialGradient>
                         </defs>\n`;
                     }
@@ -2029,10 +2053,10 @@
                         } else if (style === 'blueprint') {
                             pathStrings.push(`<path d="${dStr}" stroke="rgba(100, 200, 255, 0.6)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
                             pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.2}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
-                        } else if (style === 'density') {
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 60, 10, 0.08)" stroke-width="${baseLineWidth * 3.0}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
                         } else if (style === 'distance') {
                             pathStrings.push(`<path d="${dStr}" stroke="url(#distGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'distance-inferno') {
+                            pathStrings.push(`<path d="${dStr}" stroke="url(#infernoGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
                         } else {
                             pathStrings.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
                         }
