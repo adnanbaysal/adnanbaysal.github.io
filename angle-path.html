@@ -773,6 +773,10 @@
                     <option value="solid">Solid White (Dark)</option>
                     <option value="light">Solid Black (Light)</option>
                     <option value="light-glow">Neon Glow (Light)</option>
+                    <option value="matrix">Matrix (Dark)</option>
+                    <option value="blueprint">Blueprint (Dark)</option>
+                    <option value="density">Density Heatmap (Dark)</option>
+                    <option value="distance">Distance Radial (Dark)</option>
                 </select>
                 
                 <div class="group-header" style="margin-top: 4px;"><span>Configuration</span></div>
@@ -1321,7 +1325,12 @@
             
             currentRenderState = { N, mode, r, s, c: c_val, time, bounds: renderBounds };
             
-            ctx.fillStyle = isLightTheme ? '#ffffff' : '#050505';
+            let bgFill = '#050505';
+            if (isLightTheme) bgFill = '#ffffff';
+            else if (style === 'blueprint') bgFill = '#0a192f';
+            else if (style === 'matrix') bgFill = '#001100';
+
+            ctx.fillStyle = bgFill;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             const bbWidth = renderBounds.maxX - renderBounds.minX;
@@ -1338,7 +1347,7 @@
             ctx.scale(scale, scale);
             ctx.translate(-bbCenterX, -bbCenterY);
 
-            if (style === 'neon') ctx.globalCompositeOperation = 'lighter';
+            if (style === 'neon' || style === 'density' || style === 'distance') ctx.globalCompositeOperation = 'lighter';
             else if (style === 'light-glow') ctx.globalCompositeOperation = 'multiply';
             else ctx.globalCompositeOperation = 'source-over';
             
@@ -1352,6 +1361,16 @@
 
             const MAX_PATH_SIZE = 500000; 
             const numChunks = Math.ceil(N / MAX_PATH_SIZE);
+
+            let distGradient = null;
+            if (style === 'distance') {
+                const maxR = Math.hypot(bbWidth, bbHeight) / 2;
+                distGradient = ctx.createRadialGradient(bbCenterX, bbCenterY, 0, bbCenterX, bbCenterY, maxR || 1);
+                distGradient.addColorStop(0, `hsl(${((time * 50) % 360)}, 100%, 70%)`);
+                distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 100%, 60%)`);
+                distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`);
+                distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`);
+            }
 
             for (let i = 0; i < numChunks; i++) {
                 const start = i * MAX_PATH_SIZE;
@@ -1382,6 +1401,25 @@
                 } else if (style === 'light') {
                     ctx.lineWidth = baseLineWidth * 0.5;
                     ctx.strokeStyle = `rgba(10, 10, 10, 0.9)`;
+                    ctx.stroke();
+                } else if (style === 'matrix') {
+                    ctx.lineWidth = baseLineWidth * 0.8;
+                    ctx.strokeStyle = `rgba(0, 255, 65, 0.6)`;
+                    ctx.stroke();
+                } else if (style === 'blueprint') {
+                    ctx.lineWidth = baseLineWidth * 0.5;
+                    ctx.strokeStyle = `rgba(100, 200, 255, 0.6)`;
+                    ctx.stroke();
+                    ctx.lineWidth = baseLineWidth * 0.2;
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
+                    ctx.stroke();
+                } else if (style === 'density') {
+                    ctx.lineWidth = baseLineWidth * 3.0;
+                    ctx.strokeStyle = `rgba(255, 60, 10, 0.08)`;
+                    ctx.stroke();
+                } else if (style === 'distance') {
+                    ctx.lineWidth = baseLineWidth * 0.8;
+                    ctx.strokeStyle = distGradient;
                     ctx.stroke();
                 } else {
                     ctx.lineWidth = baseLineWidth * 0.5;
@@ -1862,7 +1900,7 @@
 
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             
-            const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow'];
+            const styles = ['neon', 'rainbow', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'density', 'distance'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
@@ -1924,7 +1962,11 @@
                     const { N, time, bounds } = currentRenderState;
                     const style = ui.style.value;
                     const isLightTheme = style === 'light' || style === 'light-glow';
-                    const bg = isLightTheme ? '#ffffff' : '#050505';
+                    
+                    let bg = '#050505';
+                    if (isLightTheme) bg = '#ffffff';
+                    else if (style === 'blueprint') bg = '#0a192f';
+                    else if (style === 'matrix') bg = '#001100';
                     
                     const pad = Math.max(0.1, 80000 / N) * 5;
                     const minX = bounds.minX - pad;
@@ -1937,6 +1979,25 @@
                     let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
 
                     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${bbWidth} ${bbHeight}" style="background-color: ${bg};">\n`;
+
+                    if (style === 'distance') {
+                        const cx = (bounds.maxX + bounds.minX) / 2;
+                        const cy = (bounds.maxY + bounds.minY) / 2;
+                        const maxR = Math.hypot(bbWidth, bbHeight) / 2;
+                        const col0 = `hsl(${((time * 50) % 360)}, 100%, 70%)`;
+                        const col1 = `hsl(${(((time * 50) + 60) % 360)}, 100%, 60%)`;
+                        const col2 = `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`;
+                        const col3 = `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`;
+
+                        svg += `<defs>
+                            <radialGradient id="distGrad" cx="${cx}" cy="${cy}" r="${maxR}" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="${col0}" />
+                                <stop offset="30%" stop-color="${col1}" />
+                                <stop offset="70%" stop-color="${col2}" />
+                                <stop offset="100%" stop-color="${col3}" />
+                            </radialGradient>
+                        </defs>\n`;
+                    }
 
                     const MAX_PATH_SIZE = 500000; 
                     const numChunks = Math.ceil(N / MAX_PATH_SIZE);
@@ -1963,6 +2024,15 @@
                             pathStrings.push(`<path d="${dStr}" stroke="rgba(30, 30, 30, 0.9)" stroke-width="${baseLineWidth * 0.4}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />`);
                         } else if (style === 'light') {
                             pathStrings.push(`<path d="${dStr}" stroke="rgba(10, 10, 10, 0.9)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'matrix') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(0, 255, 65, 0.6)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'blueprint') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(100, 200, 255, 0.6)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.2}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'density') {
+                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 60, 10, 0.08)" stroke-width="${baseLineWidth * 3.0}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                        } else if (style === 'distance') {
+                            pathStrings.push(`<path d="${dStr}" stroke="url(#distGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
                         } else {
                             pathStrings.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
                         }
