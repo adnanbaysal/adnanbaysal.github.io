@@ -730,7 +730,7 @@
                     <span>Steps (N)</span>
                     <div style="display: flex; gap: 3px; align-items: center;">
                         <button id="n-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease N" disabled>-</button>
-                        <input type="number" id="n-number" class="num-input" min="1" max="3600000" step="1000" value="90000" disabled style="margin: 0;">
+                        <input type="number" id="n-number" class="num-input" min="1" max="2000000" step="1000" value="90000" disabled style="margin: 0;">
                         <button id="n-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase N" disabled>+</button>
                     </div>
                 </div>
@@ -743,7 +743,7 @@
                 </div>
                 <div id="n-anim-settings" class="anim-settings">
                     <label>Min <input type="number" id="n-anim-min" class="num-input" value="1000" min="1"></label>
-                    <label>Max <input type="number" id="n-anim-max" class="num-input" value="3600000" max="3600000"></label>
+                    <label>Max <input type="number" id="n-anim-max" class="num-input" value="2000000" max="2000000"></label>
                 </div>
             </div>
 
@@ -816,6 +816,7 @@
                         <option value="nlog">n * log(n)</option>
                         <option value="nsin">n * sin(n)</option>
                         <option value="sinn2">sin(n²)</option>
+                        <option value="logn2">log(n²)</option>
                     </optgroup>
                     <optgroup label="User Saved" id="user-presets-group">
                     </optgroup>
@@ -1139,7 +1140,8 @@
             'n3': 'return n * n * n;',
             'nlog': 'return n * Math.log(n);',
             'nsin': 'return n * Math.sin(n);',
-            'sinn2': 'return Math.sin(n * n);'
+            'sinn2': 'return Math.sin(n * n);',
+            'logn2': 'return Math.log(n * n);'
         };
 
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
@@ -1157,7 +1159,7 @@
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
-        const MAX_N = 3600000;
+        const MAX_N = 2000000;
         const MAX_C = 100.00000;
         let points = new Float32Array((MAX_N + 1) * 2);
 
