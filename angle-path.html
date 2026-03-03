@@ -69,7 +69,7 @@
         .toolbar-group {
             display: grid;
             grid-template-columns: repeat(4, 1fr); 
-            grid-template-rows: repeat(2, 34px);    
+            grid-template-rows: repeat(3, 34px);    
             gap: 6px;
             background: #1a1a1a; 
             padding: 10px; 
@@ -77,6 +77,44 @@
             border: 1px solid #222;
             min-width: 240px; 
             align-content: center;
+        }
+
+        .toolbar-config {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            height: 34px;
+        }
+
+        .toolbar-config .config-title {
+            color: #aaa;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-right: 6px;
+            white-space: nowrap;
+        }
+
+        .toolbar-config select {
+            flex: 1 1 0;
+            min-width: 120px;
+            height: 26px;
+        }
+
+        .toolbar-config > button {
+            width: auto !important;
+            min-width: 28px;
+            height: 26px;
+            padding: 0 6px;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 20px;
+            background: #222;
+            margin-left: 6px;
+            margin-right: 6px;
         }
 
         .group-header { 
@@ -781,21 +819,35 @@
                     <option value="distance-inferno">Distance Inferno (Dark)</option>
                 </select>
                 
-                <div class="group-header" style="margin-top: 4px;"><span>Configuration</span></div>
-                <div style="display: flex; gap: 4px; align-items: center;">
-                    <select id="config-select" style="flex-grow: 1; width: 0; height: 26px;">
+                <!-- Color-length control for iter-wheel styles -->
+                <div class="label-row" style="margin-top: 6px;">
+                    <span>Color Length</span>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="number" id="color-len-number" class="num-input" min="1" step="1" value="100" style="width: 90px;">
+                    </div>
+                </div>
+                <div class="slider-row" style="margin-bottom: 12px;">
+                    <input type="range" id="color-len-slider" min="1" max="1000" step="1" value="100" disabled>
+                </div>
+
+                <!-- Configuration moved to toolbar to free space for color-length slider -->
+            </div>
+
+            <div class="toolbar-group">
+                <div class="toolbar-config">
+                    <div class="config-title">Configuration</div>
+                    <select id="config-select" style="flex:1 1 0; min-width:120px; height:26px;">
                         <option value="">Load...</option>
                         <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
                         <optgroup label="Saved" id="saved-configs-group"></optgroup>
                     </select>
-                    <button id="save-config-btn" class="btn-sec btn-icon" title="Save Config" style="height: 26px; padding: 0 6px;">💾</button>
-                    <button id="export-config-btn" class="btn-sec btn-icon" title="Export to File" style="height: 26px; padding: 0 6px;">📤</button>
-                    <button id="import-config-btn" class="btn-sec btn-icon" title="Import from File" style="height: 26px; padding: 0 6px;">📥</button>
+                    <button id="save-config-btn" class="btn-sec btn-icon" title="Save Config" style="height: 26px; width:28px; padding: 0;">💾</button>
+                    <button id="export-config-btn" class="btn-sec btn-icon" title="Export to File" style="height: 26px; width:28px; padding: 0;">📤</button>
+                    <button id="import-config-btn" class="btn-sec btn-icon" title="Import from File" style="height: 26px; width:28px; padding: 0;">📥</button>
+                    <input type="file" id="import-file" style="display:none" accept=".json">
+                    <div class="toolbar-divider" aria-hidden="true"></div>
                 </div>
-                <input type="file" id="import-file" style="display:none" accept=".json">
-            </div>
 
-            <div class="toolbar-group">
                 <button id="info-btn" class="btn-info" title="Info" style="border-radius: 50%; width: 26px; height: 26px; padding: 0;">?</button>
                 <button id="reset-zoom-btn">🔍 Reset</button>
                 <button id="random-btn" class="btn-rand">🎲 Rand</button>
@@ -919,6 +971,8 @@
             lwNumber: document.getElementById('lw-number'),
 
             style: document.getElementById('style-select'), 
+            colorLenSlider: document.getElementById('color-len-slider'),
+            colorLenNumber: document.getElementById('color-len-number'),
             pauseOverlay: document.getElementById('pause-overlay'),
             recBtn: document.getElementById('rec-btn'), 
             recInd: document.getElementById('rec-indicator'), 
@@ -950,6 +1004,54 @@
         };
 
         ui.resetZoomBtn.disabled = true;
+
+        // Color-length control utilities (for iter-wheel styles)
+        function updateColorLenLimits() {
+            if (!ui.colorLenSlider || !ui.colorLenNumber) return;
+            const min = 1;
+            // Reasonable max based on N: at least 50, up to N/10
+            const max = Math.max(50, Math.floor(userBase.n / 10) || 50);
+            ui.colorLenSlider.max = max;
+            ui.colorLenNumber.max = max;
+            if (parseInt(ui.colorLenSlider.value) > max) {
+                ui.colorLenSlider.value = max; ui.colorLenNumber.value = max;
+            }
+            if (parseInt(ui.colorLenNumber.value) < min) ui.colorLenNumber.value = min;
+        }
+
+        function updateColorLenAvailability() {
+            if (!ui.colorLenSlider) return;
+            const style = ui.style.value;
+            const enabled = (style === 'iter-wheel' || style === 'iter-wheel-light');
+            ui.colorLenSlider.disabled = !enabled;
+            ui.colorLenNumber.disabled = !enabled;
+            if (enabled) {
+                // set sensible default if currently unset
+                if (!ui.colorLenSlider.value || parseInt(ui.colorLenSlider.value) <= 0) {
+                    ui.colorLenSlider.value = Math.max(50, Math.floor(userBase.n / 40));
+                    ui.colorLenNumber.value = ui.colorLenSlider.value;
+                }
+                updateColorLenLimits();
+            }
+        }
+
+        if (ui.style) {
+            ui.style.addEventListener('change', () => {
+                updateColorLenAvailability();
+            });
+        }
+
+        if (ui.colorLenSlider && ui.colorLenNumber) {
+            ui.colorLenSlider.addEventListener('input', (e) => {
+                ui.colorLenNumber.value = e.target.value;
+            });
+            ui.colorLenNumber.addEventListener('change', (e) => {
+                let v = parseInt(e.target.value) || 1;
+                if (ui.colorLenSlider.max) v = Math.min(v, parseInt(ui.colorLenSlider.max));
+                ui.colorLenNumber.value = v;
+                ui.colorLenSlider.value = v;
+            });
+        }
 
         const builtinConfigs = {
             "Default Neon": { 
@@ -1404,7 +1506,11 @@
                     // a smooth color wheel progression along the path. To avoid
                     // overwhelming the renderer for huge N we batch segments into
                     // a reasonable step size.
-                    const cycleLen = Math.max(50, Math.floor(N / 40));
+                    let cycleLen = Math.max(50, Math.floor(N / 40));
+                    if (ui.colorLenSlider && !ui.colorLenSlider.disabled) {
+                        const parsed = parseInt(ui.colorLenSlider.value);
+                        if (!isNaN(parsed) && parsed > 0) cycleLen = parsed;
+                    }
                     const batchStep = Math.max(1, Math.floor((end - start) / 2000));
                     for (let j = start + 1; j <= end; j += batchStep) {
                         const jEnd = Math.min(end, j + batchStep - 1);
@@ -1417,7 +1523,11 @@
                         ctx.stroke();
                     }
                 } else if (style === 'iter-wheel-light') {
-                    const cycleLen = Math.max(50, Math.floor(N / 40));
+                    let cycleLen = Math.max(50, Math.floor(N / 40));
+                    if (ui.colorLenSlider && !ui.colorLenSlider.disabled) {
+                        const parsed = parseInt(ui.colorLenSlider.value);
+                        if (!isNaN(parsed) && parsed > 0) cycleLen = parsed;
+                    }
                     const batchStep = Math.max(1, Math.floor((end - start) / 2000));
                     for (let j = start + 1; j <= end; j += batchStep) {
                         const jEnd = Math.min(end, j + batchStep - 1);
@@ -1749,6 +1859,9 @@
             ui.nSlider.value = Math.log10(v).toFixed(5);
             updateLineWidth(getIdealLineWidth(v));
 
+            // Adjust color-length slider limits when N changes
+            updateColorLenLimits();
+
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
@@ -2074,7 +2187,11 @@
                             pathStrings.push(`<path d="${dStr}" stroke="${color}" stroke-width="${baseLineWidth * 1.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
                         } else if (style === 'iter-wheel') {
                             // Create batched path elements and color them by iteration
-                            const cycleLen = Math.max(50, Math.floor(N / 40));
+                            let cycleLen = Math.max(50, Math.floor(N / 40));
+                            if (ui.colorLenSlider && !ui.colorLenSlider.disabled) {
+                                const parsed = parseInt(ui.colorLenSlider.value);
+                                if (!isNaN(parsed) && parsed > 0) cycleLen = parsed;
+                            }
                             const batchSize = 200; // group segments to limit SVG size
                             // Build segments for this chunk
                             let segStart = start + 1;
@@ -2090,7 +2207,11 @@
                             }
                         } else if (style === 'iter-wheel-light') {
                             // Light-background variant: darker/lower-lightness colors
-                            const cycleLen = Math.max(50, Math.floor(N / 40));
+                            let cycleLen = Math.max(50, Math.floor(N / 40));
+                            if (ui.colorLenSlider && !ui.colorLenSlider.disabled) {
+                                const parsed = parseInt(ui.colorLenSlider.value);
+                                if (!isNaN(parsed) && parsed > 0) cycleLen = parsed;
+                            }
                             const batchSize = 200;
                             let segStart2 = start + 1;
                             while (segStart2 <= end) {
@@ -2161,6 +2282,8 @@
         updateConfigDropdown(); 
         updatePresetDropdown();
         compileFunction();
+        updateColorLenAvailability();
+        updateColorLenLimits();
         
         if (ui.nAutoValue.checked) {
             applySymmetryLock();
