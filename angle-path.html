@@ -1006,17 +1006,42 @@
         ui.resetZoomBtn.disabled = true;
 
         // Color-length control utilities (for iter-wheel styles)
+        const COLOR_SLIDER_STEPS = 1000;
+
+        function colorBlockFromSliderPos(pos) {
+            // pos in [0..COLOR_SLIDER_STEPS]
+            const n = Math.max(1, parseInt(userBase.n) || 1);
+            const logMax = Math.log10(n);
+            const t = (pos / COLOR_SLIDER_STEPS) * logMax; // 0..log10(n)
+            const val = Math.max(1, Math.round(Math.pow(10, t)));
+            return val;
+        }
+
+        function sliderPosFromColorBlock(block) {
+            const n = Math.max(1, parseInt(userBase.n) || 1);
+            const logMax = Math.log10(n);
+            const b = Math.max(1, block);
+            const pos = Math.round((Math.log10(b) / logMax) * COLOR_SLIDER_STEPS);
+            return Math.min(COLOR_SLIDER_STEPS, Math.max(0, pos || 0));
+        }
+
         function updateColorLenLimits() {
             if (!ui.colorLenSlider || !ui.colorLenNumber) return;
             const min = 1;
-            // Reasonable max based on N: at least 50, up to N/10
-            const max = Math.max(50, Math.floor(userBase.n / 10) || 50);
-            ui.colorLenSlider.max = max;
+            const max = Math.max(1, parseInt(userBase.n) || 1);
             ui.colorLenNumber.max = max;
-            if (parseInt(ui.colorLenSlider.value) > max) {
-                ui.colorLenSlider.value = max; ui.colorLenNumber.value = max;
-            }
-            if (parseInt(ui.colorLenNumber.value) < min) ui.colorLenNumber.value = min;
+            ui.colorLenNumber.min = min;
+            ui.colorLenSlider.min = 0;
+            ui.colorLenSlider.max = COLOR_SLIDER_STEPS;
+
+            // clamp numeric input
+            let cur = parseInt(ui.colorLenNumber.value) || 1;
+            if (cur < min) cur = min;
+            if (cur > max) cur = max;
+            ui.colorLenNumber.value = cur;
+
+            // sync slider position
+            ui.colorLenSlider.value = sliderPosFromColorBlock(cur);
         }
 
         function updateColorLenAvailability() {
@@ -1026,10 +1051,10 @@
             ui.colorLenSlider.disabled = !enabled;
             ui.colorLenNumber.disabled = !enabled;
             if (enabled) {
-                // set sensible default if currently unset
-                if (!ui.colorLenSlider.value || parseInt(ui.colorLenSlider.value) <= 0) {
-                    ui.colorLenSlider.value = Math.max(50, Math.floor(userBase.n / 40));
-                    ui.colorLenNumber.value = ui.colorLenSlider.value;
+                // default block roughly N/40 but at least 1
+                const defaultBlock = Math.max(1, Math.floor((parseInt(userBase.n) || 1) / 40));
+                if (!ui.colorLenNumber.value || parseInt(ui.colorLenNumber.value) <= 0) {
+                    ui.colorLenNumber.value = defaultBlock;
                 }
                 updateColorLenLimits();
             }
@@ -1043,13 +1068,16 @@
 
         if (ui.colorLenSlider && ui.colorLenNumber) {
             ui.colorLenSlider.addEventListener('input', (e) => {
-                ui.colorLenNumber.value = e.target.value;
+                const block = colorBlockFromSliderPos(parseInt(e.target.value));
+                ui.colorLenNumber.value = block;
             });
             ui.colorLenNumber.addEventListener('change', (e) => {
                 let v = parseInt(e.target.value) || 1;
-                if (ui.colorLenSlider.max) v = Math.min(v, parseInt(ui.colorLenSlider.max));
+                const max = parseInt(userBase.n) || 1;
+                if (v < 1) v = 1;
+                if (v > max) v = max;
                 ui.colorLenNumber.value = v;
-                ui.colorLenSlider.value = v;
+                ui.colorLenSlider.value = sliderPosFromColorBlock(v);
             });
         }
 
@@ -1506,8 +1534,8 @@
                     // a smooth color wheel progression along the path. To avoid
                     // overwhelming the renderer for huge N we batch segments into
                     // a reasonable step size.
-                    const numColors = Math.max(50, Math.floor(N / 40));
-                    const colorBlock = (ui.colorLenSlider && !ui.colorLenSlider.disabled) ? Math.max(1, parseInt(ui.colorLenSlider.value) || 1) : 1;
+                    const colorBlock = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
+                    const numColors = Math.max(1, Math.ceil(N / colorBlock));
                     const batchStep = Math.max(1, Math.floor((end - start) / 2000));
                     for (let j = start + 1; j <= end; j += batchStep) {
                         const jEnd = Math.min(end, j + batchStep - 1);
@@ -1521,8 +1549,8 @@
                         ctx.stroke();
                     }
                 } else if (style === 'iter-wheel-light') {
-                    const numColorsLight = Math.max(50, Math.floor(N / 40));
-                    const colorBlockLight = (ui.colorLenSlider && !ui.colorLenSlider.disabled) ? Math.max(1, parseInt(ui.colorLenSlider.value) || 1) : 1;
+                    const colorBlockLight = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
+                    const numColorsLight = Math.max(1, Math.ceil(N / colorBlockLight));
                     const batchStep = Math.max(1, Math.floor((end - start) / 2000));
                     for (let j = start + 1; j <= end; j += batchStep) {
                         const jEnd = Math.min(end, j + batchStep - 1);
@@ -2183,8 +2211,8 @@
                             pathStrings.push(`<path d="${dStr}" stroke="${color}" stroke-width="${baseLineWidth * 1.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
                         } else if (style === 'iter-wheel') {
                                 // Create batched path elements and color them by iteration
-                                const numColors = Math.max(50, Math.floor(N / 40));
-                                const colorBlock = (ui.colorLenSlider && !ui.colorLenSlider.disabled) ? Math.max(1, parseInt(ui.colorLenSlider.value) || 1) : 1;
+                                const colorBlock = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
+                                const numColors = Math.max(1, Math.ceil(N / colorBlock));
                                 const batchSize = 200; // group segments to limit SVG size
                                 // Build segments for this chunk
                                 let segStart = start + 1;
@@ -2201,8 +2229,8 @@
                                 }
                         } else if (style === 'iter-wheel-light') {
                             // Light-background variant: darker/lower-lightness colors
-                            const numColorsLight = Math.max(50, Math.floor(N / 40));
-                            const colorBlockLight = (ui.colorLenSlider && !ui.colorLenSlider.disabled) ? Math.max(1, parseInt(ui.colorLenSlider.value) || 1) : 1;
+                            const colorBlockLight = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
+                            const numColorsLight = Math.max(1, Math.ceil(N / colorBlockLight));
                             const batchSize = 200;
                             let segStart2 = start + 1;
                             while (segStart2 <= end) {
