@@ -771,6 +771,7 @@
                     <option value="neon">Neon Glow (Dark)</option>
                     <option value="rainbow">Spectrum (Dark)</option>
                     <option value="iter-wheel">Iterative Wheel (by iteration)</option>
+                    <option value="iter-wheel-light">Iterative Wheel (Light)</option>
                     <option value="solid">Solid White (Dark)</option>
                     <option value="light">Solid Black (Light)</option>
                     <option value="light-glow">Neon Glow (Light)</option>
@@ -1319,7 +1320,7 @@
 
         function performRender(N, mode, r, s, c_val, time) {
             const style = ui.style.value;
-            const isLightTheme = style === 'light' || style === 'light-glow';
+            const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light';
             
             const geoBounds = calculatePath(N, mode, r, s, c_val);
             let renderBounds = isZoomed ? zoomBounds : geoBounds;
@@ -1413,6 +1414,19 @@
                         const hue = (((j) % cycleLen) / cycleLen) * 360 + (time * 60);
                         ctx.lineWidth = baseLineWidth;
                         ctx.strokeStyle = `hsl(${hue % 360},90%,55%)`;
+                        ctx.stroke();
+                    }
+                } else if (style === 'iter-wheel-light') {
+                    const cycleLen = Math.max(50, Math.floor(N / 40));
+                    const batchStep = Math.max(1, Math.floor((end - start) / 2000));
+                    for (let j = start + 1; j <= end; j += batchStep) {
+                        const jEnd = Math.min(end, j + batchStep - 1);
+                        ctx.beginPath();
+                        ctx.moveTo(points[(j - 1) * 2], points[(j - 1) * 2 + 1]);
+                        for (let k = j; k <= jEnd; k++) ctx.lineTo(points[k * 2], points[k * 2 + 1]);
+                        const hue = (((j) % cycleLen) / cycleLen) * 360 + (time * 60);
+                        ctx.lineWidth = baseLineWidth;
+                        ctx.strokeStyle = `hsl(${hue % 360},85%,35%)`;
                         ctx.stroke();
                     }
                 } else if (style === 'neon') {
@@ -1927,7 +1941,7 @@
 
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             
-            const styles = ['neon', 'rainbow', 'iter-wheel', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'distance', 'distance-inferno'];
+            const styles = ['neon', 'rainbow', 'iter-wheel', 'iter-wheel-light', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'distance', 'distance-inferno'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
@@ -1988,7 +2002,7 @@
                 try {
                     const { N, time, bounds } = currentRenderState;
                     const style = ui.style.value;
-                    const isLightTheme = style === 'light' || style === 'light-glow';
+                    const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light';
                     
                     let bg = '#050505';
                     if (isLightTheme) bg = '#ffffff';
@@ -2073,6 +2087,21 @@
                                 const color = `hsl(${hue % 360},90%,55%)`;
                                 pathStrings.push(`<path d="${segD.join(' ')}" stroke="${color}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
                                 segStart = segEnd + 1;
+                            }
+                        } else if (style === 'iter-wheel-light') {
+                            // Light-background variant: darker/lower-lightness colors
+                            const cycleLen = Math.max(50, Math.floor(N / 40));
+                            const batchSize = 200;
+                            let segStart2 = start + 1;
+                            while (segStart2 <= end) {
+                                const segEnd2 = Math.min(end, segStart2 + batchSize - 1);
+                                const segD2 = [`M ${points[(segStart2 - 1) * 2]} ${points[(segStart2 - 1) * 2 + 1]}`];
+                                for (let k = segStart2; k <= segEnd2; k++) segD2.push(`L ${points[k * 2]} ${points[k * 2 + 1]}`);
+                                const avgIndex2 = Math.floor((segStart2 + segEnd2) / 2);
+                                const hue2 = (((avgIndex2) % cycleLen) / cycleLen) * 360 + (time * 60);
+                                const color2 = `hsl(${hue2 % 360},85%,35%)`;
+                                pathStrings.push(`<path d="${segD2.join(' ')}" stroke="${color2}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                                segStart2 = segEnd2 + 1;
                             }
                         } else if (style === 'neon') {
                             pathStrings.push(`<path d="${dStr}" stroke="rgba(0, 210, 255, 0.4)" stroke-width="${baseLineWidth}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
