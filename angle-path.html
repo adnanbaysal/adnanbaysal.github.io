@@ -807,7 +807,6 @@
                 <div class="group-header"><span>Appearance</span></div>
                 <select id="style-select" class="combined-select">
                     <option value="neon">Neon Glow (Dark)</option>
-                    <option value="rainbow">Spectrum (Dark)</option>
                     <option value="iter-wheel">Iterative Wheel (by iteration)</option>
                     <option value="iter-wheel-light">Iterative Wheel (Light)</option>
                     <option value="solid">Solid White (Dark)</option>
@@ -1089,9 +1088,6 @@
             },
             "Light Glow Core": { 
                 mode: "rational", n: 250000, r: 1, s: 1200, speed: 6, style: "light-glow", nAnim: false, code: "return n * Math.log(n);" 
-            },
-            "Rainbow Web": { 
-                mode: "rational", n: 120000, r: 179, s: 360, speed: 4, style: "rainbow", nAnim: false, code: "return n;" 
             },
             "Sine Petals (Light)": { 
                 mode: "rational", n: 50000, r: 1, s: 180, speed: 5, style: "light", nAnim: false, code: "return n * Math.sin(n);" 
@@ -1527,11 +1523,7 @@
                 ctx.moveTo(points[start * 2], points[start * 2 + 1]);
                 for (let j = start + 1; j <= end; j++) { ctx.lineTo(points[j * 2], points[j * 2 + 1]); }
 
-                if (style === 'rainbow') {
-                    ctx.lineWidth = baseLineWidth * 1.5;
-                    ctx.strokeStyle = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
-                    ctx.stroke();
-                } else if (style === 'iter-wheel') {
+                if (style === 'iter-wheel') {
                     // Color each small segment by its iteration index to produce
                     // a smooth color wheel progression along the path. To avoid
                     // overwhelming the renderer for huge N we batch segments into
@@ -2090,7 +2082,7 @@
 
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             
-            const styles = ['neon', 'rainbow', 'iter-wheel', 'iter-wheel-light', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'distance', 'distance-inferno'];
+            const styles = ['neon', 'iter-wheel', 'iter-wheel-light', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'distance', 'distance-inferno'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
@@ -2218,28 +2210,25 @@
                         }
                         const dStr = dArray.join(' ');
 
-                        if (style === 'rainbow') {
-                            const color = `hsl(${(i / numChunks) * 360 + (time * 50)}, 90%, 60%)`;
-                            pathStrings.push(`<path d="${dStr}" stroke="${color}" stroke-width="${baseLineWidth * 1.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
-                        } else if (style === 'iter-wheel') {
-                                // Create batched path elements and color them by iteration
-                                const colorBlock = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
-                                const numColors = Math.max(1, Math.ceil(N / colorBlock));
-                                const batchSize = 200; // group segments to limit SVG size
-                                // Build segments for this chunk
-                                let segStart = start + 1;
-                                while (segStart <= end) {
-                                    let segEnd = Math.min(end, segStart + batchSize - 1);
-                                    const blockEnd = (Math.floor((segStart - 1) / colorBlock) + 1) * colorBlock;
-                                    segEnd = Math.min(segEnd, blockEnd, end);
-                                    const segD = [`M ${points[(segStart - 1) * 2]} ${points[(segStart - 1) * 2 + 1]}`];
-                                    for (let k = segStart; k <= segEnd; k++) segD.push(`L ${points[k * 2]} ${points[k * 2 + 1]}`);
-                                    const colorIndex = Math.floor((segStart - 1) / colorBlock);
-                                    const hue = (((colorIndex) % paletteSize) / paletteSize) * 360 + (time * 60);
-                                    const color = `hsl(${hue % 360},90%,55%)`;
-                                    pathStrings.push(`<path d="${segD.join(' ')}" stroke="${color}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
-                                    segStart = segEnd + 1;
-                                }
+                        if (style === 'iter-wheel') {
+                            // Create batched path elements and color them by iteration
+                            const colorBlock = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
+                            const numColors = Math.max(1, Math.ceil(N / colorBlock));
+                            const batchSize = 200; // group segments to limit SVG size
+                            // Build segments for this chunk
+                            let segStart = start + 1;
+                            while (segStart <= end) {
+                                let segEnd = Math.min(end, segStart + batchSize - 1);
+                                const blockEnd = (Math.floor((segStart - 1) / colorBlock) + 1) * colorBlock;
+                                segEnd = Math.min(segEnd, blockEnd, end);
+                                const segD = [`M ${points[(segStart - 1) * 2]} ${points[(segStart - 1) * 2 + 1]}`];
+                                for (let k = segStart; k <= segEnd; k++) segD.push(`L ${points[k * 2]} ${points[k * 2 + 1]}`);
+                                const colorIndex = Math.floor((segStart - 1) / colorBlock);
+                                const hue = (((colorIndex) % paletteSize) / paletteSize) * 360 + (time * 60);
+                                const color = `hsl(${hue % 360},90%,55%)`;
+                                pathStrings.push(`<path d="${segD.join(' ')}" stroke="${color}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                                segStart = segEnd + 1;
+                            }
                         } else if (style === 'iter-wheel-light') {
                             // Light-background variant: darker/lower-lightness colors
                             const colorBlockLight = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
