@@ -806,16 +806,16 @@
             <div class="control-group">
                 <div class="group-header"><span>Appearance</span></div>
                 <select id="style-select" class="combined-select">
-                    <option value="neon">Neon Glow (Dark)</option>
-                    <option value="iter-wheel">Iterative Wheel (by iteration)</option>
+                    <option value="iter-wheel">Iterative Wheel (Dark)</option>
                     <option value="iter-wheel-light">Iterative Wheel (Light)</option>
+                    <option value="distance">Distance Radial (Dark)</option>
+                    <option value="distance-inferno">Distance Inferno (Dark)</option>
+                    <option value="neon">Neon Glow (Dark)</option>
                     <option value="solid">Solid White (Dark)</option>
                     <option value="light">Solid Black (Light)</option>
                     <option value="light-glow">Neon Glow (Light)</option>
                     <option value="matrix">Matrix (Dark)</option>
                     <option value="blueprint">Blueprint (Dark)</option>
-                    <option value="distance">Distance Radial (Dark)</option>
-                    <option value="distance-inferno">Distance Inferno (Dark)</option>
                 </select>
                 
                 <!-- Color-length control for iter-wheel styles -->
@@ -2082,7 +2082,7 @@
 
             ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
             
-            const styles = ['neon', 'iter-wheel', 'iter-wheel-light', 'solid', 'light', 'light-glow', 'matrix', 'blueprint', 'distance', 'distance-inferno'];
+            const styles = ['iter-wheel', 'iter-wheel-light', 'distance', 'distance-inferno', 'neon', 'solid', 'light', 'light-glow', 'matrix', 'blueprint'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
