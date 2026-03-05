@@ -760,11 +760,17 @@
                         <label>C</label>
                         <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="flex:1">
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; border-top:1px dashed #333; padding-top:8px;">
-                        <label style="color: #fff; font-size: 12px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="c-anim"> ANIM</label>
-                        <div id="c-anim-settings" class="anim-settings" style="margin-top:0; padding-top:0; border-top:none;">
-                            <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001"></label>
-                            <label>Max <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001"></label>
+                    <div style="display:flex; gap:12px; align-items:center; border-top:1px dashed #333; padding-top:8px;">
+                        <label style="color: #fff; font-size: 12px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space:nowrap;">ANIM <input type="checkbox" id="c-anim" style="margin-left:4px;"></label>
+                        <div id="c-anim-settings" class="anim-settings" style="margin-top:0; padding-top:0; border-top:none; display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
+                                <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001" style="flex:0 0 70%; min-width:0;">
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
+                                <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001" style="flex:0 0 70%; min-width:0;">
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -787,15 +793,15 @@
                     </div>
                     <div class="sync-row" style="margin-top:8px; align-items:center;">
                         <label style="display:flex; align-items:center; gap:8px; margin-right:12px;">ANIM <input type="checkbox" id="n-anim" style="margin-left:6px;"></label>
-                        <div id="n-anim-settings" style="display:flex; gap:12px; align-items:center; flex:1;">
-                            <div style="display:flex; flex-direction:column; flex:1;">
-                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold;">Min</span>
-                                <input type="number" id="n-anim-min" class="num-input" value="1000" min="1" style="width:100%;">
-                            </div>
-                            <div style="display:flex; flex-direction:column; flex:1;">
-                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold;">Max</span>
-                                <input type="number" id="n-anim-max" class="num-input" value="2000000" max="2000000" style="width:100%;">
-                            </div>
+                        <div id="n-anim-settings" style="display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
+                                <input type="number" id="n-anim-min" class="num-input" value="1000" min="1" style="flex:0 0 70%; min-width:0;">
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
+                                <input type="number" id="n-anim-max" class="num-input" value="2000000" max="2000000" style="flex:0 0 70%; min-width:0;">
+                            </label>
                         </div>
                     </div>
                     <!-- Speed slider moved to its own block below -->
