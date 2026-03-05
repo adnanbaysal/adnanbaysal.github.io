@@ -1844,13 +1844,66 @@
         }
 
         function applySymmetryLock() {
-            let perfectN;
-            if (userBase.mode === 'decimal') perfectN = calculateRosetteNDecimal(userBase.c);
-            else perfectN = calculateRosetteNRational(userBase.r, userBase.s);
+            // Compute rosette details (perfect N and petal length) and apply
+            const info = (function() {
+                try {
+                    if (userBase.mode === 'decimal') {
+                        const C = userBase.c;
+                        if (C <= 0) return null;
+                        let magicUpperBound = 6;
+                        let P_raw = 0;
+                        for (let u = 1; u <= magicUpperBound; u++) {
+                            let val = (180 * u) / C;
+                            if (Math.abs(val - Math.round(val)) < 1e-6) { P_raw = Math.round(val); break; }
+                        }
+                        if (P_raw === 0) return null;
+                        let totalAngle = Math.round(C * P_raw * P_raw);
+                        let remainder = totalAngle % 360;
+                        let P_true = (remainder === 180 || remainder === -180) ? P_raw * 2 : P_raw;
+                        let p = P_true;
+                        let sumAngle = C * p * (p + 1) * (2 * p + 1) / 6;
+                        let deltaTheta = Math.round(sumAngle % 360);
+                        if (deltaTheta < 0) deltaTheta += 360;
+                        if (deltaTheta === 360) deltaTheta = 0;
+                        const perfectN = p * (360 / gcd(360, deltaTheta));
+                        const petalLength = p; // use p (petal iter length) for decimal mode
+                        return { perfectN, p, petalLength };
+                    } else {
+                        const r = userBase.r, s = userBase.s;
+                        if (r <= 0 || s <= 0) return null;
+                        let g = gcd(r, s);
+                        let r_co = r / g, s_co = s / g;
+                        let P_raw = s_co;
+                        let remainder = (180 * r_co * s_co) % 360;
+                        let P_true = Math.abs(remainder) === 180 ? P_raw * 2 : P_raw;
+                        let p = P_true;
+                        let p_div_s = p / s_co;
+                        let sumAngle = 30 * r_co * p_div_s * (p + 1) * (2 * p + 1);
+                        let deltaTheta = sumAngle % 360;
+                        if (deltaTheta < 0) deltaTheta += 360;
+                        if (deltaTheta === 360) deltaTheta = 0;
+                        const perfectN = p * (360 / gcd(360, deltaTheta));
+                        const petalLength = s; // for rational mode, petal length equals s
+                        return { perfectN, p, petalLength };
+                    }
+                } catch (err) { return null; }
+            })();
 
-            if (perfectN) {
-                const clampedN = Math.min(perfectN, MAX_N);
-                updateN(clampedN, false); 
+            if (info && info.perfectN) {
+                const clampedN = Math.min(info.perfectN, MAX_N);
+                updateN(clampedN, false);
+
+                // Update color-length to half the petal length (in iterations)
+                try {
+                    updateColorLenLimits();
+                    if (info.petalLength && ui.colorLenNumber && ui.colorLenSlider) {
+                        const half = Math.max(1, Math.round(info.petalLength / 2));
+                        const maxAllowed = parseInt(ui.colorLenNumber.max) || Math.max(1, userBase.n);
+                        const newVal = Math.min(maxAllowed, half);
+                        ui.colorLenNumber.value = newVal;
+                        ui.colorLenSlider.value = sliderPosFromColorBlock(newVal);
+                    }
+                } catch (e) { /* non-fatal */ }
             }
         }
 
