@@ -2221,7 +2221,9 @@
                     const scale = Math.min(1600 / (viewWidth || 1), 1600 / (viewHeight || 1)) * 0.90;
                     let baseLineWidth = (Math.max(0.1, 80000 / N) / scale) * lwMultiplier;
 
-                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${viewWidth} ${viewHeight}" style="background-color: ${bg};">\n`;
+                    // Build SVG as an array of Blob parts to avoid huge in-memory joins
+                    const blobParts = [];
+                    blobParts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${viewWidth} ${viewHeight}" style="background-color: ${bg};">\n`);
 
                     if (style === 'distance') {
                         const col0 = `hsl(${((time * 50) % 360)}, 100%, 70%)`;
@@ -2229,29 +2231,28 @@
                         const col2 = `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`;
                         const col3 = `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`;
 
-                        svg += `<defs>
-                            <radialGradient id="distGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">
-                                <stop offset="0%" stop-color="${col0}" />
-                                <stop offset="30%" stop-color="${col1}" />
-                                <stop offset="70%" stop-color="${col2}" />
-                                <stop offset="100%" stop-color="${col3}" />
-                            </radialGradient>
-                        </defs>\n`;
+                        blobParts.push(`<defs>\n`);
+                        blobParts.push(`<radialGradient id="distGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
+                        blobParts.push(`<stop offset="0%" stop-color="${col0}" />\n`);
+                        blobParts.push(`<stop offset="30%" stop-color="${col1}" />\n`);
+                        blobParts.push(`<stop offset="70%" stop-color="${col2}" />\n`);
+                        blobParts.push(`<stop offset="100%" stop-color="${col3}" />\n`);
+                        blobParts.push(`</radialGradient>\n`);
+                        blobParts.push(`</defs>\n`);
                     } else if (style === 'distance-inferno') {
-                        svg += `<defs>
-                            <radialGradient id="infernoGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">
-                                <stop offset="0%" stop-color="hsl(60, 100%, 70%)" />
-                                <stop offset="20%" stop-color="hsl(30, 100%, 60%)" />
-                                <stop offset="50%" stop-color="hsl(0, 100%, 50%)" />
-                                <stop offset="80%" stop-color="hsl(280, 100%, 40%)" />
-                                <stop offset="100%" stop-color="hsl(240, 100%, 20%)" />
-                            </radialGradient>
-                        </defs>\n`;
+                        blobParts.push(`<defs>\n`);
+                        blobParts.push(`<radialGradient id="infernoGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
+                        blobParts.push(`<stop offset="0%" stop-color="hsl(60, 100%, 70%)" />\n`);
+                        blobParts.push(`<stop offset="20%" stop-color="hsl(30, 100%, 60%)" />\n`);
+                        blobParts.push(`<stop offset="50%" stop-color="hsl(0, 100%, 50%)" />\n`);
+                        blobParts.push(`<stop offset="80%" stop-color="hsl(280, 100%, 40%)" />\n`);
+                        blobParts.push(`<stop offset="100%" stop-color="hsl(240, 100%, 20%)" />\n`);
+                        blobParts.push(`</radialGradient>\n`);
+                        blobParts.push(`</defs>\n`);
                     }
 
-                    const MAX_PATH_SIZE = 500000; 
+                    const MAX_PATH_SIZE = 500000;
                     const numChunks = Math.ceil(N / MAX_PATH_SIZE);
-                    let pathStrings = [];
 
                     for (let i = 0; i < numChunks; i++) {
                         const start = i * MAX_PATH_SIZE;
@@ -2264,11 +2265,10 @@
                         const dStr = dArray.join(' ');
 
                         if (style === 'iter-wheel') {
-                            // Create batched path elements and color them by iteration
                             const colorBlock = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
-                            const numColors = Math.max(1, Math.ceil(N / colorBlock));
-                            const batchSize = 200; // group segments to limit SVG size
-                            // Build segments for this chunk
+                            const numBlocks = Math.max(1, Math.ceil(N / colorBlock));
+                            const paletteSize = Math.min(360, Math.max(1, numBlocks));
+                            const batchSize = 200;
                             let segStart = start + 1;
                             while (segStart <= end) {
                                 let segEnd = Math.min(end, segStart + batchSize - 1);
@@ -2279,13 +2279,13 @@
                                 const colorIndex = Math.floor((segStart - 1) / colorBlock);
                                 const hue = (((colorIndex) % paletteSize) / paletteSize) * 360 + (time * 60);
                                 const color = `hsl(${hue % 360},90%,55%)`;
-                                pathStrings.push(`<path d="${segD.join(' ')}" stroke="${color}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                                blobParts.push(`<path d="${segD.join(' ')}" stroke="${color}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                                 segStart = segEnd + 1;
                             }
                         } else if (style === 'iter-wheel-light') {
-                            // Light-background variant: darker/lower-lightness colors
                             const colorBlockLight = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
-                            const numColorsLight = Math.max(1, Math.ceil(N / colorBlockLight));
+                            const numBlocksLight = Math.max(1, Math.ceil(N / colorBlockLight));
+                            const paletteSizeLight = Math.min(360, Math.max(1, numBlocksLight));
                             const batchSize = 200;
                             let segStart2 = start + 1;
                             while (segStart2 <= end) {
@@ -2297,34 +2297,34 @@
                                 const colorIndex2 = Math.floor((segStart2 - 1) / colorBlockLight);
                                 const hue2 = (((colorIndex2) % paletteSizeLight) / paletteSizeLight) * 360 + (time * 60);
                                 const color2 = `hsl(${hue2 % 360},85%,35%)`;
-                                pathStrings.push(`<path d="${segD2.join(' ')}" stroke="${color2}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                                blobParts.push(`<path d="${segD2.join(' ')}" stroke="${color2}" stroke-width="${baseLineWidth}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                                 segStart2 = segEnd2 + 1;
                             }
                         } else if (style === 'neon') {
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(0, 210, 255, 0.4)" stroke-width="${baseLineWidth}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.3}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(0, 210, 255, 0.4)" stroke-width="${baseLineWidth}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.3}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'light-glow') {
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 0, 128, 0.3)" stroke-width="${baseLineWidth * 1.5}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />`);
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(30, 30, 30, 0.9)" stroke-width="${baseLineWidth * 0.4}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(255, 0, 128, 0.3)" stroke-width="${baseLineWidth * 1.5}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(30, 30, 30, 0.9)" stroke-width="${baseLineWidth * 0.4}" fill="none" style="mix-blend-mode: multiply;" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'light') {
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(10, 10, 10, 0.9)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(10, 10, 10, 0.9)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'matrix') {
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(0, 255, 65, 0.6)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(0, 255, 65, 0.6)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'blueprint') {
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(100, 200, 255, 0.6)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
-                            pathStrings.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.2}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(100, 200, 255, 0.6)" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.2}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance') {
-                            pathStrings.push(`<path d="${dStr}" stroke="url(#distGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="url(#distGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance-inferno') {
-                            pathStrings.push(`<path d="${dStr}" stroke="url(#infernoGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="url(#infernoGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else {
-                            pathStrings.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`);
+                            blobParts.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         }
                     }
 
-                    svg += pathStrings.join('\n') + '\n</svg>';
+                    blobParts.push('</svg>');
 
-                    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+                    const blob = new Blob(blobParts, { type: 'image/svg+xml;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.download = `anglepath-${Date.now()}.svg`;
