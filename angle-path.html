@@ -1732,10 +1732,17 @@
                         isZoomed = true;
                         ui.resetZoomBtn.disabled = false;
                     }
-                    const zoomFactor = lastPinchDist / currentDist; 
+                    // Compute ratio and apply stronger damping so touch pinch matches mouse wheel feel
+                    const ratio = lastPinchDist / currentDist;
+                    // use a smaller exponent to further reduce sensitivity
+                    const raw = Math.pow(ratio, 0.4);
+                    // apply damping: move raw value toward 1 to reduce the effect
+                    let zoomFactor = 1 + (raw - 1) * 0.35;
+                    // clamp to avoid extreme jumps on some devices
+                    zoomFactor = Math.max(0.92, Math.min(1.08, zoomFactor));
                     const midLogical = screenToLogical((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2);
                     zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
-                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - pointerLogical.x) * zoomFactor;
+                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
                     zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
                     zoomBounds.maxY = midLogical.y + (zoomBounds.maxY - midLogical.y) * zoomFactor;
                 }
