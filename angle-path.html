@@ -11,6 +11,9 @@
             --panel: #111; 
         }
 
+        /* Use border-box globally to avoid unexpected overflow */
+        *, *:before, *:after { box-sizing: border-box; }
+
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; 
             display: flex; 
@@ -21,87 +24,12 @@
             height: 100vh; 
             overflow: hidden; 
         }
-        
-        /* --- Header UI --- */
-        header { 
-            background: var(--panel); 
-            padding: 10px; 
-            border-bottom: 1px solid #333; 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center;
-            align-items: stretch;
-            gap: 10px; 
-            z-index: 10;
-        }
 
-        /* --- Advanced Toggle Button --- */
-        #adv-toggle-btn {
-            display: none; /* Hidden on desktop */
-            margin-top: 10px; 
-            width: 100%;
-        }
-        
-        .control-group { 
-            background: #1a1a1a; 
-            padding: 10px 12px; 
-            border-radius: 6px; 
-            display: flex; 
-            flex-direction: column; 
-            border: 1px solid #222;
-            min-width: 160px; 
-            flex-grow: 1; 
-            max-width: 240px;
-        }
-
-        #advanced-controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .collapsed {
-            display: none !important;
-        }
-
-        /* --- Rigid 2-Row Toolbar --- */
-        .toolbar-group {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); 
-            grid-template-rows: repeat(3, 34px);    
-            gap: 6px;
-            background: #1a1a1a; 
-            padding: 10px; 
-            border-radius: 6px; 
-            border: 1px solid #222;
-            min-width: 240px; 
-            align-content: center;
-        }
-
-        .toolbar-config {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            height: 34px;
-        }
-
-        .toolbar-config .config-title {
-            color: #aaa;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-right: 6px;
-            white-space: nowrap;
-        }
-
-        .toolbar-config select {
-            flex: 1 1 0;
-            min-width: 120px;
-            height: 26px;
-        }
-
+        /* Dark scrollbar */
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar-track { background: #0b0b0b; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: #333; }
         .toolbar-config > button {
             width: auto !important;
             min-width: 28px;
@@ -121,7 +49,7 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            color: #aaa; 
+            color: var(--accent); 
             font-size: 10px; 
             font-weight: bold; 
             text-transform: uppercase; 
@@ -224,9 +152,10 @@
             align-items: center;
             flex-grow: 0;
         }
+        /* Increase decimal MIN/MAX input width so decimal places are visible */
         #decimal-controls .anim-settings input.num-input {
-            width: 50px;
-            margin-left: 4px;
+            width: 110px;
+            margin-left: 8px;
         }
         
         .combined-select { 
@@ -289,9 +218,13 @@
         .left-col { 
             display: flex; 
             flex-direction: column; 
-            width: 320px; 
+            width: 400px; 
             gap: 10px; 
             flex-shrink: 0; 
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+            position: relative;
+            z-index: 20;
         }
 
         .right-col { 
@@ -302,6 +235,7 @@
             border-radius: 6px; 
             overflow: hidden; 
             touch-action: none;
+            height: calc(100vh - 64px);
         }
 
         #canvas-container { 
@@ -335,12 +269,60 @@
             flex-grow: 1; 
             display: flex; 
             flex-direction: column;
-            background: var(--panel); 
+            /* background: var(--panel); 
             border: 1px solid #333; 
             border-radius: 6px;
             padding: 10px; 
-            min-height: 0;
+            min-height: 0;*/
         }
+        /* Generic control block styling to ensure consistent width and appearance */
+        .control-block {
+            background: var(--panel);
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Labels inside control blocks should be uniform */
+        .control-block label { font-size: 12px; color: #aaa; font-family: inherit; }
+
+        /* Row that groups a slider and numeric input */
+        .sync-row { display: flex; align-items: center; gap: 8px; }
+        .sync-row label { width: 80px; color: #aaa; font-size: 12px; }
+        .sync-row input[type="number"] { width: 90px; }
+        .offset-row { border-top: 1px dashed #333; padding-top: 8px; margin-top: 8px; }
+        /* Small boxed sub-blocks inside a control-block (r/s and C) */
+        .sub-block { background: #0d0d0d; border: 1px solid #222; border-radius: 8px; padding: 8px; margin-top: 6px; }
+
+        /* Slim editor variant to reduce code textarea height */
+        .editor-container .slim-editor textarea { 
+            height: 120px; 
+            flex-grow: 0;
+            min-height: 100px;
+        }
+
+        /* Ensure editor sits above neighboring elements if needed */
+        .editor-container { position: relative; z-index: 40; }
+
+        /* Prevent horizontal overflow */
+        html, body { overflow-x: hidden; }
+
+        /* Topbar at the very top */
+        .topbar { 
+            position: fixed; 
+            left: 0; right: 0; top: 0; 
+            background: var(--panel); 
+            border-bottom: 1px solid #333; 
+            z-index: 60; 
+        }
+
+        /* Ensure main content sits below topbar */
+        main { padding-top: 64px; }
+
+        /* Canvas top-right controls */
+        #canvas-top-controls { position: absolute; top: 12px; right: 12px; display:flex; gap:8px; z-index:25; }
 
         .panel-header {
             font-size: 11px; 
@@ -693,177 +675,23 @@
                 min-height: 350px; 
             }
             #adv-toggle-btn {
-                display: block;
+                display: none;
             }
         }
     </style>
 </head>
+
 <body>
-
-    <header id="ui-panel">
-        
-        <div class="control-group">
-            <div class="toggles-row" style="margin-top: 0; margin-bottom: 12px; justify-content: flex-start; gap: 15px;">
-                <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational (r/s)</label>
-                <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal (C)</label>
-            </div>
-
-            <div id="rational-controls">
-                <div class="group-header">
-                    <span>R (π Multiplier)</span>
-                    <div style="display: flex; gap: 3px; align-items: center;">
-                        <button id="r-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease R">-</button>
-                        <input type="number" id="r-number" class="num-input" min="1" step="1" value="1" style="margin: 0;">
-                        <button id="r-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase R">+</button>
-                    </div>
-                </div>
-                <div class="group-header" style="margin-top: 5px; margin-bottom: 2px;">
-                    <span>S (π Divider)</span>
-                    <div style="display: flex; gap: 3px; align-items: center;">
-                        <button id="s-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease S">-</button>
-                        <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500" style="margin: 0;">
-                        <button id="s-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase S">+</button>
-                    </div>
-                </div>
-                <div class="toggles-row" style="margin-top: 6px;">
-                    <span>Simplified (r/s):</span>
-                    <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
-                </div>
-            </div>
-
-            <div id="decimal-controls" style="display: none;">
-                <div class="group-header" style="margin-bottom: 8px;">
-                    <span>C Multiplier</span>
-                    <div style="display: flex; gap: 3px; align-items: center;">
-                        <button id="c-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease C">-</button>
-                        <input type="number" id="c-number" class="num-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="margin: 0;">
-                        <button id="c-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase C">+</button>
-                    </div>
-                </div>
-                <div class="slider-row" style="margin-bottom: 0px;">
-                    <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400">
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px dashed #333; padding-top: 8px;">
-                    
-                    <label style="color: var(--accent); font-size: 9px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                        <input type="checkbox" id="c-anim"> ANIM
-                    </label>
-                    
-                    <div id="c-anim-settings" class="anim-settings" style="margin-top: 0; padding-top: 0; border-top: none;">
-                        <label>Min <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001"></label>
-                        <label>Max <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001"></label>
-                    </div>
-                    
-                </div>
-            </div>
-
-            <button id="adv-toggle-btn" class="btn-sec">⚙️ Advanced Options</button>
-        </div>
-
-        <div id="advanced-controls">
-            
-            <div class="control-group">
-                <div class="group-header">
-                    <span>Steps (N)</span>
-                    <div style="display: flex; gap: 3px; align-items: center;">
-                        <button id="n-dec-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Decrease N" disabled>-</button>
-                        <input type="number" id="n-number" class="num-input" min="1" max="2000000" step="1000" value="90000" disabled style="margin: 0;">
-                        <button id="n-inc-btn" class="btn-sec" style="height: 22px; width: 22px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Increase N" disabled>+</button>
-                    </div>
-                </div>
-                <div class="slider-row">
-                    <input type="range" id="n-input" min="3" max="6.556303" step="0.0001" value="4.9542" disabled>
-                </div>
-                <div class="toggles-row">
-                    <label for="n-anim"><input type="checkbox" id="n-anim"> ANIMATE</label>
-                    <label for="n-auto-value" title="Lock Symmetry"><input type="checkbox" id="n-auto-value" checked> AUTO N</label>
-                </div>
-                <div id="n-anim-settings" class="anim-settings">
-                    <label>Min <input type="number" id="n-anim-min" class="num-input" value="1000" min="1"></label>
-                    <label>Max <input type="number" id="n-anim-max" class="num-input" value="2000000" max="2000000"></label>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <div class="group-header">
-                    <span>Line Width</span>
-                    <input type="number" id="lw-number" class="num-input" min="0.01" max="50.0" step="0.01" value="1.0" style="width: 50px;">
-                </div>
-                <div class="slider-row" style="margin-bottom: 12px;">
-                    <input type="range" id="lw-input" min="0.01" max="50.0" step="0.01" value="1.0">
-                </div>
-                
-                <div class="group-header">
-                    <span>Animation Speed</span>
-                    <span id="spd-val" style="color: var(--accent); font-family: monospace; font-size: 12px;">5</span>
-                </div>
-                <div class="slider-row" style="margin-bottom: 0;">
-                    <input type="range" id="speed-input" min="1" max="10" value="5">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <div class="group-header"><span>Appearance</span></div>
-                <select id="style-select" class="combined-select">
-                    <option value="iter-wheel">Iterative Wheel (Dark)</option>
-                    <option value="iter-wheel-light">Iterative Wheel (Light)</option>
-                    <option value="distance">Distance Radial (Dark)</option>
-                    <option value="distance-inferno">Distance Inferno (Dark)</option>
-                    <option value="neon">Neon Glow (Dark)</option>
-                    <option value="solid">Solid White (Dark)</option>
-                    <option value="light">Solid Black (Light)</option>
-                    <option value="light-glow">Neon Glow (Light)</option>
-                    <option value="matrix">Matrix (Dark)</option>
-                    <option value="blueprint">Blueprint (Dark)</option>
-                </select>
-                
-                <!-- Color-length control for iter-wheel styles -->
-                <div class="label-row" style="margin-top: 6px;">
-                    <span>Color Length</span>
-                    <div style="display:flex; gap:6px; align-items:center;">
-                        <input type="number" id="color-len-number" class="num-input" min="1" step="1" value="100" style="width: 90px;">
-                    </div>
-                </div>
-                <div class="slider-row" style="margin-bottom: 12px;">
-                    <input type="range" id="color-len-slider" min="1" max="1000" step="1" value="100" disabled>
-                </div>
-
-                <!-- Configuration moved to toolbar to free space for color-length slider -->
-            </div>
-
-            <div class="toolbar-group">
-                <div class="toolbar-config">
-                    <div class="config-title">Configuration</div>
-                    <select id="config-select" style="flex:1 1 0; min-width:120px; height:26px;">
-                        <option value="">Load...</option>
-                        <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
-                        <optgroup label="Saved" id="saved-configs-group"></optgroup>
-                    </select>
-                    <button id="save-config-btn" class="btn-sec btn-icon" title="Save Config" style="height: 26px; width:28px; padding: 0;">💾</button>
-                    <button id="export-config-btn" class="btn-sec btn-icon" title="Export to File" style="height: 26px; width:28px; padding: 0;">📤</button>
-                    <button id="import-config-btn" class="btn-sec btn-icon" title="Import from File" style="height: 26px; width:28px; padding: 0;">📥</button>
-                    <input type="file" id="import-file" style="display:none" accept=".json">
-                    <div class="toolbar-divider" aria-hidden="true"></div>
-                </div>
-
-                <button id="info-btn" class="btn-info" title="Info" style="border-radius: 50%; width: 26px; height: 26px; padding: 0;">?</button>
-                <button id="reset-zoom-btn">🔍 Reset</button>
-                <button id="random-btn" class="btn-rand">🎲 Rand</button>
-                <button id="fs-btn" class="btn-util">⛶ Full</button>
-                
-                <button id="save-btn" class="btn-util">📸 PNG</button>
-                <button id="save-svg-btn" class="btn-util">📄 SVG</button>
-                <button id="rec-btn" class="btn-rec">⏺ Rec</button>
-                <button onclick="window.location.href='index.html'" class="btn-util">🏠</button>
-            </div>
-
+    <header id="ui-panel" class="topbar">
+        <div style="display:flex; gap:8px; align-items:center; width:100%; justify-content:flex-start; padding:8px;">
+            <button onclick="window.location.href='index.html'" class="btn-util" title="Home">🏠</button>
+            <button id="info-btn" class="btn-info" title="Info" style="border-radius: 50%; width: 36px; height: 36px; padding: 0;">?</button>
         </div>
     </header>
 
     <main>
         <div class="left-col" id="advanced-editor">
-            <div class="editor-container">
+            <div class="editor-container slim-editor">
                 <div class="panel-header">Function f(n)</div>
                 <select id="preset-select" class="preset-select">
                     <optgroup label="Standard Math">
@@ -886,12 +714,181 @@
                     <button id="run-btn" class="btn-run">▶ Update Canvas</button>
                 </div>
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
+
             </div>
+
+            <!-- Multiplier (r/s) and Decimal (C) controls -->
+            <div class="control-block">
+                <div class="group-header">Multiplier</div>
+                <div class="toggles-row" style="margin-top: 0; margin-bottom: 8px; justify-content: flex-start; gap: 12px;">
+                    <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational (r/s)</label>
+                    <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal (C)</label>
+                </div>
+
+                <div class="sub-block" id="rational-controls">
+                    <div class="group-header">
+                        <span>R (π Multiplier)</span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <button id="r-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
+                            <input type="number" id="r-number" class="num-input" min="1" step="1" value="1">
+                            <button id="r-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
+                        </div>
+                    </div>
+                    <div class="group-header" style="margin-top:6px;">
+                        <span>S (π Divider)</span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <button id="s-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
+                            <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500">
+                            <button id="s-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
+                        </div>
+                    </div>
+                    <div class="toggles-row" style="margin-top:8px;">
+                        <span>Simplified (r/s):</span>
+                        <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
+                    </div>
+                </div>
+
+                <div class="sub-block" id="decimal-controls" style="display: none; margin-top:8px;">
+                    <div class="group-header">
+                        <span></span>
+                        <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                            <button id="c-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
+                            <input type="number" id="c-number" class="num-input" min="0.0018" max="100.0" step="0.00001" value="0.02400" style="width:110px;">
+                            <button id="c-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
+                        </div>
+                    </div>
+                    <div class="sync-row" style="margin-top:8px; margin-bottom:6px;">
+                        <label>C</label>
+                        <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="flex:1">
+                    </div>
+                    <div style="display:flex; gap:12px; align-items:center; border-top:1px dashed #333; padding-top:8px;">
+                        <label style="color: #fff; font-size: 12px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space:nowrap;">ANIM <input type="checkbox" id="c-anim" style="margin-left:4px;"></label>
+                        <div id="c-anim-settings" class="anim-settings" style="margin-top:0; padding-top:0; border-top:none; display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
+                                <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001" style="flex:0 0 70%; min-width:0;">
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
+                                <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001" style="flex:0 0 70%; min-width:0;">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- N input + Auto N -->
+            <div class="control-block">
+                <div class="group-header">ITERATIONS (N)</div>
+                    <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
+                        <label style="display:flex; align-items:center; gap:8px;">AUTO N <input type="checkbox" id="n-auto-value" checked></label>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <button id="n-dec-btn" class="btn-sec" style="height:26px; width:28px;" disabled>-</button>
+                            <input type="number" id="n-number" class="num-input" min="1" max="2000000" step="1000" value="90000" disabled style="width:120px; text-align:right;">
+                            <button id="n-inc-btn" class="btn-sec" style="height:26px; width:28px;" disabled>+</button>
+                        </div>
+                    </div>
+                    <div class="sync-row" style="margin-top:8px; align-items:center;">
+                        <label>N</label>
+                        <input type="range" id="n-input" min="3" max="6.556303" step="0.0001" value="4.9542" disabled style="flex:1">
+                    </div>
+                    <div class="sync-row" style="margin-top:8px; align-items:center;">
+                        <label style="display:flex; align-items:center; gap:8px; margin-right:12px;">ANIM <input type="checkbox" id="n-anim" style="margin-left:6px;"></label>
+                        <div id="n-anim-settings" style="display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
+                                <input type="number" id="n-anim-min" class="num-input" value="1000" min="1" style="flex:0 0 70%; min-width:0;">
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
+                                <input type="number" id="n-anim-max" class="num-input" value="2000000" max="2000000" style="flex:0 0 70%; min-width:0;">
+                            </label>
+                        </div>
+                    </div>
+                    <!-- N Offset: numeric with increment/decrement aligned right, slider below -->
+                    <div class="offset-row">
+                        <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
+                            <div></div>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <button id="n-offset-dec-btn" class="btn-sec" style="height:26px; width:28px;">-</button>
+                                <input type="number" id="n-offset-number" class="num-input" min="0" max="2000000" step="1000" value="0" style="width:120px; text-align:right;">
+                                <button id="n-offset-inc-btn" class="btn-sec" style="height:26px; width:28px;">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sync-row" style="margin-top:8px; align-items:center;">
+                        <label>Offset</label>
+                        <input type="range" id="n-offset-input" min="0" max="2000000" step="1" value="0" style="flex:1">
+                    </div>
+                </div>
+
+            <!-- Animation speed block (moved from Iterations) -->
+            <div class="control-block">
+                <div class="group-header">Animation</div>
+                <div class="sync-row" style="align-items:center;">
+                    <label>Speed</label>
+                    <input id="speed-input" type="range" min="1" max="10" value="5" style="flex:1">
+                    <span id="spd-val" class="value">5</span>
+                </div>
+            </div>
+
+            <!-- Styling block -->
+            <div class="control-block">
+                <div class="group-header">Appearance</div>
+                <select id="style-select" class="combined-select">
+                    <option value="iter-wheel">Iterative Wheel (Dark)</option>
+                    <option value="iter-wheel-light">Iterative Wheel (Light)</option>
+                    <option value="distance">Distance Radial (Dark)</option>
+                    <option value="distance-inferno">Distance Inferno (Dark)</option>
+                    <option value="neon">Neon Glow (Dark)</option>
+                    <option value="solid">Solid White (Dark)</option>
+                    <option value="light">Solid Black (Light)</option>
+                    <option value="light-glow">Neon Glow (Light)</option>
+                    <option value="matrix">Matrix (Dark)</option>
+                    <option value="blueprint">Blueprint (Dark)</option>
+                </select>
+                <!-- Color length numeric input is now grouped with the slider below -->
+                <div class="sync-row" style="margin-top:8px; margin-bottom:6px;">
+                    <label>Color Length</label>
+                    <input type="range" id="color-len-slider" min="1" max="1000" step="1" value="100" disabled style="flex:1">
+                    <input type="number" id="color-len-number" class="num-input" min="1" step="1" value="100" style="width:90px;">
+                </div>
+                <div class="sync-row" style="margin-top:6px; margin-bottom:6px;">
+                    <label>Line Width</label>
+                    <input type="range" id="lw-input" min="0.01" max="50.0" step="0.01" value="1.0" style="flex:1">
+                    <input type="number" id="lw-number" class="num-input" min="0.01" max="50.0" step="0.01" value="1.0" style="width:90px;">
+                </div>
+            </div>
+
+            <!-- Save / export buttons -->
+            <div class="control-block" style="display:flex; gap:8px; margin-top:12px;">
+                <button id="random-btn" class="btn-rand">🎲 Rand</button>
+                <button id="save-btn" class="btn-util">📸 PNG</button>
+                <button id="save-svg-btn" class="btn-util">📄 SVG</button>
+                <button id="rec-btn" class="btn-rec">⏺ Rec</button>
+            </div>
+
+            <!-- Configuration management -->
+            <div class="control-block" style="margin-top:12px;">
+                <div class="panel-header" style="margin-bottom:8px;">Configuration</div>
+                <div style="display:flex; gap:8px;">
+                    <select id="config-select" class="combined-select" style="flex:1;">
+                        <option value="">Load...</option>
+                        <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
+                        <optgroup label="Saved" id="saved-configs-group"></optgroup>
+                    </select>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button id="export-config-btn" class="btn-util">Export</button>
+                    <button id="import-config-btn" class="btn-util">Import</button>
+                    <button id="save-config-btn" class="btn-sec">Save</button>
+                    <input type="file" id="import-file" style="display:none" accept=".json">
+                </div>
+            </div>
+
             
-            <div style="padding: 10px; background: var(--panel); border: 1px solid #222; border-radius: 6px; font-size: 11px; color: #888;">
-                <div class="panel-header" style="margin-bottom: 4px;">Context Variables</div>
-                <p style="margin: 0;"><strong>n</strong>: The current iteration step (Integer)</p>
-            </div>
+            <button id="adv-toggle-btn" class="btn-sec" style="display:none; margin-top:8px;">⚙️ Advanced Options</button>
+            <div id="advanced-controls" style="display:none"></div>
         </div>
 
         <div class="right-col">
@@ -912,6 +909,11 @@
                     
                     <p style="margin-top: 20px; font-size: 10px; opacity: 0.5;">End of Documentation</p>
                 </div>
+            </div>
+
+            <div id="canvas-top-controls">
+                <button id="reset-zoom-btn">🔍 Reset</button>
+                <button id="fs-btn" class="btn-util">⛶ Full</button>
             </div>
 
             <div id="canvas-container">
@@ -944,6 +946,10 @@
             nAutoValue: document.getElementById('n-auto-value'),
             nIncrBtn: document.getElementById('n-inc-btn'),
             nDecrBtn: document.getElementById('n-dec-btn'),
+            nOffsetSlider: document.getElementById('n-offset-input'),
+            nOffsetNumber: document.getElementById('n-offset-number'),
+            nOffsetIncr: document.getElementById('n-offset-inc-btn'),
+            nOffsetDecr: document.getElementById('n-offset-dec-btn'),
 
             rNumber: document.getElementById('r-number'), 
             rIncrBtn: document.getElementById('r-inc-btn'),
@@ -1186,7 +1192,11 @@
                 ui.nIncrBtn.disabled = false;
             }
 
-            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+            // Enable/disable N animation min/max inputs instead of hiding the container
+            const nAnimEnabled = !!ui.nAnim.checked;
+            ui.nAnimMin.disabled = !nAnimEnabled;
+            ui.nAnimMax.disabled = !nAnimEnabled;
+            ui.nAnimSettings.style.opacity = nAnimEnabled ? '1' : '0.35';
 
             ui.cAnim.checked = !!config.cAnim;
 
@@ -1285,7 +1295,7 @@
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { mode: 'rational', n: 30000, r: 1, s: 7500, c: 0.024 };
+        let userBase = { mode: 'rational', n: 30000, r: 1, s: 7500, c: 0.024, offset: 0 };
 
         let glowStartN = 0, glowEndN = 0, glowIntensity = 0;
         let eraseStartN = 0, eraseEndN = 0, eraseIntensity = 0;
@@ -1293,7 +1303,9 @@
         let virtualTime = 0, lastRealTime = performance.now();
         let mediaRecorder, recordedChunks = [], recStartTime;
 
-        const MAX_N = 2000000;
+        const MAX_DRAW_N = 2000000; // maximum number of iterations drawn
+        const MAX_OFFSET = 2000000; // maximum starting offset
+        const MAX_N = MAX_DRAW_N + MAX_OFFSET; // total buffer size
         const MAX_C = 100.00000;
         let points = new Float32Array((MAX_N + 1) * 2);
 
@@ -1446,14 +1458,15 @@
             return { minX, maxX, minY, maxY };
         }
 
-        function performRender(N, mode, r, s, c_val, time) {
+        function performRender(N, offset, mode, r, s, c_val, time) {
             const style = ui.style.value;
             const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light';
             
-            const geoBounds = calculatePath(N, mode, r, s, c_val);
+            const total = (offset || 0) + N; // compute final absolute n value
+            const geoBounds = calculatePath(total, mode, r, s, c_val);
             let renderBounds = isZoomed ? zoomBounds : geoBounds;
             
-            currentRenderState = { N, mode, r, s, c: c_val, time, bounds: renderBounds };
+            currentRenderState = { N, offset: offset || 0, mode, r, s, c: c_val, time, bounds: renderBounds };
             
             let bgFill = '#050505';
             if (isLightTheme) bgFill = '#ffffff';
@@ -1497,7 +1510,7 @@
             if (isZoomed) baseLineWidth *= 1.5;
 
             const MAX_PATH_SIZE = 500000; 
-            const numChunks = Math.ceil(N / MAX_PATH_SIZE);
+            const numChunks = Math.ceil(total / MAX_PATH_SIZE);
 
             let distGradient = null;
             if (style === 'distance') {
@@ -1517,11 +1530,16 @@
 
             for (let i = 0; i < numChunks; i++) {
                 const start = i * MAX_PATH_SIZE;
-                const end = Math.min((i + 1) * MAX_PATH_SIZE, N);
+                const end = Math.min((i + 1) * MAX_PATH_SIZE, total);
+
+                // Draw only the range that corresponds to the requested N iterations
+                const drawStart = Math.max(start, offset || 0);
+                const drawEnd = Math.min(end, (offset || 0) + N);
+                if (drawEnd <= drawStart) continue;
 
                 ctx.beginPath();
-                ctx.moveTo(points[start * 2], points[start * 2 + 1]);
-                for (let j = start + 1; j <= end; j++) { ctx.lineTo(points[j * 2], points[j * 2 + 1]); }
+                ctx.moveTo(points[drawStart * 2], points[drawStart * 2 + 1]);
+                for (let j = drawStart + 1; j <= drawEnd; j++) { ctx.lineTo(points[j * 2], points[j * 2 + 1]); }
 
                 if (style === 'iter-wheel') {
                     // Color each small segment by its iteration index to produce
@@ -1531,20 +1549,21 @@
                     const colorBlock = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
                     const numBlocks = Math.max(1, Math.ceil(N / colorBlock));
                     const paletteSize = Math.min(360, Math.max(1, numBlocks));
-                    const batchStep = Math.max(1, Math.floor((end - start) / 2000));
-                    for (let j = start + 1; j <= end; ) {
-                        const candidateEnd = Math.min(end, j + batchStep - 1);
-                        const blockEnd = (Math.floor((j - 1) / colorBlock) + 1) * colorBlock;
-                        const jEnd = Math.min(candidateEnd, blockEnd, end);
+                    const batchStep = Math.max(1, Math.floor((drawEnd - drawStart) / 2000));
+                    for (let j = drawStart + 1; j <= drawEnd; ) {
+                        const candidateEnd = Math.min(drawEnd, j + batchStep - 1);
+                        const relIndex = j - (offset || 0);
+                        const blockEndRel = (Math.floor((relIndex - 1) / colorBlock) + 1) * colorBlock;
+                        const blockEnd = Math.min(candidateEnd, blockEndRel + (offset || 0), drawEnd);
                         ctx.beginPath();
                         ctx.moveTo(points[(j - 1) * 2], points[(j - 1) * 2 + 1]);
-                        for (let k = j; k <= jEnd; k++) ctx.lineTo(points[k * 2], points[k * 2 + 1]);
-                        const colorIndex = Math.floor((j - 1) / colorBlock);
+                        for (let k = j; k <= blockEnd; k++) ctx.lineTo(points[k * 2], points[k * 2 + 1]);
+                        const colorIndex = Math.floor((relIndex - 1) / colorBlock);
                         const hue = (((colorIndex) % paletteSize) / paletteSize) * 360 + (time * 60);
                         ctx.lineWidth = baseLineWidth;
                         ctx.strokeStyle = `hsl(${hue % 360},90%,55%)`;
                         ctx.stroke();
-                        j = jEnd + 1;
+                        j = blockEnd + 1;
                     }
                 } else if (style === 'iter-wheel-light') {
                     const colorBlockLight = (ui.colorLenNumber && !ui.colorLenNumber.disabled) ? Math.max(1, parseInt(ui.colorLenNumber.value) || 1) : 1;
@@ -1741,10 +1760,17 @@
                         isZoomed = true;
                         ui.resetZoomBtn.disabled = false;
                     }
-                    const zoomFactor = lastPinchDist / currentDist; 
+                    // Compute ratio and apply stronger damping so touch pinch matches mouse wheel feel
+                    const ratio = lastPinchDist / currentDist;
+                    // use a smaller exponent to further reduce sensitivity
+                    const raw = Math.pow(ratio, 0.4);
+                    // apply damping: move raw value toward 1 to reduce the effect
+                    let zoomFactor = 1 + (raw - 1) * 0.35;
+                    // clamp to avoid extreme jumps on some devices
+                    zoomFactor = Math.max(0.92, Math.min(1.08, zoomFactor));
                     const midLogical = screenToLogical((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2);
                     zoomBounds.minX = midLogical.x - (midLogical.x - zoomBounds.minX) * zoomFactor;
-                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - pointerLogical.x) * zoomFactor;
+                    zoomBounds.maxX = midLogical.x + (zoomBounds.maxX - midLogical.x) * zoomFactor;
                     zoomBounds.minY = midLogical.y - (midLogical.y - zoomBounds.minY) * zoomFactor;
                     zoomBounds.maxY = midLogical.y + (zoomBounds.maxY - midLogical.y) * zoomFactor;
                 }
@@ -1779,7 +1805,7 @@
                 if (ui.nAnim.checked) {
                     const easedProgress = Math.pow(pingPong, 2); 
                     const minN = parseInt(ui.nAnimMin.value) || 1;
-                    const maxN = parseInt(ui.nAnimMax.value) || MAX_N;
+                    const maxN = parseInt(ui.nAnimMax.value) || MAX_DRAW_N;
                     aN = Math.floor(minN + (maxN - minN) * easedProgress);
                     
                     ui.nNumber.value = aN;
@@ -1797,7 +1823,7 @@
                     ui.cNumber.value = aC.toFixed(cPrecision);
                 }
                 
-                performRender(aN, userBase.mode, userBase.r, userBase.s, aC, virtualTime);
+                performRender(aN, userBase.offset || 0, userBase.mode, userBase.r, userBase.s, aC, virtualTime);
             }
             
             updateRecTimer();
@@ -1927,7 +1953,8 @@
         const updateN = (val, fromSlider = false) => {
             let v = fromSlider ? Math.round(Math.pow(10, parseFloat(val))) : parseInt(val);
             if (isNaN(v)) v = 1000;
-            if (v > MAX_N) v = MAX_N;
+            // clamp draw-count to MAX_DRAW_N (keep number of drawn lines limited)
+            if (v > MAX_DRAW_N) v = MAX_DRAW_N;
 
             if (v > userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
                 glowStartN = userBase.n; glowEndN = v; glowIntensity = 1.0; eraseIntensity = 0;
@@ -2010,6 +2037,31 @@
         ui.nDecrBtn.addEventListener('click', () => updateN(parseInt(userBase.n) - 1));
         ui.nIncrBtn.addEventListener('click', () => updateN(parseInt(userBase.n) + 1));
 
+        // N Offset handlers: sync slider, number and buttons; trigger immediate redraw
+        function updateOffset(val, fromSlider = false) {
+            let v = fromSlider ? parseInt(val) : parseInt(val);
+            if (isNaN(v)) v = 0;
+            if (v < 0) v = 0;
+            if (v > MAX_OFFSET) v = MAX_OFFSET;
+
+            userBase.offset = v;
+            if (ui.nOffsetNumber) ui.nOffsetNumber.value = v;
+            if (ui.nOffsetSlider) ui.nOffsetSlider.value = v;
+
+            // disable/enable buttons appropriately
+            if (ui.nOffsetDecr) ui.nOffsetDecr.disabled = (v <= 0);
+            if (ui.nOffsetIncr) ui.nOffsetIncr.disabled = (v >= MAX_OFFSET);
+
+            // ensure not paused so the live loop reflects the change, and also force a single render
+            if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+            try { performRender(parseInt(userBase.n) || 0, userBase.offset || 0, userBase.mode, userBase.r, userBase.s, userBase.c, virtualTime); } catch (e) { /* non-fatal */ }
+        }
+
+        if (ui.nOffsetSlider) ui.nOffsetSlider.addEventListener('input', (e) => updateOffset(e.target.value, true));
+        if (ui.nOffsetNumber) ui.nOffsetNumber.addEventListener('change', (e) => updateOffset(e.target.value, false));
+        if (ui.nOffsetIncr) ui.nOffsetIncr.addEventListener('click', () => updateOffset((parseInt(userBase.offset || 0) + parseInt(ui.nOffsetNumber.step || 1000))));
+        if (ui.nOffsetDecr) ui.nOffsetDecr.addEventListener('click', () => updateOffset((parseInt(userBase.offset || 0) - parseInt(ui.nOffsetNumber.step || 1000))));
+
         const updateLineWidth = (val) => {
             let v = parseFloat(val);
             if (v < 0.01) v = 0.01;
@@ -2023,8 +2075,11 @@
 
         // Sync Animations
         ui.nAnim.addEventListener('change', () => {
-            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
-            if (ui.nAnim.checked) {
+            const enabled = ui.nAnim.checked;
+            ui.nAnimMin.disabled = !enabled;
+            ui.nAnimMax.disabled = !enabled;
+            ui.nAnimSettings.style.opacity = enabled ? '1' : '0.35';
+            if (enabled) {
                 ui.cAnim.checked = false;
                 const minN = parseInt(ui.nAnimMin.value) || 1;
                 const maxN = parseInt(ui.nAnimMax.value) || MAX_N;
@@ -2047,7 +2102,9 @@
         ui.cAnim.addEventListener('change', () => {
             if (ui.cAnim.checked) {
                 ui.nAnim.checked = false;
-                ui.nAnimSettings.style.display = 'none';
+                ui.nAnimMin.disabled = true;
+                ui.nAnimMax.disabled = true;
+                ui.nAnimSettings.style.opacity = '0.35';
 
                 const minC = parseFloat(ui.cAnimMin.value) || 0;
                 const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
@@ -2133,7 +2190,9 @@
             ui.nAnim.checked = (animChoice === 1);
             ui.cAnim.checked = (animChoice === 2 && userBase.mode === 'decimal');
 
-            ui.nAnimSettings.style.display = ui.nAnim.checked ? 'flex' : 'none';
+            ui.nAnimMin.disabled = !ui.nAnim.checked;
+            ui.nAnimMax.disabled = !ui.nAnim.checked;
+            ui.nAnimSettings.style.opacity = ui.nAnim.checked ? '1' : '0.35';
             
             const styles = ['iter-wheel', 'iter-wheel-light', 'distance', 'distance-inferno', 'neon', 'solid', 'light', 'light-glow', 'matrix', 'blueprint'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
