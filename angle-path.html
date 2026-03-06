@@ -590,6 +590,9 @@
 
         .header-block { display:flex; align-items:center; }
 
+        /* Make R/S labels in rational controls white (only block titles remain accent colored) */
+        #rational-controls .group-header span { color: #fff; }
+
         .btn-icon { 
             padding: 0 8px; 
             font-size: 14px; 
@@ -1035,6 +1038,15 @@
 
         ui.resetZoomBtn.disabled = true;
 
+        // Disable N-animation min/max controls by default (n-anim unchecked initially)
+        if (ui.nAnim) {
+            try {
+                ui.nAnimMin.disabled = true;
+                ui.nAnimMax.disabled = true;
+                if (ui.nAnimSettings) ui.nAnimSettings.style.opacity = '0.35';
+            } catch (e) { /* silent */ }
+        }
+
         // Color-length control utilities (for iter-wheel styles)
         const COLOR_SLIDER_STEPS = 1000;
 
@@ -1333,6 +1345,13 @@
         const MAX_N = MAX_DRAW_N + MAX_OFFSET; // total buffer size
         const MAX_C = 100.00000;
         let points = new Float32Array((MAX_N + 1) * 2);
+
+        // Ensure the N slider's range matches the actual MAX_DRAW_N (slider uses log10(N))
+        if (ui.nSlider) {
+            ui.nSlider.min = Math.log10(1000); // matches earlier UI min (1000)
+            ui.nSlider.max = Math.log10(MAX_DRAW_N);
+            ui.nSlider.step = 0.0001;
+        }
 
         function gcd(a, b) {
             a = Math.abs(a);
