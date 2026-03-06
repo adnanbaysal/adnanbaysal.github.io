@@ -864,7 +864,23 @@
                 </div>
             </div>
 
-            <!-- Save / export buttons moved to header -->
+            <!-- Configuration management -->
+            <div class="control-block" style="margin-top:12px;">
+                <div class="panel-header" style="margin-bottom:8px;">Configuration</div>
+                <div style="display:flex; gap:8px;">
+                    <select id="config-select" class="combined-select" style="flex:1;">
+                        <option value="">Load...</option>
+                        <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
+                        <optgroup label="Saved" id="saved-configs-group"></optgroup>
+                    </select>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button id="export-config-btn" class="btn-util">Export</button>
+                    <button id="import-config-btn" class="btn-util">Import</button>
+                    <button id="save-config-btn" class="btn-sec">Save</button>
+                    <input type="file" id="import-file" style="display:none" accept=".json">
+                </div>
+            </div>
 
             <!-- Function editor (moved below Save/Export) -->
             <div class="editor-container slim-editor">
@@ -891,24 +907,6 @@
                 </div>
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
 
-            </div>
-
-            <!-- Configuration management -->
-            <div class="control-block" style="margin-top:12px;">
-                <div class="panel-header" style="margin-bottom:8px;">Configuration</div>
-                <div style="display:flex; gap:8px;">
-                    <select id="config-select" class="combined-select" style="flex:1;">
-                        <option value="">Load...</option>
-                        <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
-                        <optgroup label="Saved" id="saved-configs-group"></optgroup>
-                    </select>
-                </div>
-                <div style="display:flex; gap:8px; margin-top:8px;">
-                    <button id="export-config-btn" class="btn-util">Export</button>
-                    <button id="import-config-btn" class="btn-util">Import</button>
-                    <button id="save-config-btn" class="btn-sec">Save</button>
-                    <input type="file" id="import-file" style="display:none" accept=".json">
-                </div>
             </div>
         </div>
 
