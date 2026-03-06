@@ -839,7 +839,9 @@
                     <option value="iter-wheel">Iterative Wheel (Dark)</option>
                     <option value="iter-wheel-light">Iterative Wheel (Light)</option>
                     <option value="distance">Distance Radial (Dark)</option>
+                    <option value="distance-light">Distance Radial (Light)</option>
                     <option value="distance-inferno">Distance Inferno (Dark)</option>
+                    <option value="distance-inferno-light">Distance Inferno (Light)</option>
                     <option value="neon">Neon Glow (Dark)</option>
                     <option value="solid">Solid White (Dark)</option>
                     <option value="light">Solid Black (Light)</option>
@@ -1460,7 +1462,7 @@
 
         function performRender(N, offset, mode, r, s, c_val, time) {
             const style = ui.style.value;
-            const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light';
+            const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light' || style === 'distance-light' || style === 'distance-inferno-light';
             
             const total = (offset || 0) + N; // compute final absolute n value
             const geoBounds = calculatePath(total, mode, r, s, c_val);
@@ -1519,6 +1521,13 @@
                 distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 100%, 60%)`);
                 distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`);
                 distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`);
+            } else if (style === 'distance-light') {
+                // Light-background variant: use darker/lower-lightness stops
+                distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
+                distGradient.addColorStop(0, `hsl(${((time * 50) % 360)}, 70%, 28%)`);
+                distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 70%, 32%)`);
+                distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 70%, 38%)`);
+                distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 70%, 44%)`);
             } else if (style === 'distance-inferno') {
                 distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
                 distGradient.addColorStop(0, `hsl(60, 100%, 70%)`);     // Yellow center
@@ -1526,6 +1535,14 @@
                 distGradient.addColorStop(0.5, `hsl(0, 100%, 50%)`);     // Red
                 distGradient.addColorStop(0.8, `hsl(280, 100%, 40%)`);   // Deep Purple
                 distGradient.addColorStop(1, `hsl(240, 100%, 20%)`);     // Dark Blue
+            } else if (style === 'distance-inferno-light') {
+                // Light-background inferno: darker overall stops
+                distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
+                distGradient.addColorStop(0, `hsl(60, 85%, 28%)`);
+                distGradient.addColorStop(0.2, `hsl(30, 85%, 26%)`);
+                distGradient.addColorStop(0.5, `hsl(0, 85%, 22%)`);
+                distGradient.addColorStop(0.8, `hsl(280, 85%, 18%)`);
+                distGradient.addColorStop(1, `hsl(240, 85%, 12%)`);
             }
 
             for (let i = 0; i < numChunks; i++) {
@@ -1615,7 +1632,7 @@
                     ctx.lineWidth = baseLineWidth * 0.2;
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
                     ctx.stroke();
-                } else if (style === 'distance' || style === 'distance-inferno') {
+                } else if (style === 'distance' || style === 'distance-inferno' || style === 'distance-light' || style === 'distance-inferno-light') {
                     ctx.lineWidth = baseLineWidth * 0.8;
                     ctx.strokeStyle = distGradient;
                     ctx.stroke();
@@ -2194,7 +2211,7 @@
             ui.nAnimMax.disabled = !ui.nAnim.checked;
             ui.nAnimSettings.style.opacity = ui.nAnim.checked ? '1' : '0.35';
             
-            const styles = ['iter-wheel', 'iter-wheel-light', 'distance', 'distance-inferno', 'neon', 'solid', 'light', 'light-glow', 'matrix', 'blueprint'];
+            const styles = ['iter-wheel', 'iter-wheel-light', 'distance', 'distance-light', 'distance-inferno', 'distance-inferno-light', 'neon', 'solid', 'light', 'light-glow', 'matrix', 'blueprint'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
@@ -2255,7 +2272,7 @@
                 try {
                     const { N, time, bounds } = currentRenderState;
                     const style = ui.style.value;
-                    const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light';
+                    const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light' || style === 'distance-light' || style === 'distance-inferno-light';
                     
                     let bg = '#050505';
                     if (isLightTheme) bg = '#ffffff';
@@ -2298,6 +2315,19 @@
                         blobParts.push(`<stop offset="100%" stop-color="${col3}" />\n`);
                         blobParts.push(`</radialGradient>\n`);
                         blobParts.push(`</defs>\n`);
+                    } else if (style === 'distance-light') {
+                        const col0l = `hsl(${((time * 50) % 360)}, 70%, 28%)`;
+                        const col1l = `hsl(${(((time * 50) + 60) % 360)}, 70%, 32%)`;
+                        const col2l = `hsl(${(((time * 50) + 120) % 360)}, 70%, 38%)`;
+                        const col3l = `hsl(${(((time * 50) + 180) % 360)}, 70%, 44%)`;
+                        blobParts.push(`<defs>\n`);
+                        blobParts.push(`<radialGradient id="distGradLight" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
+                        blobParts.push(`<stop offset="0%" stop-color="${col0l}" />\n`);
+                        blobParts.push(`<stop offset="30%" stop-color="${col1l}" />\n`);
+                        blobParts.push(`<stop offset="70%" stop-color="${col2l}" />\n`);
+                        blobParts.push(`<stop offset="100%" stop-color="${col3l}" />\n`);
+                        blobParts.push(`</radialGradient>\n`);
+                        blobParts.push(`</defs>\n`);
                     } else if (style === 'distance-inferno') {
                         blobParts.push(`<defs>\n`);
                         blobParts.push(`<radialGradient id="infernoGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
@@ -2306,6 +2336,16 @@
                         blobParts.push(`<stop offset="50%" stop-color="hsl(0, 100%, 50%)" />\n`);
                         blobParts.push(`<stop offset="80%" stop-color="hsl(280, 100%, 40%)" />\n`);
                         blobParts.push(`<stop offset="100%" stop-color="hsl(240, 100%, 20%)" />\n`);
+                        blobParts.push(`</radialGradient>\n`);
+                        blobParts.push(`</defs>\n`);
+                    } else if (style === 'distance-inferno-light') {
+                        blobParts.push(`<defs>\n`);
+                        blobParts.push(`<radialGradient id="infernoGradLight" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
+                        blobParts.push(`<stop offset="0%" stop-color="hsl(60, 85%, 28%)" />\n`);
+                        blobParts.push(`<stop offset="20%" stop-color="hsl(30, 85%, 26%)" />\n`);
+                        blobParts.push(`<stop offset="50%" stop-color="hsl(0, 85%, 22%)" />\n`);
+                        blobParts.push(`<stop offset="80%" stop-color="hsl(280, 85%, 18%)" />\n`);
+                        blobParts.push(`<stop offset="100%" stop-color="hsl(240, 85%, 12%)" />\n`);
                         blobParts.push(`</radialGradient>\n`);
                         blobParts.push(`</defs>\n`);
                     }
@@ -2374,8 +2414,12 @@
                             blobParts.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.2}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance') {
                             blobParts.push(`<path d="${dStr}" stroke="url(#distGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                        } else if (style === 'distance-light') {
+                            blobParts.push(`<path d="${dStr}" stroke="url(#distGradLight)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance-inferno') {
                             blobParts.push(`<path d="${dStr}" stroke="url(#infernoGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                        } else if (style === 'distance-inferno-light') {
+                            blobParts.push(`<path d="${dStr}" stroke="url(#infernoGradLight)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else {
                             blobParts.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         }
