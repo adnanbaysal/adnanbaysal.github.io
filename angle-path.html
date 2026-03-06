@@ -1522,12 +1522,12 @@
                 distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`);
                 distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`);
             } else if (style === 'distance-light') {
-                // Light-background variant: use darker/lower-lightness stops
+                // Light-background variant: increase saturation and reduce lightness for punch
                 distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
-                distGradient.addColorStop(0, `hsl(${((time * 50) % 360)}, 70%, 28%)`);
-                distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 70%, 32%)`);
-                distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 70%, 38%)`);
-                distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 70%, 44%)`);
+                distGradient.addColorStop(0, `hsl(${((time * 50) % 360)}, 95%, 32%)`);
+                distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 95%, 36%)`);
+                distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 95%, 42%)`);
+                distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 95%, 48%)`);
             } else if (style === 'distance-inferno') {
                 distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
                 distGradient.addColorStop(0, `hsl(60, 100%, 70%)`);     // Yellow center
@@ -1538,11 +1538,11 @@
             } else if (style === 'distance-inferno-light') {
                 // Light-background inferno: darker overall stops
                 distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
-                distGradient.addColorStop(0, `hsl(60, 85%, 28%)`);
-                distGradient.addColorStop(0.2, `hsl(30, 85%, 26%)`);
-                distGradient.addColorStop(0.5, `hsl(0, 85%, 22%)`);
-                distGradient.addColorStop(0.8, `hsl(280, 85%, 18%)`);
-                distGradient.addColorStop(1, `hsl(240, 85%, 12%)`);
+                distGradient.addColorStop(0, `hsl(60, 95%, 32%)`);
+                distGradient.addColorStop(0.2, `hsl(30, 95%, 28%)`);
+                distGradient.addColorStop(0.5, `hsl(0, 95%, 24%)`);
+                distGradient.addColorStop(0.8, `hsl(280, 95%, 20%)`);
+                distGradient.addColorStop(1, `hsl(240, 95%, 14%)`);
             }
 
             for (let i = 0; i < numChunks; i++) {
@@ -1632,7 +1632,16 @@
                     ctx.lineWidth = baseLineWidth * 0.2;
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
                     ctx.stroke();
-                } else if (style === 'distance' || style === 'distance-inferno' || style === 'distance-light' || style === 'distance-inferno-light') {
+                } else if (style === 'distance' || style === 'distance-inferno') {
+                    ctx.lineWidth = baseLineWidth * 0.8;
+                    ctx.strokeStyle = distGradient;
+                    ctx.stroke();
+                } else if (style === 'distance-light' || style === 'distance-inferno-light') {
+                    // Draw a subtle dark under-stroke to give contrast on white backgrounds
+                    ctx.lineWidth = baseLineWidth * 1.6;
+                    ctx.strokeStyle = `rgba(0,0,0,0.12)`;
+                    ctx.stroke();
+
                     ctx.lineWidth = baseLineWidth * 0.8;
                     ctx.strokeStyle = distGradient;
                     ctx.stroke();
@@ -2415,10 +2424,13 @@
                         } else if (style === 'distance') {
                             blobParts.push(`<path d="${dStr}" stroke="url(#distGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance-light') {
+                            // subtle dark under-stroke for contrast on light backgrounds
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(0,0,0,0.12)" stroke-width="${baseLineWidth * 1.6}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                             blobParts.push(`<path d="${dStr}" stroke="url(#distGradLight)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance-inferno') {
                             blobParts.push(`<path d="${dStr}" stroke="url(#infernoGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance-inferno-light') {
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(0,0,0,0.12)" stroke-width="${baseLineWidth * 1.6}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                             blobParts.push(`<path d="${dStr}" stroke="url(#infernoGradLight)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else {
                             blobParts.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
