@@ -576,6 +576,20 @@
             border-color: #fff; 
         }
 
+        /* Header-specific button sizing */
+        .btn-header {
+            padding: 6px;
+            height: 36px;
+            min-width: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .header-block { display:flex; align-items:center; }
+
         .btn-icon { 
             padding: 0 8px; 
             font-size: 14px; 
@@ -657,8 +671,9 @@
                 height: auto; 
                 padding: 10px; 
                 justify-content: center; 
-                gap: 15px; 
+                gap: 12px; 
             }
+            .btn-header { height: 32px; min-width: 32px; font-size: 12px; padding: 4px; }
             main { 
                 flex-direction: column; 
                 height: auto; 
@@ -683,9 +698,20 @@
 
 <body>
     <header id="ui-panel" class="topbar">
-        <div style="display:flex; gap:8px; align-items:center; width:100%; justify-content:flex-start; padding:8px;">
-            <button onclick="window.location.href='index.html'" class="btn-util" title="Home">🏠</button>
-            <button id="info-btn" class="btn-info" title="Info" style="border-radius: 50%; width: 36px; height: 36px; padding: 0;">?</button>
+        <div style="display:flex; gap:8px; align-items:center; width:100%; justify-content:space-between; padding:8px;">
+            <div class="header-block" style="display:flex; gap:8px; align-items:center;">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button onclick="window.location.href='index.html'" class="btn-util btn-header" title="Home">🏠</button>
+                    <button id="info-btn" class="btn-info btn-header" title="Info" style="border-radius: 50%; width: 36px; height: 36px; padding: 0;">?</button>
+                </div>
+            </div>
+
+            <div class="header-block" style="display:flex; gap:8px; align-items:center;">
+                <button id="random-btn" class="btn-rand btn-header" title="Random">🎲</button>
+                <button id="save-btn" class="btn-util btn-header" title="Save PNG">📸</button>
+                <button id="save-svg-btn" class="btn-util btn-header" title="Save SVG">📄</button>
+                <button id="rec-btn" class="btn-rec btn-header" title="Record">⏺</button>
+            </div>
         </div>
     </header>
 
@@ -838,13 +864,7 @@
                 </div>
             </div>
 
-            <!-- Save / export buttons -->
-            <div class="control-block" style="display:flex; gap:8px; margin-top:12px;">
-                <button id="random-btn" class="btn-rand">🎲 Rand</button>
-                <button id="save-btn" class="btn-util">📸 PNG</button>
-                <button id="save-svg-btn" class="btn-util">📄 SVG</button>
-                <button id="rec-btn" class="btn-rec">⏺ Rec</button>
-            </div>
+            <!-- Save / export buttons moved to header -->
 
             <!-- Function editor (moved below Save/Export) -->
             <div class="editor-container slim-editor">
