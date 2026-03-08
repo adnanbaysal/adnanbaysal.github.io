@@ -80,9 +80,7 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            font-size: 9px; 
-            color: var(--accent); 
-            font-weight: bold; 
+            font-size: 10px; 
             margin-top: auto;
             padding-top: 6px; 
             min-height: 14px;
@@ -152,9 +150,9 @@
             align-items: center;
             flex-grow: 0;
         }
-        /* Increase decimal MIN/MAX input width so decimal places are visible */
+
         #decimal-controls .anim-settings input.num-input {
-            width: 110px;
+            width: 90px;
             margin-left: 8px;
         }
         
@@ -223,8 +221,10 @@
             flex-shrink: 0; 
             height: calc(100vh - 64px);
             overflow-y: auto;
+            scrollbar-gutter: stable;
             position: relative;
             z-index: 20;
+            padding: 5px;
         }
 
         .right-col { 
@@ -275,26 +275,29 @@
             padding: 10px; 
             min-height: 0;*/
         }
-        /* Generic control block styling to ensure consistent width and appearance */
-        .control-block {
-            background: var(--panel);
-            border: 1px solid #222;
-            border-radius: 8px;
-            padding: 10px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Labels inside control blocks should be uniform */
-        .control-block label { font-size: 12px; color: #aaa; font-family: inherit; }
 
         /* Row that groups a slider and numeric input */
         .sync-row { display: flex; align-items: center; gap: 8px; }
         .sync-row label { width: 80px; color: #aaa; font-size: 12px; }
         .sync-row input[type="number"] { width: 90px; }
         .offset-row { border-top: 1px dashed #333; padding-top: 8px; margin-top: 8px; }
-        /* Small boxed sub-blocks inside a control-block (r/s and C) */
+        /* Small boxed sub-blocks (r/s and C) */
         .sub-block { background: #0d0d0d; border: 1px solid #222; border-radius: 8px; padding: 8px; margin-top: 6px; }
+
+        #rational-controls, #decimal-controls {
+            height: 124px; /* force same exact height to avoid small visual differences */
+            box-sizing: border-box;
+            display: block;
+            overflow: hidden;
+        }
+
+        /* Make numeric inputs inside control blocks uniform */
+        #rational-controls .num-input,
+        #decimal-controls .num-input {
+            width: 110px;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
 
         /* Slim editor variant to reduce code textarea height */
         .editor-container .slim-editor textarea { 
@@ -324,16 +327,19 @@
         /* Canvas top-right controls */
         #canvas-top-controls { position: absolute; top: 12px; right: 12px; display:flex; gap:8px; z-index:25; }
 
-        .panel-header {
-            font-size: 11px; 
-            letter-spacing: 1px; 
-            color: var(--accent);
-            text-transform: uppercase; 
-            font-weight: bold; 
-            opacity: 0.8;
-            margin-bottom: 8px; 
-            display: flex; 
-            justify-content: space-between;
+        /* Label for function preset selector (white, normal case) */
+        .label-select-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .label-select-row label {
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: none;
+            white-space: nowrap;
         }
 
         select.preset-select {
@@ -576,6 +582,23 @@
             border-color: #fff; 
         }
 
+        /* Header-specific button sizing */
+        .btn-header {
+            padding: 6px;
+            height: 36px;
+            min-width: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .header-block { display:flex; align-items:center; }
+
+        /* Make R/S labels in rational controls white (only block titles remain accent colored) */
+        #rational-controls .group-header span { color: #fff; }
+
         .btn-icon { 
             padding: 0 8px; 
             font-size: 14px; 
@@ -618,7 +641,7 @@
         }
         
         input[type="number"].num-input { 
-            width: 75px; 
+            width: 90px; 
             background: #222; 
             color: #fff; 
             border: 1px solid #444; 
@@ -657,8 +680,9 @@
                 height: auto; 
                 padding: 10px; 
                 justify-content: center; 
-                gap: 15px; 
+                gap: 12px; 
             }
+            .btn-header { height: 32px; min-width: 32px; font-size: 12px; padding: 4px; }
             main { 
                 flex-direction: column; 
                 height: auto; 
@@ -674,26 +698,193 @@
                 height: 55vh; 
                 min-height: 350px; 
             }
-            #adv-toggle-btn {
-                display: none;
-            }
         }
     </style>
 </head>
 
 <body>
     <header id="ui-panel" class="topbar">
-        <div style="display:flex; gap:8px; align-items:center; width:100%; justify-content:flex-start; padding:8px;">
-            <button onclick="window.location.href='index.html'" class="btn-util" title="Home">🏠</button>
-            <button id="info-btn" class="btn-info" title="Info" style="border-radius: 50%; width: 36px; height: 36px; padding: 0;">?</button>
+        <div style="display:flex; gap:8px; align-items:center; width:100%; justify-content:space-between; padding:8px;">
+            <div class="header-block" style="display:flex; gap:8px; align-items:center;">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button onclick="window.location.href='index.html'" class="btn-util btn-header" title="Home">🏠</button>
+                    <button id="info-btn" class="btn-info btn-header" title="Info" style="border-radius: 50%; width: 36px; height: 36px; padding: 0;">?</button>
+                </div>
+            </div>
+
+            <div class="header-block" style="display:flex; gap:8px; align-items:center;">
+                <button id="random-btn" class="btn-rand btn-header" title="Random">🎲</button>
+                <button id="save-btn" class="btn-util btn-header" title="Save PNG">📸</button>
+                <button id="save-svg-btn" class="btn-util btn-header" title="Save SVG">📄</button>
+                <button id="rec-btn" class="btn-rec btn-header" title="Record">⏺</button>
+            </div>
         </div>
     </header>
 
     <main>
         <div class="left-col" id="advanced-editor">
-            <div class="editor-container slim-editor">
-                <div class="panel-header">Function f(n)</div>
-                <select id="preset-select" class="preset-select">
+            <!-- Multiplier (r/s) and Decimal (C) controls -->
+            <div style="display:flex; gap: 6px; justify-content:space-between; align-items:center;">
+                <label style="font-size: 10px;">Constant Mode</label>
+                <div class="toggles-row" style="margin-top: 0; margin-bottom: 8px; justify-content: flex-start; gap: 12px;">
+                    <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational <code>&pi;</code> Multiplier</label>
+                    <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal Degree</label>
+                </div>
+            </div>
+
+            <div class="sub-block" id="rational-controls">
+                <div class="group-header">
+                    <span>R (π Multiplier)</span>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <button id="r-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
+                        <input type="number" id="r-number" class="num-input" min="1" step="1" value="1">
+                        <button id="r-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
+                    </div>
+                </div>
+                <div class="group-header" style="margin-top:6px;">
+                    <span>S (π Divider)</span>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <button id="s-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
+                        <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500">
+                        <button id="s-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
+                    </div>
+                </div>
+                <div class="toggles-row" style="margin-top:8px;">
+                    <span>Simplified (r/s):</span>
+                    <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
+                </div>
+            </div>
+
+            <div class="sub-block" id="decimal-controls" style="display: none; margin-top:8px;">
+                <div class="group-header">
+                    <span></span>
+                    <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                        <button id="c-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
+                        <input type="number" id="c-number" class="num-input" min="0.0018" max="100.0" step="0.00001" value="0.02400" style="width:110px;">
+                        <button id="c-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
+                    </div>
+                </div>
+                <div class="sync-row" style="margin-top:8px; margin-bottom:6px;">
+                    <label>C</label>
+                    <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="flex:1">
+                </div>
+                <div style="display:flex; gap:12px; align-items:center; border-top:1px dashed #333; padding-top:8px;">
+                    <label style="color: #fff; font-size: 12px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space:nowrap;">ANIM <input type="checkbox" id="c-anim" style="margin-left:4px;"></label>
+                    <div id="c-anim-settings" class="anim-settings" style="margin-top:0; padding-top:0; border-top:none; display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
+                        <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                            <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
+                            <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001" style="flex:0 0 70%; min-width:0; width: 110px">
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                            <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
+                            <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001" style="flex:0 0 70%; min-width:0; width: 110px">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- N input + Auto N -->
+            <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
+                <label style="display:flex; align-items:center; gap:8px; font-size: 10px;">AUTO N <input type="checkbox" id="n-auto-value" checked></label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button id="n-dec-btn" class="btn-sec" style="height:26px; width:28px;" disabled>-</button>
+                    <input type="number" id="n-number" class="num-input" min="1" max="2000000" step="1000" value="90000" disabled style="width:120px; text-align:right; width: 90px">
+                    <button id="n-inc-btn" class="btn-sec" style="height:26px; width:28px;" disabled>+</button>
+                </div>
+            </div>
+            <div class="sync-row" style="margin-top:8px; align-items:center;">
+                <label>Steps (N)</label>
+                <input type="range" id="n-input" min="3" max="6.556303" step="0.0001" value="4.9542" disabled style="flex:1">
+            </div>
+            <div class="sync-row" style="margin-top:8px; padding-bottom: 0; align-items:center;">
+                <label style="display:flex; align-items:center; gap:8px; margin-right:12px;">ANIM N <input type="checkbox" id="n-anim" style="margin-left:6px;"></label>
+                <div id="n-anim-settings" style="display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
+                    <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                        <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
+                        <input type="number" id="n-anim-min" class="num-input" value="1000" min="1" style="flex:0 0 70%; min-width:0;">
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                        <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
+                        <input type="number" id="n-anim-max" class="num-input" value="2000000" max="2000000" style="flex:0 0 70%; min-width:0;">
+                    </label>
+                </div>
+            </div>
+            <!-- N Offset: numeric with increment/decrement aligned right, slider below -->
+            <div class="offset-row">
+                <div style="display:flex; gap:4px; align-items:center; justify-content:space-between;">
+                    <div></div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button id="n-offset-dec-btn" class="btn-sec" style="height:26px; width:28px;">-</button>
+                        <input type="number" id="n-offset-number" class="num-input" min="0" max="2000000" step="1000" value="0" style="width:120px; text-align:right; width: 90px">
+                        <button id="n-offset-inc-btn" class="btn-sec" style="height:26px; width:28px;">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="sync-row" style="margin-top:8px; align-items:center;">
+                <label>Offset</label>
+                <input type="range" id="n-offset-input" min="0" max="2000000" step="1" value="0" style="flex:1">
+            </div>
+
+            <!-- Animation speed block (moved from Iterations) -->
+            <div class="sync-row" style="align-items:center; border-top:1px dashed #333; padding-top:6px; margin-top:4px;">
+                <label>Animation Speed</label>
+                <input id="speed-input" type="range" min="1" max="10" value="5" style="flex:1">
+                <span id="spd-val" class="value">5</span>
+            </div>
+
+            <!-- Styling block -->
+            <div class="sync-row">
+                <label>Style</label>
+            
+                <select id="style-select" class="combined-select">
+                    <option value="iter-wheel">Iterative Wheel (Dark)</option>
+                    <option value="iter-wheel-light">Iterative Wheel (Light)</option>
+                    <option value="distance">Distance Radial (Dark)</option>
+                    <option value="distance-light">Distance Radial (Light)</option>
+                    <option value="distance-inferno">Distance Inferno (Dark)</option>
+                    <option value="distance-inferno-light">Distance Inferno (Light)</option>
+                    <option value="neon">Neon Glow (Dark)</option>
+                    <option value="solid">Solid White (Dark)</option>
+                    <option value="light">Solid Black (Light)</option>
+                    <option value="light-glow">Neon Glow (Light)</option>
+                    <option value="matrix">Matrix (Dark)</option>
+                    <option value="blueprint">Blueprint (Dark)</option>
+                    </select>
+                </div>
+            <div class="sync-row" style="margin-top:4px; margin-bottom:4px;">
+                <label>Color Length</label>
+                <input type="range" id="color-len-slider" min="1" max="1000" step="1" value="100" disabled style="flex:1">
+                <input type="number" id="color-len-number" class="num-input" min="1" step="1" value="100" style="width:90px;">
+            </div>
+            <div class="sync-row" style="margin-top:4px; margin-bottom:4px;">
+                <label>Line Width</label>
+                <input type="range" id="lw-input" min="0.01" max="50.0" step="0.01" value="1.0" style="flex:1">
+                <input type="number" id="lw-number" class="num-input" min="0.01" max="50.0" step="0.01" value="1.0" style="width:90px;">
+            </div>
+
+            <!-- Configuration management -->
+            <div class="sync-row">
+                <label>Config</label>
+                <div style="display:flex; gap:4px;">
+                    <select id="config-select" class="combined-select" style="flex:1;">
+                        <option value="">Load...</option>
+                        <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
+                        <optgroup label="Saved" id="saved-configs-group"></optgroup>
+                    </select>
+                </div>
+                <div style="display:flex; gap:4px;">
+                    <button id="export-config-btn" class="btn-util">Export</button>
+                    <button id="import-config-btn" class="btn-util">Import</button>
+                    <button id="save-config-btn" class="btn-sec">Save</button>
+                    <input type="file" id="import-file" style="display:none" accept=".json">
+                </div>
+            </div>
+
+            <!-- Function editor (moved below Save/Export) -->
+            <div class="editor-container slim-editor" style="border-top: 1px dashed #333; padding-top: 4px">
+                <div class="label-select-row">
+                    <label for="preset-select">Function f(n)</label>
+                    <select id="preset-select" class="preset-select">
                     <optgroup label="Standard Math">
                         <option value="n2">Square (n²)</option>
                         <option value="n">Linear (n)</option>
@@ -705,7 +896,8 @@
                     </optgroup>
                     <optgroup label="User Saved" id="user-presets-group">
                     </optgroup>
-                </select>
+                    </select>
+                </div>
 
                 <textarea id="code-area" spellcheck="false">return n * n;</textarea>
 
@@ -716,179 +908,6 @@
                 <div id="code-error" style="color: #ff4757; font-size: 10px; margin-top: 5px; display: none;">Error</div>
 
             </div>
-
-            <!-- Multiplier (r/s) and Decimal (C) controls -->
-            <div class="control-block">
-                <div class="group-header">Multiplier</div>
-                <div class="toggles-row" style="margin-top: 0; margin-bottom: 8px; justify-content: flex-start; gap: 12px;">
-                    <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational (r/s)</label>
-                    <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal (C)</label>
-                </div>
-
-                <div class="sub-block" id="rational-controls">
-                    <div class="group-header">
-                        <span>R (π Multiplier)</span>
-                        <div style="display: flex; gap: 6px; align-items: center;">
-                            <button id="r-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
-                            <input type="number" id="r-number" class="num-input" min="1" step="1" value="1">
-                            <button id="r-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
-                        </div>
-                    </div>
-                    <div class="group-header" style="margin-top:6px;">
-                        <span>S (π Divider)</span>
-                        <div style="display: flex; gap: 6px; align-items: center;">
-                            <button id="s-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
-                            <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500">
-                            <button id="s-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
-                        </div>
-                    </div>
-                    <div class="toggles-row" style="margin-top:8px;">
-                        <span>Simplified (r/s):</span>
-                        <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
-                    </div>
-                </div>
-
-                <div class="sub-block" id="decimal-controls" style="display: none; margin-top:8px;">
-                    <div class="group-header">
-                        <span></span>
-                        <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
-                            <button id="c-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
-                            <input type="number" id="c-number" class="num-input" min="0.0018" max="100.0" step="0.00001" value="0.02400" style="width:110px;">
-                            <button id="c-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
-                        </div>
-                    </div>
-                    <div class="sync-row" style="margin-top:8px; margin-bottom:6px;">
-                        <label>C</label>
-                        <input type="range" id="c-input" min="0.00180" max="100.00000" step="0.00001" value="0.02400" style="flex:1">
-                    </div>
-                    <div style="display:flex; gap:12px; align-items:center; border-top:1px dashed #333; padding-top:8px;">
-                        <label style="color: #fff; font-size: 12px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space:nowrap;">ANIM <input type="checkbox" id="c-anim" style="margin-left:4px;"></label>
-                        <div id="c-anim-settings" class="anim-settings" style="margin-top:0; padding-top:0; border-top:none; display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
-                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
-                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
-                                <input type="number" id="c-anim-min" class="num-input" value="0.00180" step="0.00001" style="flex:0 0 70%; min-width:0;">
-                            </label>
-                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
-                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
-                                <input type="number" id="c-anim-max" class="num-input" value="100.00000" step="0.00001" style="flex:0 0 70%; min-width:0;">
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- N input + Auto N -->
-            <div class="control-block">
-                <div class="group-header">ITERATIONS (N)</div>
-                    <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
-                        <label style="display:flex; align-items:center; gap:8px;">AUTO N <input type="checkbox" id="n-auto-value" checked></label>
-                        <div style="display:flex; gap:6px; align-items:center;">
-                            <button id="n-dec-btn" class="btn-sec" style="height:26px; width:28px;" disabled>-</button>
-                            <input type="number" id="n-number" class="num-input" min="1" max="2000000" step="1000" value="90000" disabled style="width:120px; text-align:right;">
-                            <button id="n-inc-btn" class="btn-sec" style="height:26px; width:28px;" disabled>+</button>
-                        </div>
-                    </div>
-                    <div class="sync-row" style="margin-top:8px; align-items:center;">
-                        <label>N</label>
-                        <input type="range" id="n-input" min="3" max="6.556303" step="0.0001" value="4.9542" disabled style="flex:1">
-                    </div>
-                    <div class="sync-row" style="margin-top:8px; align-items:center;">
-                        <label style="display:flex; align-items:center; gap:8px; margin-right:12px;">ANIM <input type="checkbox" id="n-anim" style="margin-left:6px;"></label>
-                        <div id="n-anim-settings" style="display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
-                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
-                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Min</span>
-                                <input type="number" id="n-anim-min" class="num-input" value="1000" min="1" style="flex:0 0 70%; min-width:0;">
-                            </label>
-                            <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
-                                <span style="font-size:9px; color:#888; text-transform:uppercase; font-weight:bold; width:36px;">Max</span>
-                                <input type="number" id="n-anim-max" class="num-input" value="2000000" max="2000000" style="flex:0 0 70%; min-width:0;">
-                            </label>
-                        </div>
-                    </div>
-                    <!-- N Offset: numeric with increment/decrement aligned right, slider below -->
-                    <div class="offset-row">
-                        <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
-                            <div></div>
-                            <div style="display:flex; gap:6px; align-items:center;">
-                                <button id="n-offset-dec-btn" class="btn-sec" style="height:26px; width:28px;">-</button>
-                                <input type="number" id="n-offset-number" class="num-input" min="0" max="2000000" step="1000" value="0" style="width:120px; text-align:right;">
-                                <button id="n-offset-inc-btn" class="btn-sec" style="height:26px; width:28px;">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sync-row" style="margin-top:8px; align-items:center;">
-                        <label>Offset</label>
-                        <input type="range" id="n-offset-input" min="0" max="2000000" step="1" value="0" style="flex:1">
-                    </div>
-                </div>
-
-            <!-- Animation speed block (moved from Iterations) -->
-            <div class="control-block">
-                <div class="group-header">Animation</div>
-                <div class="sync-row" style="align-items:center;">
-                    <label>Speed</label>
-                    <input id="speed-input" type="range" min="1" max="10" value="5" style="flex:1">
-                    <span id="spd-val" class="value">5</span>
-                </div>
-            </div>
-
-            <!-- Styling block -->
-            <div class="control-block">
-                <div class="group-header">Appearance</div>
-                <select id="style-select" class="combined-select">
-                    <option value="iter-wheel">Iterative Wheel (Dark)</option>
-                    <option value="iter-wheel-light">Iterative Wheel (Light)</option>
-                    <option value="distance">Distance Radial (Dark)</option>
-                    <option value="distance-inferno">Distance Inferno (Dark)</option>
-                    <option value="neon">Neon Glow (Dark)</option>
-                    <option value="solid">Solid White (Dark)</option>
-                    <option value="light">Solid Black (Light)</option>
-                    <option value="light-glow">Neon Glow (Light)</option>
-                    <option value="matrix">Matrix (Dark)</option>
-                    <option value="blueprint">Blueprint (Dark)</option>
-                </select>
-                <!-- Color length numeric input is now grouped with the slider below -->
-                <div class="sync-row" style="margin-top:8px; margin-bottom:6px;">
-                    <label>Color Length</label>
-                    <input type="range" id="color-len-slider" min="1" max="1000" step="1" value="100" disabled style="flex:1">
-                    <input type="number" id="color-len-number" class="num-input" min="1" step="1" value="100" style="width:90px;">
-                </div>
-                <div class="sync-row" style="margin-top:6px; margin-bottom:6px;">
-                    <label>Line Width</label>
-                    <input type="range" id="lw-input" min="0.01" max="50.0" step="0.01" value="1.0" style="flex:1">
-                    <input type="number" id="lw-number" class="num-input" min="0.01" max="50.0" step="0.01" value="1.0" style="width:90px;">
-                </div>
-            </div>
-
-            <!-- Save / export buttons -->
-            <div class="control-block" style="display:flex; gap:8px; margin-top:12px;">
-                <button id="random-btn" class="btn-rand">🎲 Rand</button>
-                <button id="save-btn" class="btn-util">📸 PNG</button>
-                <button id="save-svg-btn" class="btn-util">📄 SVG</button>
-                <button id="rec-btn" class="btn-rec">⏺ Rec</button>
-            </div>
-
-            <!-- Configuration management -->
-            <div class="control-block" style="margin-top:12px;">
-                <div class="panel-header" style="margin-bottom:8px;">Configuration</div>
-                <div style="display:flex; gap:8px;">
-                    <select id="config-select" class="combined-select" style="flex:1;">
-                        <option value="">Load...</option>
-                        <optgroup label="Built-in" id="builtin-configs-group"></optgroup>
-                        <optgroup label="Saved" id="saved-configs-group"></optgroup>
-                    </select>
-                </div>
-                <div style="display:flex; gap:8px; margin-top:8px;">
-                    <button id="export-config-btn" class="btn-util">Export</button>
-                    <button id="import-config-btn" class="btn-util">Import</button>
-                    <button id="save-config-btn" class="btn-sec">Save</button>
-                    <input type="file" id="import-file" style="display:none" accept=".json">
-                </div>
-            </div>
-
-            
-            <button id="adv-toggle-btn" class="btn-sec" style="display:none; margin-top:8px;">⚙️ Advanced Options</button>
-            <div id="advanced-controls" style="display:none"></div>
         </div>
 
         <div class="right-col">
@@ -896,16 +915,29 @@
                 <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
                 <div class="info-content">
                     <h2>Angle Path Generator</h2>
-                    <p>This generator draws a sequence of lines based on a simple mathematical rule.</p>
+                    <p>
+                        This generator draws a sequence of lines based on a simple mathematical rule. 
+                        In the initial step, a unit length line is drawn starting from the origin, in the positive X-axis direction.
+                        At each step <code>n &in; {1, ..., N}</code>, previous heading direction is rotated by <code>c &times; f(n)</code> degrees.
+                        By this simple rule, interesting patterns appear for different choice of <code>c</code> and <code>f(n)</code>.
+                        Most interesting results are attined when <code>f(n) = n²</code>. 
+                        So most of the UI and descriptions in this helper are valid for this specific funtion.
+                    </p>
                     
-                    <h3>Rational Mode (r/s)</h3>
-                    <p>To eliminate chaotic floating-point drift, this mode represents angles using two integers, <code>r</code> (multiplier) and <code>s</code> (divider). <code>Angle = Previous + (r/s * f(n) * &pi;)</code>. If your math formula produces exact integers, the engine uses integer modular arithmetic ensuring 100% symmetric stability indefinitely.</p>
+                    <h3>Constant representation</h3>
+                    <p>
+                        Constant <code>c</code> can be any real number, but for specifically integer returning <code>f(n)</code> functions, 
+                        rational multiples of <code>&pi;</code> as radians (will be converted to degreen in the code) can provide symmetric results.
+                        For this representation, user can select 2 integers <code>r, s</code>, where the cosntant is calculated as <code>&pi;&times;r/s</code> in radians.
 
-                    <h3>Decimal Mode (C)</h3>
-                    <p>Useful for progressive animations. <code>Angle = Previous + (C * f(n) * &pi;/180)</code>. Offers smooth scaling of the multiplier.</p>
+                        On the other hand, if <code>f(n)</code> returns decimal numbers, it make sense to have decimal <code>c</code> and animate this value continiously to see the affect of changing constant dynamically.
+                    </p>
 
-                    <h3>Symmetry Lock (Auto N)</h3>
-                    <p>Checking <strong>Lock Symmetry</strong> calculates the precise step sequence required to perfectly close a rotational rosette in either mode.</p>
+                    <h3>Auto N</h3>
+                    <p>
+                        For the <code>n²</code> function, checking <strong>Auto N</strong> calculates the precise step sequence required to perfectly close a rotational rosette. 
+                        There is a mathematical formula to calculate the minimal such N which is available in the code of this page.
+                    </p>
                     
                     <p style="margin-top: 20px; font-size: 10px; opacity: 0.5;">End of Documentation</p>
                 </div>
@@ -1000,15 +1032,19 @@
             exportConfigBtn: document.getElementById('export-config-btn'),
             importConfigBtn: document.getElementById('import-config-btn'),
             importFile: document.getElementById('import-file'),
-
-            saveSvgBtn: document.getElementById('save-svg-btn'),
-            
-            advToggleBtn: document.getElementById('adv-toggle-btn'),
-            advControls: document.getElementById('advanced-controls'),
-            advEditor: document.getElementById('advanced-editor')
+            saveSvgBtn: document.getElementById('save-svg-btn')
         };
 
         ui.resetZoomBtn.disabled = true;
+
+        // Disable N-animation min/max controls by default (n-anim unchecked initially)
+        if (ui.nAnim) {
+            try {
+                ui.nAnimMin.disabled = true;
+                ui.nAnimMax.disabled = true;
+                if (ui.nAnimSettings) ui.nAnimSettings.style.opacity = '0.35';
+            } catch (e) { /* silent */ }
+        }
 
         // Color-length control utilities (for iter-wheel styles)
         const COLOR_SLIDER_STEPS = 1000;
@@ -1263,17 +1299,6 @@
             ui.importFile.value = ''; 
         });
 
-        ui.advToggleBtn.addEventListener('click', () => {
-            ui.advControls.classList.toggle('collapsed');
-            ui.advEditor.classList.toggle('collapsed');
-            window.dispatchEvent(new Event('resize'));
-        });
-
-        if (window.innerWidth <= 900) {
-            ui.advControls.classList.add('collapsed');
-            ui.advEditor.classList.add('collapsed');
-        }
-
         let isZoomed = false;
         let zoomBounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
         let activeTransform = { scale: 1, cx: 0, cy: 0 }; 
@@ -1308,6 +1333,13 @@
         const MAX_N = MAX_DRAW_N + MAX_OFFSET; // total buffer size
         const MAX_C = 100.00000;
         let points = new Float32Array((MAX_N + 1) * 2);
+
+        // Ensure the N slider's range matches the actual MAX_DRAW_N (slider uses log10(N))
+        if (ui.nSlider) {
+            ui.nSlider.min = Math.log10(1000); // matches earlier UI min (1000)
+            ui.nSlider.max = Math.log10(MAX_DRAW_N);
+            ui.nSlider.step = 0.0001;
+        }
 
         function gcd(a, b) {
             a = Math.abs(a);
@@ -1460,7 +1492,7 @@
 
         function performRender(N, offset, mode, r, s, c_val, time) {
             const style = ui.style.value;
-            const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light';
+            const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light' || style === 'distance-light' || style === 'distance-inferno-light';
             
             const total = (offset || 0) + N; // compute final absolute n value
             const geoBounds = calculatePath(total, mode, r, s, c_val);
@@ -1519,6 +1551,13 @@
                 distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 100%, 60%)`);
                 distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 100%, 50%)`);
                 distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 100%, 40%)`);
+            } else if (style === 'distance-light') {
+                // Light-background variant: increase saturation and reduce lightness for punch
+                distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
+                distGradient.addColorStop(0, `hsl(${((time * 50) % 360)}, 95%, 32%)`);
+                distGradient.addColorStop(0.3, `hsl(${(((time * 50) + 60) % 360)}, 95%, 36%)`);
+                distGradient.addColorStop(0.7, `hsl(${(((time * 50) + 120) % 360)}, 95%, 42%)`);
+                distGradient.addColorStop(1, `hsl(${(((time * 50) + 180) % 360)}, 95%, 48%)`);
             } else if (style === 'distance-inferno') {
                 distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
                 distGradient.addColorStop(0, `hsl(60, 100%, 70%)`);     // Yellow center
@@ -1526,6 +1565,14 @@
                 distGradient.addColorStop(0.5, `hsl(0, 100%, 50%)`);     // Red
                 distGradient.addColorStop(0.8, `hsl(280, 100%, 40%)`);   // Deep Purple
                 distGradient.addColorStop(1, `hsl(240, 100%, 20%)`);     // Dark Blue
+            } else if (style === 'distance-inferno-light') {
+                // Light-background inferno: darker overall stops
+                distGradient = ctx.createRadialGradient(geoCenterX, geoCenterY, 0, geoCenterX, geoCenterY, geoMaxR || 1);
+                distGradient.addColorStop(0, `hsl(60, 95%, 32%)`);
+                distGradient.addColorStop(0.2, `hsl(30, 95%, 28%)`);
+                distGradient.addColorStop(0.5, `hsl(0, 95%, 24%)`);
+                distGradient.addColorStop(0.8, `hsl(280, 95%, 20%)`);
+                distGradient.addColorStop(1, `hsl(240, 95%, 14%)`);
             }
 
             for (let i = 0; i < numChunks; i++) {
@@ -1616,6 +1663,15 @@
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
                     ctx.stroke();
                 } else if (style === 'distance' || style === 'distance-inferno') {
+                    ctx.lineWidth = baseLineWidth * 0.8;
+                    ctx.strokeStyle = distGradient;
+                    ctx.stroke();
+                } else if (style === 'distance-light' || style === 'distance-inferno-light') {
+                    // Draw a subtle dark under-stroke to give contrast on white backgrounds
+                    ctx.lineWidth = baseLineWidth * 1.6;
+                    ctx.strokeStyle = `rgba(0,0,0,0.12)`;
+                    ctx.stroke();
+
                     ctx.lineWidth = baseLineWidth * 0.8;
                     ctx.strokeStyle = distGradient;
                     ctx.stroke();
@@ -2194,7 +2250,7 @@
             ui.nAnimMax.disabled = !ui.nAnim.checked;
             ui.nAnimSettings.style.opacity = ui.nAnim.checked ? '1' : '0.35';
             
-            const styles = ['iter-wheel', 'iter-wheel-light', 'distance', 'distance-inferno', 'neon', 'solid', 'light', 'light-glow', 'matrix', 'blueprint'];
+            const styles = ['iter-wheel', 'iter-wheel-light', 'distance', 'distance-light', 'distance-inferno', 'distance-inferno-light', 'neon', 'solid', 'light', 'light-glow', 'matrix', 'blueprint'];
             ui.style.value = styles[Math.floor(Math.random() * styles.length)];
             
             compileFunction();
@@ -2255,7 +2311,7 @@
                 try {
                     const { N, time, bounds } = currentRenderState;
                     const style = ui.style.value;
-                    const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light';
+                    const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light' || style === 'distance-light' || style === 'distance-inferno-light';
                     
                     let bg = '#050505';
                     if (isLightTheme) bg = '#ffffff';
@@ -2298,6 +2354,19 @@
                         blobParts.push(`<stop offset="100%" stop-color="${col3}" />\n`);
                         blobParts.push(`</radialGradient>\n`);
                         blobParts.push(`</defs>\n`);
+                    } else if (style === 'distance-light') {
+                        const col0l = `hsl(${((time * 50) % 360)}, 70%, 28%)`;
+                        const col1l = `hsl(${(((time * 50) + 60) % 360)}, 70%, 32%)`;
+                        const col2l = `hsl(${(((time * 50) + 120) % 360)}, 70%, 38%)`;
+                        const col3l = `hsl(${(((time * 50) + 180) % 360)}, 70%, 44%)`;
+                        blobParts.push(`<defs>\n`);
+                        blobParts.push(`<radialGradient id="distGradLight" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
+                        blobParts.push(`<stop offset="0%" stop-color="${col0l}" />\n`);
+                        blobParts.push(`<stop offset="30%" stop-color="${col1l}" />\n`);
+                        blobParts.push(`<stop offset="70%" stop-color="${col2l}" />\n`);
+                        blobParts.push(`<stop offset="100%" stop-color="${col3l}" />\n`);
+                        blobParts.push(`</radialGradient>\n`);
+                        blobParts.push(`</defs>\n`);
                     } else if (style === 'distance-inferno') {
                         blobParts.push(`<defs>\n`);
                         blobParts.push(`<radialGradient id="infernoGrad" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
@@ -2306,6 +2375,16 @@
                         blobParts.push(`<stop offset="50%" stop-color="hsl(0, 100%, 50%)" />\n`);
                         blobParts.push(`<stop offset="80%" stop-color="hsl(280, 100%, 40%)" />\n`);
                         blobParts.push(`<stop offset="100%" stop-color="hsl(240, 100%, 20%)" />\n`);
+                        blobParts.push(`</radialGradient>\n`);
+                        blobParts.push(`</defs>\n`);
+                    } else if (style === 'distance-inferno-light') {
+                        blobParts.push(`<defs>\n`);
+                        blobParts.push(`<radialGradient id="infernoGradLight" cx="${geoCenterX}" cy="${geoCenterY}" r="${geoMaxR}" gradientUnits="userSpaceOnUse">\n`);
+                        blobParts.push(`<stop offset="0%" stop-color="hsl(60, 85%, 28%)" />\n`);
+                        blobParts.push(`<stop offset="20%" stop-color="hsl(30, 85%, 26%)" />\n`);
+                        blobParts.push(`<stop offset="50%" stop-color="hsl(0, 85%, 22%)" />\n`);
+                        blobParts.push(`<stop offset="80%" stop-color="hsl(280, 85%, 18%)" />\n`);
+                        blobParts.push(`<stop offset="100%" stop-color="hsl(240, 85%, 12%)" />\n`);
                         blobParts.push(`</radialGradient>\n`);
                         blobParts.push(`</defs>\n`);
                     }
@@ -2374,8 +2453,15 @@
                             blobParts.push(`<path d="${dStr}" stroke="rgba(255, 255, 255, 0.8)" stroke-width="${baseLineWidth * 0.2}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance') {
                             blobParts.push(`<path d="${dStr}" stroke="url(#distGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                        } else if (style === 'distance-light') {
+                            // subtle dark under-stroke for contrast on light backgrounds
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(0,0,0,0.12)" stroke-width="${baseLineWidth * 1.6}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                            blobParts.push(`<path d="${dStr}" stroke="url(#distGradLight)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else if (style === 'distance-inferno') {
                             blobParts.push(`<path d="${dStr}" stroke="url(#infernoGrad)" stroke-width="${baseLineWidth * 0.8}" fill="none" style="mix-blend-mode: screen;" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                        } else if (style === 'distance-inferno-light') {
+                            blobParts.push(`<path d="${dStr}" stroke="rgba(0,0,0,0.12)" stroke-width="${baseLineWidth * 1.6}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
+                            blobParts.push(`<path d="${dStr}" stroke="url(#infernoGradLight)" stroke-width="${baseLineWidth * 0.8}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         } else {
                             blobParts.push(`<path d="${dStr}" stroke="#ffffff" stroke-width="${baseLineWidth * 0.5}" fill="none" stroke-linejoin="round" stroke-linecap="round" />\n`);
                         }
