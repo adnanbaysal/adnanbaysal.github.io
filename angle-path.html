@@ -704,8 +704,15 @@
             .right-col { 
                 width: 100%; 
                 order: 1; 
-                height: auto !important;
-                min-height: 320px; 
+                /* Fix canvas area at the top of the viewport (below header)
+                   so it remains visible while the UI scrolls underneath. */
+                position: fixed !important;
+                top: 64px; /* matches main padding-top / header height */
+                left: 0;
+                right: 0;
+                height: 55vh !important;
+                min-height: 280px;
+                z-index: 45;
             }
 
             /* Let the control panels grow to fit their content on mobile */
@@ -716,6 +723,11 @@
             }
 
             .sub-block { padding-bottom: 12px; }
+
+            /* Ensure the left UI sits below the fixed canvas and can scroll
+               independently of the canvas. The extra top margin accounts for
+               the fixed canvas height. */
+            .left-col { margin-top: calc(55vh + 12px); }
         }
     </style>
 </head>
