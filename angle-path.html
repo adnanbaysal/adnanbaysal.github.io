@@ -915,16 +915,29 @@
                 <span class="close-info" onclick="document.getElementById('info-modal').style.display='none'">&times;</span>
                 <div class="info-content">
                     <h2>Angle Path Generator</h2>
-                    <p>This generator draws a sequence of lines based on a simple mathematical rule.</p>
+                    <p>
+                        This generator draws a sequence of lines based on a simple mathematical rule. 
+                        In the initial step, a unit length line is drawn starting from the origin, in the positive X-axis direction.
+                        At each step <code>n &in; {1, ..., N}</code>, previous heading direction is rotated by <code>c &times; f(n)</code> degrees.
+                        By this simple rule, interesting patterns appear for different choice of <code>c</code> and <code>f(n)</code>.
+                        Most interesting results are attined when <code>f(n) = n²</code>. 
+                        So most of the UI and descriptions in this helper are valid for this specific funtion.
+                    </p>
                     
-                    <h3>Rational Mode (r/s)</h3>
-                    <p>To eliminate chaotic floating-point drift, this mode represents angles using two integers, <code>r</code> (multiplier) and <code>s</code> (divider). <code>Angle = Previous + (r/s * f(n) * &pi;)</code>. If your math formula produces exact integers, the engine uses integer modular arithmetic ensuring 100% symmetric stability indefinitely.</p>
+                    <h3>Constant representation</h3>
+                    <p>
+                        Constant <code>c</code> can be any real number, but for specifically integer returning <code>f(n)</code> functions, 
+                        rational multiples of <code>&pi;</code> as radians (will be converted to degreen in the code) can provide symmetric results.
+                        For this representation, user can select 2 integers <code>r, s</code>, where the cosntant is calculated as <code>&pi;&times;r/s</code> in radians.
 
-                    <h3>Decimal Mode (C)</h3>
-                    <p>Useful for progressive animations. <code>Angle = Previous + (C * f(n) * &pi;/180)</code>. Offers smooth scaling of the multiplier.</p>
+                        On the other hand, if <code>f(n)</code> returns decimal numbers, it make sense to have decimal <code>c</code> and animate this value continiously to see the affect of changing constant dynamically.
+                    </p>
 
-                    <h3>Symmetry Lock (Auto N)</h3>
-                    <p>Checking <strong>Lock Symmetry</strong> calculates the precise step sequence required to perfectly close a rotational rosette in either mode. This property is valid for only <code>f(n) = n²</code>.</p>
+                    <h3>Auto N</h3>
+                    <p>
+                        For the <code>n²</code> function, checking <strong>Auto N</strong> calculates the precise step sequence required to perfectly close a rotational rosette. 
+                        There is a mathematical formula to calculate the minimal such N which is available in the code of this page.
+                    </p>
                     
                     <p style="margin-top: 20px; font-size: 10px; opacity: 0.5;">End of Documentation</p>
                 </div>
