@@ -329,16 +329,19 @@
         /* Canvas top-right controls */
         #canvas-top-controls { position: absolute; top: 12px; right: 12px; display:flex; gap:8px; z-index:25; }
 
-        .panel-header {
-            font-size: 11px; 
-            letter-spacing: 1px; 
-            color: var(--accent);
-            text-transform: uppercase; 
-            font-weight: bold; 
-            opacity: 0.8;
-            margin-bottom: 8px; 
-            display: flex; 
-            justify-content: space-between;
+        /* Label for function preset selector (white, normal case) */
+        .label-select-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .label-select-row label {
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: none;
+            white-space: nowrap;
         }
 
         select.preset-select {
@@ -792,7 +795,7 @@
                 <label>Steps (N)</label>
                 <input type="range" id="n-input" min="3" max="6.556303" step="0.0001" value="4.9542" disabled style="flex:1">
             </div>
-            <div class="sync-row" style="margin-top:8px; align-items:center;">
+            <div class="sync-row" style="margin-top:8px; padding-bottom: 0; align-items:center;">
                 <label style="display:flex; align-items:center; gap:8px; margin-right:12px;">ANIM N <input type="checkbox" id="n-anim" style="margin-left:6px;"></label>
                 <div id="n-anim-settings" style="display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
                     <label style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
@@ -807,7 +810,7 @@
             </div>
             <!-- N Offset: numeric with increment/decrement aligned right, slider below -->
             <div class="offset-row">
-                <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
+                <div style="display:flex; gap:4px; align-items:center; justify-content:space-between;">
                     <div></div>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <button id="n-offset-dec-btn" class="btn-sec" style="height:26px; width:28px;">-</button>
@@ -845,14 +848,14 @@
                     <option value="light-glow">Neon Glow (Light)</option>
                     <option value="matrix">Matrix (Dark)</option>
                     <option value="blueprint">Blueprint (Dark)</option>
-                </select>
-            </div>
-            <div class="sync-row" style="margin-top:8px; margin-bottom:6px;">
+                    </select>
+                </div>
+            <div class="sync-row" style="margin-top:4px; margin-bottom:4px;">
                 <label>Color Length</label>
                 <input type="range" id="color-len-slider" min="1" max="1000" step="1" value="100" disabled style="flex:1">
                 <input type="number" id="color-len-number" class="num-input" min="1" step="1" value="100" style="width:90px;">
             </div>
-            <div class="sync-row" style="margin-top:6px; margin-bottom:6px;">
+            <div class="sync-row" style="margin-top:4px; margin-bottom:4px;">
                 <label>Line Width</label>
                 <input type="range" id="lw-input" min="0.01" max="50.0" step="0.01" value="1.0" style="flex:1">
                 <input type="number" id="lw-number" class="num-input" min="0.01" max="50.0" step="0.01" value="1.0" style="width:90px;">
@@ -877,9 +880,10 @@
             </div>
 
             <!-- Function editor (moved below Save/Export) -->
-            <div class="editor-container slim-editor">
-                <div class="panel-header">Function f(n)</div>
-                <select id="preset-select" class="preset-select">
+            <div class="editor-container slim-editor" style="border-top: 1px dashed #333; padding-top: 4px">
+                <div class="label-select-row">
+                    <label for="preset-select">Function f(n)</label>
+                    <select id="preset-select" class="preset-select">
                     <optgroup label="Standard Math">
                         <option value="n2">Square (n²)</option>
                         <option value="n">Linear (n)</option>
@@ -891,7 +895,8 @@
                     </optgroup>
                     <optgroup label="User Saved" id="user-presets-group">
                     </optgroup>
-                </select>
+                    </select>
+                </div>
 
                 <textarea id="code-area" spellcheck="false">return n * n;</textarea>
 
