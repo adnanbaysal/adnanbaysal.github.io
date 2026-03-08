@@ -80,9 +80,7 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            font-size: 9px; 
-            color: var(--accent); 
-            font-weight: bold; 
+            font-size: 10px; 
             margin-top: auto;
             padding-top: 6px; 
             min-height: 14px;
@@ -726,9 +724,12 @@
     <main>
         <div class="left-col" id="advanced-editor">
             <!-- Multiplier (r/s) and Decimal (C) controls -->
-            <div class="toggles-row" style="margin-top: 0; margin-bottom: 8px; justify-content: flex-start; gap: 12px;">
-                <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational (r/s)</label>
-                <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal (C)</label>
+            <div style="display:flex; gap: 6px; justify-content:space-between; align-items:center;">
+                <label style="font-size: 10px;">Constant Mode</label>
+                <div class="toggles-row" style="margin-top: 0; margin-bottom: 8px; justify-content: flex-start; gap: 12px;">
+                    <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational <code>&pi;</code> Multiplier</label>
+                    <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal Degree</label>
+                </div>
             </div>
 
             <div class="sub-block" id="rational-controls">
