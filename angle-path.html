@@ -860,6 +860,9 @@
                 <label>Animation Speed</label>
                 <input id="speed-input" type="range" min="1" max="10" value="5" style="flex:1">
                 <span id="spd-val" class="value">5</span>
+                <label style="display:flex; align-items:center; gap:6px; margin-left:8px; white-space:nowrap;">
+                    <input type="checkbox" id="fix-axes" title="Keep origin fixed and zoom symmetrically" style="margin-left:6px;"> Fix axes
+                </label>
             </div>
 
             <!-- Styling block -->
@@ -1033,6 +1036,7 @@
 
             speed: document.getElementById('speed-input'), 
             spdLabel: document.getElementById('spd-val'),
+            fixAxes: document.getElementById('fix-axes'),
 
             lwSlider: document.getElementById('lw-input'),
             lwNumber: document.getElementById('lw-number'),
@@ -1066,6 +1070,12 @@
         };
 
         ui.resetZoomBtn.disabled = true;
+
+        if (ui.fixAxes) {
+            ui.fixAxes.addEventListener('change', () => {
+                if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+            });
+        }
 
         // Disable N-animation min/max controls by default (n-anim unchecked initially)
         if (ui.nAnim) {
@@ -1526,7 +1536,21 @@
             
             const total = (offset || 0) + N; // compute final absolute n value
             const geoBounds = calculatePath(total, mode, r, s, c_val);
-            let renderBounds = isZoomed ? zoomBounds : geoBounds;
+
+            let renderBounds;
+            if (isZoomed) {
+                renderBounds = zoomBounds;
+            } else if (ui.fixAxes && ui.fixAxes.checked) {
+                // Center view on origin and make a symmetric bounding box
+                const m = Math.max(
+                    Math.abs(geoBounds.minX || 0), Math.abs(geoBounds.maxX || 0),
+                    Math.abs(geoBounds.minY || 0), Math.abs(geoBounds.maxY || 0)
+                );
+                const R = Math.max(1e-6, m) * 1.05; // small padding
+                renderBounds = { minX: -R, maxX: R, minY: -R, maxY: R };
+            } else {
+                renderBounds = geoBounds;
+            }
             
             currentRenderState = { N, offset: offset || 0, mode, r, s, c: c_val, time, bounds: renderBounds };
             
