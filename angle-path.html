@@ -223,6 +223,7 @@
             flex-shrink: 0; 
             height: calc(100vh - 64px);
             overflow-y: auto;
+            scrollbar-gutter: stable;
             position: relative;
             z-index: 20;
             padding: 5px;
@@ -286,7 +287,18 @@
         .sub-block { background: #0d0d0d; border: 1px solid #222; border-radius: 8px; padding: 8px; margin-top: 6px; }
 
         #rational-controls, #decimal-controls {
-            min-height: 120px;
+            height: 124px; /* force same exact height to avoid small visual differences */
+            box-sizing: border-box;
+            display: block;
+            overflow: hidden;
+        }
+
+        /* Make numeric inputs inside control blocks uniform */
+        #rational-controls .num-input,
+        #decimal-controls .num-input {
+            width: 110px;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         /* Slim editor variant to reduce code textarea height */
