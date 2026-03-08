@@ -688,16 +688,34 @@
                 height: auto; 
                 overflow: visible; 
             }
+
+            /* Make the left column expand vertically on small screens so
+               the rational/decimal control blocks are fully visible. */
             .left-col { 
                 width: 100%; 
-                order: 2; 
+                order: 2;
+                flex-shrink: 0;
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                padding-bottom: 12px;
             }
+
             .right-col { 
                 width: 100%; 
                 order: 1; 
-                height: 55vh; 
-                min-height: 350px; 
+                height: auto !important;
+                min-height: 320px; 
             }
+
+            /* Let the control panels grow to fit their content on mobile */
+            #rational-controls, #decimal-controls {
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .sub-block { padding-bottom: 12px; }
         }
     </style>
 </head>
