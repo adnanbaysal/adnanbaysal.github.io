@@ -15,7 +15,7 @@
     {
         "id": "mirror-sim",
         "title": "Reflections inside a closed mirror",
-        "description": "A circular light wave reflection simulation inside an closed shaped mirror. AVOID IF YOU HAVE EPILEPSY OR SIMILAR DISEASE!",
+        "description": "A circular light wave reflection simulation inside an closed shaped mirror.",
         "url": "./mirror-sim.html",
         "image": "media/mirror-sim.png",
         "tags": [
@@ -64,5 +64,19 @@
             "Chaos"
         ],
         "date": "2026-02-20"
+    },
+    {
+        "id": "limits-of-knowledge",
+        "title": "Limits of Our Knowledge",
+        "description": "This is an article that discusses about the limits of the knowledge that we discover and can prove to ourselves.",
+        "url": "./limits-of-knowledge.html",
+        "image": "media/limits-of-our-knowledge.jpg",
+        "tags": [
+            "Philosophy",
+            "Mathematics",
+            "Science",
+            "Proof"
+        ],
+        "date": "2026-03-19"
     }
 ]

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limits of Our Knowledge - Adnan Baysal</title>
+    <style>
+        :root { --bg: #050505; --card-bg: #111; --text: #eee; --accent: #00d4ff; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text); margin: 0; padding: 0;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+
+        /* --- Header & Nav --- */
+        header { padding: 40px 20px 20px 20px; text-align: center; border-bottom: 1px solid #222; }
+        h1.site-title { margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
+        p.subtitle { color: #888; font-size: 0.9rem; margin-top: 10px; }
+        nav { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
+        nav a { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        nav a:hover { text-decoration: underline; }
+
+        /* --- Article Layout --- */
+        main { max-width: 800px; margin: 40px auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
+        .article-section { 
+            background: var(--card-bg); border: 1px solid #222; border-radius: 8px; 
+            padding: 40px; line-height: 1.7; 
+        }
+
+        .article-section h1 { color: var(--text); font-size: 2rem; margin-top: 0; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .article-section h3 { color: var(--accent); font-weight: 400; margin-top: 35px; margin-bottom: 15px; font-size: 1.3rem; }
+        .article-section p { color: #aaa; margin-bottom: 20px; font-size: 1.05rem; }
+        .article-section ul, .article-section ol { color: #aaa; margin-bottom: 20px; font-size: 1.05rem; padding-left: 20px; }
+        .article-section li { margin-bottom: 8px; }
+        .article-section hr { border: 0; height: 1px; background: #333; margin: 40px 0; }
+
+        /* --- Tooltip Citations (Wiki Style) --- */
+        .ref-link { 
+            color: var(--accent); text-decoration: none; font-weight: bold; 
+            position: relative; display: inline-block; cursor: pointer;
+        }
+        .ref-link:hover { text-decoration: underline; }
+        
+        .ref-link .tooltip {
+            visibility: hidden; opacity: 0; width: 260px;
+            background-color: #222; color: #eee; text-align: left;
+            border-radius: 6px; padding: 12px; position: absolute;
+            z-index: 10; bottom: 150%; left: 50%; margin-left: -130px;
+            border: 1px solid var(--accent); font-size: 0.85rem; font-weight: normal;
+            line-height: 1.4; transition: opacity 0.2s, bottom 0.2s;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.6); pointer-events: none;
+        }
+        
+        .ref-link .tooltip::after {
+            content: ""; position: absolute; top: 100%; left: 50%;
+            margin-left: -6px; border-width: 6px; border-style: solid;
+            border-color: var(--accent) transparent transparent transparent;
+        }
+        
+        .ref-link:hover .tooltip { visibility: visible; opacity: 1; bottom: 130%; }
+
+        /* --- References Section --- */
+        .references-section { margin-top: 50px; border-top: 1px solid #333; padding-top: 20px; }
+        .references-section h3 { color: #888; margin-bottom: 15px; font-size: 1.1rem; }
+        .references-list { list-style-type: decimal; color: #666; font-size: 0.9rem; padding-left: 20px; }
+        .references-list li { margin-bottom: 12px; }
+        .references-list li:target { color: var(--text); transition: color 0.5s ease; }
+
+        /* --- Footer --- */
+        footer { margin-top: auto; padding: 40px 20px; text-align: center; font-size: 0.8rem; color: #444; border-top: 1px solid #111; }
+        
+        /* --- Responsive Mobile View --- */
+        @media (max-width: 768px) {
+            .article-section { padding: 25px; }
+            .article-section h1 { font-size: 1.6rem; }
+            .ref-link .tooltip { display: none; /* Hide tooltips on mobile to prevent overflow issues */ }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="site-title">ADNAN BAYSAL</h1>
+        <p class="subtitle">Essays & Writings</p>
+        <nav>
+            <a href="index.html">Portfolio</a>
+            <a href="about-me.html">About Me</a>
+        </nav>
+    </header>
+
+    <main>
+        <article class="article-section">
+            <h1>Limits of Our Knowledge</h1>
+
+            <h3>Two kinds of knowledge</h3>
+            <p>We can roughly group human knowledge into two categories:</p>
+            <ul>
+                <li><strong>External knowledge:</strong> claims about the world outside our minds.</li>
+                <li><strong>Internal knowledge:</strong> structures we build and explore in thought.</li>
+            </ul>
+            <p>
+                Science is primarily concerned with external knowledge <a href="#ref2" class="ref-link">[2]<span class="tooltip">"Mathematics Is Not Science" (Stanford University)</span></a>. 
+                Mathematics, and much of philosophy, are more concerned with internal knowledge. 
+                The two are deeply connected, because internal results often become tools for understanding the external world. 
+                A purely mathematical insight can later prove essential in a physical theory, as concepts developed independently of physics frequently find unexpected applications in the natural sciences <a href="#ref3" class="ref-link">[3]<span class="tooltip">"The Unreasonable Effectiveness of Mathematics..." (Eugene Wigner, 1960)</span></a>.
+            </p>
+            <p>A key point, though, is that internal claims can be <em>true within their own system</em> even if the external world turns out to behave differently.</p>
+
+            <hr>
+
+            <h3>How we generate knowledge</h3>
+            <p>Whether we are doing mathematics or science, our reasoning usually follows the same broad pattern:</p>
+            <ol>
+                <li><strong>Adopt starting assumptions</strong> (axioms, postulates, or working hypotheses).</li>
+                <li><strong>Choose rules of inference</strong> (how we are allowed to reason from one statement to another).</li>
+                <li><strong>Derive new statements</strong> by applying those rules step by step.</li>
+            </ol>
+            <p>
+                This description fits mathematics very clearly, but both inductive and deductive reasoning are also fundamental to scientific research <a href="#ref2" class="ref-link">[2]<span class="tooltip">"Mathematics Is Not Science" (Stanford University)</span></a>. 
+                Since modern science is expressed through mathematical models, it also inherits much of this logical structure.</p>
+            <p>The major difference appears in the next step: <strong>verification</strong>.</p>
+
+            <hr>
+
+            <h3>Verification in mathematics</h3>
+            <p>In mathematics, verification is built into the derivation itself, as theorems are rigorously proven through pure reasoning based on established rules <a href="#ref2" class="ref-link">[2]<span class="tooltip">"Mathematics Is Not Science" (Stanford University)</span></a>.</p>
+            <p>
+                A mathematical statement is considered established once a mathematician produces a proof that starts from accepted axioms and applies accepted inference rules. 
+                When a proof is correct, the conclusion is as certain as the underlying system allows. 
+                The result may not feel “obvious” at first, but once the proof is understood, its correctness is not a matter of further testing.
+            </p>
+
+            <hr>
+
+            <h3>Verification in science</h3>
+            <p>Science also uses reasoning and derivation, but it relies on an additional layer of validation:</p>
+            <ul>
+                <li><strong>Observation</strong></li>
+                <li><strong>Experiment</strong></li>
+                <li><strong>Measurement</strong></li>
+            </ul>
+            <p>
+                The foundation of science lies in these empirical observations <a href="#ref2" class="ref-link">[2]<span class="tooltip">"Mathematics Is Not Science" (Stanford University)</span></a>. 
+                Here, verification is never purely logical, making science inherently empirical and falsifiable <a href="#ref2" class="ref-link">[2]<span class="tooltip">"Mathematics Is Not Science" (Stanford University)</span></a>. 
+                Measurements can be wrong. Instruments can drift. Experimental setups can contain hidden biases. 
+                So scientific knowledge includes an unavoidable element of uncertainty <a href="#ref1" class="ref-link">[1]<span class="tooltip">"The Limits of Science..." (Oxford Academic)</span></a>.
+            </p>
+            <p>There is also a deeper, theoretical worry: verifying a measurement method often requires <em>another</em> measurement, which itself needs verification, and so on. In principle, this chain has no perfectly final endpoint.</p>
+            <p>In practice, however, science does something sensible: it treats measurement as <strong>good enough for current purposes</strong>, and then improves it over time. As instruments and methods get better, scientific conclusions are refined, corrected, or sometimes replaced, because there is always a chance a better explanation will be found to match real-world observations <a href="#ref2" class="ref-link">[2]<span class="tooltip">"Mathematics Is Not Science" (Stanford University)</span></a>.</p>
+
+            <hr>
+
+            <h3>What this means for the limits of knowledge</h3>
+            <p>Both mathematics and science ultimately depend on:</p>
+            <ul>
+                <li>the assumptions we start with, and</li>
+                <li>the rules we use to derive consequences.</li>
+            </ul>
+            <p>
+                In mathematics, many different consistent sets of axioms can generate valid “worlds” of internal truth. 
+                Their validity is logical: if the system is consistent, results derived within it are <em>relative to that system</em>. 
+                An important caveat comes from Gödel's second incompleteness theorem: a consistent formal system cannot demonstrate its own consistency <a href="#ref4" class="ref-link">[4]<span class="tooltip">"Gödel's Incompleteness Theorems" (Stanford Encyclopedia of Philosophy)</span></a>, so we cannot be sure if there can be contradictory results.
+            </p>
+            <p>
+                In science, we aim for claims that hold in the external world. 
+                Empirical testing gives science a powerful anchor to reality, but also makes its conclusions inherently provisional, as any theory must be verified by empirical observation and remains subject to falsification <a href="#ref2" class="ref-link">[2]<span class="tooltip">"Mathematics Is Not Science" (Stanford University)</span></a>.
+            </p>
+            <p>
+                To make these two kinds of knowledge support each other, we tend to develop mathematical frameworks that are especially useful for modeling and predicting the external world. 
+                Mathematics supplies precise internal structures, and science supplies feedback from reality about which structures are most fruitful.
+            </p>
+
+            <div class="references-section">
+                <h3>References</h3>
+                <ol class="references-list">
+                    <li id="ref1">"The Limits of Science: Grounded in the Boundaries of Our Methods and Mind" (Oxford Academic).</li>
+                    <li id="ref2">"Mathematics Is Not Science" (Stanford University).</li>
+                    <li id="ref3">"The Unreasonable Effectiveness of Mathematics in the Natural Sciences" (Eugene Wigner, 1960).</li>
+                    <li id="ref4">"Gödel's Incompleteness Theorems" (Stanford Encyclopedia of Philosophy).</li>
+                </ol>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <p>Built with Vanilla JS & HTML/CSS</p>
+    </footer>
+
+</body>
+</html>
