@@ -126,6 +126,19 @@
                 <option value="justIntonation">Harmonic Pure</option>
             </select>
         </div>
+        <div class="control-group">
+            <div class="label-row"><span>Interior Heatmap</span> <span id="int-heat-val" class="value">OFF</span></div>
+            <select id="int-heat-mode">
+                <option value="off">Off</option>
+                <option value="lifetime">Lifetime</option>
+                <option value="recent">Recent (time-limited)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <div class="label-row"><span>History (s)</span> <span id="hist-sec-val" class="value">30</span></div>
+            <input type="range" id="history-seconds" min="1" max="180" step="1" value="30">
+        </div>
         <button id="rand-btn" class="btn-rand">🎲 Random</button>
         <button id="heatmap-btn" class="btn-util">Heatmap: ON</button>
         <button id="pause-btn" class="btn-util">Pause</button>
@@ -160,6 +173,12 @@
     let currentShape = 'ellipse', numParticles = 3000;
     let source = { x: -0.5, y: 0 }, mouse = { x: 0, y: 0 };
     let particles = [], heatmapBins = new Float32Array(360);
+    // Interior heatmap grids (lifetime + time-limited)
+    let interiorMode = 'off'; // 'off' | 'lifetime' | 'recent'
+    let historySeconds = 30;
+    let gridW = 0, gridH = 0;
+    let lifetimeGrid = null, recentGrid = null;
+    let lastDecayTime = performance.now();
     let collisionCount = 0, lastMetricTime = performance.now();
     let mediaRecorder, recordedChunks = [], recStartTime;
 
@@ -183,6 +202,12 @@
         recTimer: document.getElementById('rec-timer'), pauseBtn: document.getElementById('pause-btn'),
         audioBtn: document.getElementById('audio-btn')
     };
+
+    // interior heatmap UI
+    const intHeatSelect = document.getElementById('int-heat-mode');
+    const intHeatVal = document.getElementById('int-heat-val');
+    const histRange = document.getElementById('history-seconds');
+    const histVal = document.getElementById('hist-sec-val');
 
     // Define the frequency sets
     const scaleLibrary = {
@@ -286,11 +311,35 @@
         collisionDensity.top *= 0.8; collisionDensity.bottom *= 0.8;
     }
 
+    // Interior heatmap grid initialization
+    function initInteriorGrid() {
+        // choose a moderate resolution based on canvas size
+        gridW = Math.max(80, Math.floor(width / 6));
+        gridH = Math.max(40, Math.floor(height / 6));
+        lifetimeGrid = new Float32Array(gridW * gridH);
+        recentGrid = new Float32Array(gridW * gridH);
+        lastDecayTime = performance.now();
+    }
+
+    function mapToGrid(x, y) {
+        // Return index in grid or -1 if outside bounds
+        // sim space x in [-paramA, paramA], y in [-1,1]
+        if (!checkBounds(x, y)) return -1;
+        const nx = (x + paramA) / (2 * paramA); // 0..1
+        const ny = (y + 1) / 2; // 0..1
+        const gx = Math.floor(nx * (gridW - 1));
+        const gy = Math.floor((1 - ny) * (gridH - 1)); // invert y for drawing top->0
+        if (gx < 0 || gx >= gridW || gy < 0 || gy >= gridH) return -1;
+        return gy * gridW + gx;
+    }
+
     function resize() {
         width = canvas.width = canvas.parentElement.clientWidth;
         height = canvas.height = canvas.parentElement.clientHeight;
         centerX = width / 2; centerY = height / 2;
         scale = Math.min((width * 0.8) / (paramA * 2), (height * 0.8) / 2);
+        // initialize interior heatmap grid for new size
+        initInteriorGrid();
     }
 
     function toScreen(x, y) { return { x: centerX + x * scale, y: centerY - y * scale }; }
@@ -325,6 +374,8 @@
 
     function firePulse() {
         particles = []; collisionCount = 0; heatmapBins.fill(0);
+        if (lifetimeGrid) lifetimeGrid.fill(0);
+        if (recentGrid) recentGrid.fill(0);
         for (let i = 0; i < numParticles; i++) {
             const angle = (Math.PI * 2 * i) / numParticles;
             particles.push({ x: source.x, y: source.y, vx: Math.cos(angle), vy: Math.sin(angle) });
@@ -376,7 +427,17 @@
                 } else { p.x = nx; p.y = ny; }
             }
         }
-        const now = performance.now();
+                // After moving / colliding, record particle passage into interior grid
+                for (let i = 0; i < numParticles; i++) {
+                    const p = particles[i];
+                    const gi = mapToGrid(p.x, p.y);
+                    if (gi >= 0) {
+                        lifetimeGrid[gi] += 1.0;
+                        recentGrid[gi] += 1.0;
+                    }
+                }
+
+                const now = performance.now();
         if (now - lastMetricTime > 500) {
             ui.cps.textContent = Math.round((collisionCount / (now - lastMetricTime)) * 1000).toLocaleString();
             collisionCount = 0; lastMetricTime = now;
@@ -405,6 +466,99 @@
                 const s = toScreen(bx, by);
                 ctx.fillStyle = `hsla(${180 + val * 0.6}, 100%, 50%, ${Math.min(val/20, 0.8)})`;
                 ctx.fillRect(s.x-2, s.y-2, 4, 4);
+            }
+        }
+
+        // Interior heatmap rendering (lifetime or recent)
+        if (interiorMode !== 'off' && lifetimeGrid && recentGrid) {
+            // apply decay to recentGrid based on elapsed seconds
+            const now = performance.now();
+            const elapsed = (now - lastDecayTime) / 1000.0;
+            if (elapsed > 0) {
+                const tau = Math.max(0.001, historySeconds);
+                const factor = Math.exp(-elapsed / tau);
+                // decay recentGrid in place
+                for (let i = 0; i < recentGrid.length; i++) recentGrid[i] *= factor;
+                lastDecayTime = now;
+            }
+
+            // choose grid to visualize
+            const grid = (interiorMode === 'lifetime') ? lifetimeGrid : recentGrid;
+            // Build an enhanced contrast mapping as described:
+            // 1) min/max -> x in [0,1]
+            // 2) compute mean a of x over positive cells
+            // 3) compute signed-square: s = sign(x-a) * (x-a)^2
+            // 4) remap s to [0,1] by min/max of s
+            let minVal = Number.POSITIVE_INFINITY;
+            let maxVal = 0.0;
+            let positiveCount = 0;
+            for (let i = 0; i < grid.length; i++) {
+                const vv = grid[i];
+                if (vv > 0) {
+                    positiveCount++;
+                    if (vv < minVal) minVal = vv;
+                    if (vv > maxVal) maxVal = vv;
+                }
+            }
+            if (!isFinite(minVal)) {
+                // nothing to draw
+                minVal = 0; maxVal = 0;
+            }
+
+            const denom = (maxVal - minVal);
+            // compute normalized x in [0,1]
+            const xnorm = new Float32Array(grid.length);
+            let sumX = 0;
+            if (positiveCount > 0) {
+                for (let i = 0; i < grid.length; i++) {
+                    const v = grid[i];
+                    if (v > 0) {
+                        const x = (denom > 0) ? ((v - minVal) / denom) : 0.5;
+                        xnorm[i] = x;
+                        sumX += x;
+                    } else xnorm[i] = 0;
+                }
+            }
+            const avgX = positiveCount > 0 ? (sumX / positiveCount) : 0.5;
+
+            // signed-square transform and find its range
+            const proc = new Float32Array(grid.length);
+            let procMin = Number.POSITIVE_INFINITY, procMax = Number.NEGATIVE_INFINITY;
+            for (let i = 0; i < grid.length; i++) {
+                const x = xnorm[i];
+                const d = x - avgX;
+                const s = (d === 0) ? 0 : (Math.sign(d) * d * d);
+                proc[i] = s;
+                if (x > 0) {
+                    if (s < procMin) procMin = s;
+                    if (s > procMax) procMax = s;
+                }
+            }
+            if (!isFinite(procMin)) { procMin = 0; procMax = 0; }
+            const procDen = (procMax - procMin) || 1e-6;
+
+            // draw each cell as a small rect; map grid coords to simulation coords
+            const cellW = (2 * paramA) / gridW;
+            const cellH = 2 / gridH;
+            for (let gy = 0; gy < gridH; gy++) {
+                for (let gx = 0; gx < gridW; gx++) {
+                    const idx = gy * gridW + gx;
+                    const v = grid[idx];
+                    if (v <= 0) continue;
+                    // take processed signed-square value and remap to [0,1]
+                    const s = proc[idx];
+                    const mapped = (s - procMin) / procDen;
+                    const nn = Math.max(0, Math.min(1, mapped));
+                    const alpha = Math.min(0.9, nn * 0.9);
+                    // compute center of cell in sim coords
+                    const sx = -paramA + (gx + 0.5) * cellW;
+                    const sy = 1 - (gy + 0.5) * cellH;
+                    const scr = toScreen(sx, sy);
+                    const pw = Math.max(1, Math.ceil((cellW * scale))); // pixel width
+                    const ph = Math.max(1, Math.ceil((cellH * scale)));
+                    ctx.fillStyle = `hsla(${210 - nn * 120},100%,50%,${alpha})`;
+                    ctx.fillRect(scr.x - pw/2, scr.y - ph/2, pw, ph);
+                }
             }
         }
 
@@ -505,6 +659,16 @@
     ui.infoBtn.onclick = () => { ui.info.style.display = (ui.info.style.display === 'block') ? 'none' : 'block'; };
     document.getElementById('close-info').onclick = () => ui.info.style.display = 'none';
     document.getElementById('rand-btn').onclick = randomize;
+    
+    // Interior heatmap UI bindings
+    intHeatSelect.onchange = (e) => {
+        interiorMode = e.target.value;
+        intHeatVal.textContent = interiorMode === 'off' ? 'OFF' : (interiorMode === 'lifetime' ? 'LIFETIME' : 'RECENT');
+    };
+    histRange.oninput = (e) => {
+        historySeconds = parseInt(e.target.value);
+        histVal.textContent = historySeconds;
+    };
     
     document.getElementById('save-btn').onclick = () => {
         const preSavePaused = isPaused;
