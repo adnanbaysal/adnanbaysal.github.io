@@ -26,7 +26,7 @@
             color: #aaa; line-height: 1.6; text-align: center; font-size: 1rem;
         }
 
-        /* --- Project Grid (Now a Flex Column) --- */
+        /* --- Pages Grid --- */
         main {
             max-width: 1000px; margin: 40px auto; width: 100%; padding: 0 20px;
             display: flex; flex-direction: column; gap: 30px; 
@@ -90,14 +90,14 @@
     </header>
 
     <div class="intro-text">
-        Welcome to my digital laboratory, a space dedicated to exploring the synergy between math and code. 
-        These projects are the result of years of independent thought, now brought to life through modern LLM-assisted development. 
-        While I may not be the first to uncover these mathematical patterns, the implementations here are personal discoveries, 
-        bridged from abstract ideas to reality with the help of tools like Gemini, ChatGPT, and Deepseek. 
+        Welcome to my portfolio of tools and articles on maths, coding, art, and some philosophy. 
+        These ideas are the result of years of independent thought, now brought to life with the help od modern LLM-assisted tools. 
+        While I may not be the first to uncover these mathematical ideas, the implementations here are personal discoveries, 
+        bridged from abstract ideas to reality. 
     </div>
 
-    <main id="project-grid">
-        <div id="loading">Loading Projects...</div>
+    <main id="pages-grid">
+        <div id="loading">Loading Pages...</div>
     </main>
 
     <footer>
@@ -105,14 +105,14 @@
     </footer>
 
     <script>
-        async function loadProjects() {
-            const grid = document.getElementById('project-grid');
+        async function loadPages() {
+            const grid = document.getElementById('pages-grid');
             try {
                 const response = await fetch('manifest.json');
                 if (!response.ok) throw new Error("Manifest not found");
-                const projects = await response.json();
+                const pages = await response.json();
                 grid.innerHTML = '';
-                projects.forEach(proj => {
+                pages.forEach(proj => {
                     const card = document.createElement('a');
                     card.className = 'card';
                     card.href = proj.url;
@@ -135,7 +135,7 @@
                 grid.innerHTML = `<div style="color:red">Error loading portfolio: ${e.message}</div>`;
             }
         }
-        loadProjects();
+        loadPages();
     </script>
 </body>
 </html>
