@@ -757,7 +757,7 @@
             <div style="display:flex; gap: 6px; justify-content:space-between; align-items:center;">
                 <label style="font-size: 10px;">Constant Mode</label>
                 <div class="toggles-row" style="margin-top: 0; margin-bottom: 8px; justify-content: flex-start; gap: 12px;">
-                    <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational <code>&pi;</code> Multiplier</label>
+                    <label><input type="radio" name="multiplier-mode" value="rational" checked> Rational <code>2&pi;</code> Multiplier</label>
                     <label><input type="radio" name="multiplier-mode" value="decimal"> Decimal Degree</label>
                 </div>
             </div>
@@ -960,8 +960,8 @@
                     <h3>Constant representation</h3>
                     <p>
                         Constant <code>c</code> can be any real number, but for specifically integer returning <code>f(n)</code> functions, 
-                        rational multiples of <code>&pi;</code> as radians (will be converted to degreen in the code) can provide symmetric results.
-                        For this representation, user can select 2 integers <code>r, s</code>, where the cosntant is calculated as <code>&pi;&times;r/s</code> in radians.
+                        rational multiples of <code>2&pi;</code> as radians (will be converted to degreen in the code) can provide symmetric results.
+                        For this representation, user can select 2 integers <code>r, s</code>, where the constant is calculated as <code>2&pi;&times;r/s</code> in radians.
 
                         On the other hand, if <code>f(n)</code> returns decimal numbers, it make sense to have decimal <code>c</code> and animate this value continiously to see the affect of changing constant dynamically.
                     </p>
@@ -1472,15 +1472,14 @@
             if (mode === 'rational') {
                 if (isFuncStrictlyInteger && Number.isInteger(r) && Number.isInteger(s)) {
                     let phaseNum = 0;
-                    const doubleS = 2 * s;
-                    const pi_div_s = Math.PI / s;
+                    const twoPi_div_s = 2 * Math.PI / s;
 
                     for (let n = 1; n <= N; n++) {
-                        let stepAngle = activeFunc(n);
-                        phaseNum = (phaseNum + (stepAngle * r) % doubleS) % doubleS;
-                        if (phaseNum < 0) phaseNum += doubleS; 
+                        let stepAngleMultiplier = activeFunc(n - 1);
+                        phaseNum = (phaseNum + (stepAngleMultiplier * r) % s) % s;
+                        if (phaseNum < 0) phaseNum += s;
                         
-                        let angle = phaseNum * pi_div_s;
+                        let angle = phaseNum * twoPi_div_s;
                         x += Math.cos(angle);
                         y += Math.sin(angle);
 
@@ -1492,11 +1491,11 @@
                     }
                 } else {
                     let angle = 0;
-                    const C_rad = (r / s) * Math.PI;
                     const twoPi = 2 * Math.PI;
+                    const C_rad = (r / s) * twoPi;
 
                     for (let n = 1; n <= N; n++) {
-                        let stepAngle = activeFunc(n);
+                        let stepAngle = activeFunc(n - 1);
                         angle = (angle + stepAngle * C_rad) % twoPi;
                         if (angle < 0) angle += twoPi;
                         
@@ -1514,7 +1513,7 @@
                 let angle = 0;
                 const c = c_val * (Math.PI / 180); 
                 for (let n = 1; n <= N; n++) {
-                    let stepAngle = activeFunc(n);
+                    let stepAngle = activeFunc(n - 1);
                     angle += stepAngle * c;
                     x += Math.cos(angle);
                     y += Math.sin(angle);
@@ -1945,12 +1944,9 @@
             if (r <= 0 || s <= 0) return null;
             let g = gcd(r, s);
             let r_co = r / g, s_co = s / g;
-            let P_raw = s_co;
-            let remainder = (180 * r_co * s_co) % 360;
-            let P_true = Math.abs(remainder) === 180 ? P_raw * 2 : P_raw;
-            let p = P_true;
-            let p_div_s = p / s_co; 
-            let sumAngle = 30 * r_co * p_div_s * (p + 1) * (2 * p + 1);
+            let p = s_co;
+            let p_div_s = p / s_co;
+            let sumAngle = 60 * r_co * p_div_s * (p + 1) * (2 * p + 1);
             let deltaTheta = sumAngle % 360;
             if (deltaTheta < 0) deltaTheta += 360;
             if (deltaTheta === 360) deltaTheta = 0;
@@ -2009,12 +2005,9 @@
                         if (r <= 0 || s <= 0) return null;
                         let g = gcd(r, s);
                         let r_co = r / g, s_co = s / g;
-                        let P_raw = s_co;
-                        let remainder = (180 * r_co * s_co) % 360;
-                        let P_true = Math.abs(remainder) === 180 ? P_raw * 2 : P_raw;
-                        let p = P_true;
+                        let p = s_co;
                         let p_div_s = p / s_co;
-                        let sumAngle = 30 * r_co * p_div_s * (p + 1) * (2 * p + 1);
+                        let sumAngle = 60 * r_co * p_div_s * (p + 1) * (2 * p + 1);
                         let deltaTheta = sumAngle % 360;
                         if (deltaTheta < 0) deltaTheta += 360;
                         if (deltaTheta === 360) deltaTheta = 0;
