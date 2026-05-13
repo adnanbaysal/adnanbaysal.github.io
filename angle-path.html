@@ -775,13 +775,13 @@
                     <span>S (π Divider)</span>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         <button id="s-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
-                        <input type="number" id="s-number" class="num-input" min="1" step="1" value="7500">
+                        <input type="number" id="s-number" class="num-input" min="1" step="1" value="15000">
                         <button id="s-inc-btn" class="btn-sec" style="height: 26px; width: 28px;">+</button>
                     </div>
                 </div>
                 <div class="toggles-row" style="margin-top:8px;">
                     <span>Simplified (r/s):</span>
-                    <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 7500</span>
+                    <span id="co-prime-display" style="color: var(--accent); font-family: monospace;">1 / 15000</span>
                 </div>
             </div>
 
@@ -1166,7 +1166,7 @@
 
         const builtinConfigs = {
             "Default Neon": { 
-                mode: "rational", n: 30000, r: 1, s: 7500, c: 0.024, speed: 5, style: "neon", nAnim: false, code: "return n * n;" 
+                mode: "rational", n: 90000, r: 1, s: 15000, c: 0.024, speed: 5, style: "neon", nAnim: false, code: "return n * n;" 
             },
             "Light Glow Core": { 
                 mode: "rational", n: 250000, r: 1, s: 1200, speed: 6, style: "light-glow", nAnim: false, code: "return n * Math.log(n);" 
@@ -1181,7 +1181,7 @@
             N: 0,
             mode: 'rational',
             r: 1, 
-            s: 7500, 
+            s: 15000, 
             c: 0.024, 
             time: 0,
             bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 } 
@@ -1360,7 +1360,7 @@
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { mode: 'rational', n: 30000, r: 1, s: 7500, c: 0.024, offset: 0 };
+        let userBase = { mode: 'rational', n: 90000, r: 1, s: 15000, c: 0.024, offset: 0 };
 
         let glowStartN = 0, glowEndN = 0, glowIntensity = 0;
         let eraseStartN = 0, eraseEndN = 0, eraseIntensity = 0;
