@@ -1476,6 +1476,7 @@
 
                     for (let n = 1; n <= N; n++) {
                         let stepAngleMultiplier = activeFunc(n - 1);
+                        if (!isFinite(stepAngleMultiplier)) stepAngleMultiplier = 0; // Handle -Infinity, NaN
                         phaseNum = (phaseNum + (stepAngleMultiplier * r) % s) % s;
                         if (phaseNum < 0) phaseNum += s;
                         
@@ -1496,6 +1497,8 @@
 
                     for (let n = 1; n <= N; n++) {
                         let stepAngle = activeFunc(n - 1);
+                        if (!isFinite(stepAngle)) stepAngle = 0; // Handle -Infinity, NaN
+                        stepAngle = stepAngle % s;
                         angle = (angle + stepAngle * C_rad) % twoPi;
                         if (angle < 0) angle += twoPi;
                         
@@ -1514,6 +1517,7 @@
                 const c = c_val * (Math.PI / 180); 
                 for (let n = 1; n <= N; n++) {
                     let stepAngle = activeFunc(n - 1);
+                    if (!isFinite(stepAngle)) stepAngle = 0; // Handle -Infinity, NaN
                     angle += stepAngle * c;
                     x += Math.cos(angle);
                     y += Math.sin(angle);
