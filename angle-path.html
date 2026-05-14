@@ -764,7 +764,7 @@
 
             <div class="sub-block" id="rational-controls">
                 <div class="group-header">
-                    <span>R (π Multiplier)</span>
+                    <span>R (2π Multiplier)</span>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         <button id="r-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
                         <input type="number" id="r-number" class="num-input" min="1" step="1" value="1">
@@ -772,7 +772,7 @@
                     </div>
                 </div>
                 <div class="group-header" style="margin-top:6px;">
-                    <span>S (π Divider)</span>
+                    <span>S (2π Divider)</span>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         <button id="s-dec-btn" class="btn-sec" style="height: 26px; width: 28px;">-</button>
                         <input type="number" id="s-number" class="num-input" min="1" step="1" value="15000">
@@ -891,8 +891,8 @@
             </div>
             <div class="sync-row" style="margin-top:4px; margin-bottom:4px;">
                 <label>Line Width</label>
-                <input type="range" id="lw-input" min="0.01" max="50.0" step="0.01" value="1.0" style="flex:1">
-                <input type="number" id="lw-number" class="num-input" min="0.01" max="50.0" step="0.01" value="1.0" style="width:90px;">
+                <input type="range" id="lw-input" min="0.001" max="50.0" step="0.001" value="1.0" style="flex:1">
+                <input type="number" id="lw-number" class="num-input" min="0.001" max="50.0" step="0.001" value="1.0" style="width:90px;">
             </div>
 
             <!-- Configuration management -->
@@ -1391,7 +1391,7 @@
         function getIdealLineWidth(n) {
             if (ui.editor.value.trim() !== presets['n2']) return parseFloat(ui.lwSlider.value);
             const table = [
-                [1, 0.01], [10, 0.01], [100, 0.03], [1000, 0.06], [10000, 0.6], 
+                [1, 0.001], [10, 0.003], [100, 0.01], [1000, 0.06], [10000, 0.6], 
                 [100000, 1.5], [180000, 2.6], [250000, 3.0], [320000, 3.5], 
                 [576000, 4.1], [675000, 5.3], [720000, 5.8], [1125000, 6.5]
             ];
@@ -1921,8 +1921,8 @@
                     ui.nSlider.value = Math.log10(Math.max(1, aN));
                     
                     const autoLw = getIdealLineWidth(aN);
-                    ui.lwSlider.value = autoLw.toFixed(2);
-                    ui.lwNumber.value = autoLw.toFixed(2);
+                    ui.lwSlider.value = autoLw.toFixed(3);
+                    ui.lwNumber.value = autoLw.toFixed(3);
                 } else if (userBase.mode === 'decimal' && ui.cAnim.checked) {
                     const minC = parseFloat(ui.cAnimMin.value) || 0;
                     const maxC = parseFloat(ui.cAnimMax.value) || MAX_C;
@@ -2056,7 +2056,8 @@
         const updateN = (val, fromSlider = false) => {
             let v = fromSlider ? Math.round(Math.pow(10, parseFloat(val))) : parseInt(val);
             if (isNaN(v)) v = 1000;
-            // clamp draw-count to MAX_DRAW_N (keep number of drawn lines limited)
+            // clamp draw-count to [1, MAX_DRAW_N] (keep number of drawn lines limited)
+            if (v < 1) v = 1;
             if (v > MAX_DRAW_N) v = MAX_DRAW_N;
 
             if (v > userBase.n && !ui.nAnim.checked && !ui.nAutoValue.checked) {
@@ -2069,6 +2070,7 @@
             ui.nNumber.value = v;
             ui.nSlider.value = Math.log10(v).toFixed(5);
             updateLineWidth(getIdealLineWidth(v));
+            updateNButtonStates();
 
             // Adjust color-length slider limits when N changes
             updateColorLenLimits();
@@ -2079,16 +2081,52 @@
         ui.nSlider.addEventListener('input', (e) => updateN(e.target.value, true));
         ui.nNumber.addEventListener('change', (e) => updateN(e.target.value, false));
 
+        const nextCoprimeR = (r, s) => {
+            const maxR = Math.max(1, s - 1);
+            for (let candidate = Math.max(1, r + 1); candidate <= maxR; candidate++) {
+                if (gcd(candidate, s) === 1) return candidate;
+            }
+            return null;
+        };
+
+        const prevCoprimeR = (r, s) => {
+            const maxR = Math.max(1, s - 1);
+            for (let candidate = Math.min(r - 1, maxR); candidate >= 1; candidate--) {
+                if (gcd(candidate, s) === 1) return candidate;
+            }
+            return null;
+        };
+
+        const updateRButtonStates = () => {
+            if (!ui.rIncrBtn || !ui.rDecrBtn) return;
+            const nextR = nextCoprimeR(userBase.r, userBase.s);
+            const prevR = prevCoprimeR(userBase.r, userBase.s);
+            ui.rIncrBtn.disabled = nextR === null;
+            ui.rDecrBtn.disabled = prevR === null;
+        };
+
+        const updateNButtonStates = () => {
+            if (!ui.nDecrBtn || !ui.nIncrBtn) return;
+            const currentN = parseInt(userBase.n) || 1;
+            ui.nDecrBtn.disabled = currentN <= 1 || ui.nAutoValue.checked;
+            ui.nIncrBtn.disabled = ui.nAutoValue.checked;
+        };
+
         const updateRS = (rVal, sVal) => {
             let r = parseInt(rVal) || 1;
             let s = parseInt(sVal) || 1;
-            if (r < 1) r = 1; if (s < 1) s = 1;
+            if (r < 1) r = 1;
+            if (s < 1) s = 1;
 
-            userBase.r = r; userBase.s = s;
-            ui.rNumber.value = r; ui.sNumber.value = s;
+            userBase.r = r;
+            userBase.s = s;
+            ui.rNumber.value = r;
+            ui.sNumber.value = s;
 
             let g = gcd(r, s);
             ui.coprimeDisplay.textContent = `${r / g} / ${s / g}`;
+
+            updateRButtonStates();
 
             if (ui.nAutoValue.checked && userBase.mode === 'rational') applySymmetryLock();
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
@@ -2096,8 +2134,14 @@
 
         ui.rNumber.addEventListener('change', (e) => updateRS(e.target.value, userBase.s));
         ui.sNumber.addEventListener('change', (e) => updateRS(userBase.r, e.target.value));
-        ui.rDecrBtn.addEventListener('click', () => updateRS(userBase.r - 1, userBase.s));
-        ui.rIncrBtn.addEventListener('click', () => updateRS(userBase.r + 1, userBase.s));
+        ui.rDecrBtn.addEventListener('click', () => {
+            const prevR = prevCoprimeR(userBase.r, userBase.s);
+            if (prevR !== null) updateRS(prevR, userBase.s);
+        });
+        ui.rIncrBtn.addEventListener('click', () => {
+            const nextR = nextCoprimeR(userBase.r, userBase.s);
+            if (nextR !== null) updateRS(nextR, userBase.s);
+        });
         ui.sDecrBtn.addEventListener('click', () => updateRS(userBase.r, userBase.s - 1));
         ui.sIncrBtn.addEventListener('click', () => updateRS(userBase.r, userBase.s + 1));
 
@@ -2167,9 +2211,9 @@
 
         const updateLineWidth = (val) => {
             let v = parseFloat(val);
-            if (v < 0.01) v = 0.01;
-            ui.lwSlider.value = v.toFixed(2);
-            ui.lwNumber.value = v.toFixed(2);
+            if (v < 0.001) v = 0.001;
+            ui.lwSlider.value = v.toFixed(3);
+            ui.lwNumber.value = v.toFixed(3);
             if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
         };
 
@@ -2250,6 +2294,7 @@
             ui.nNumber.disabled = isAuto;
             ui.nDecrBtn.disabled = isAuto;
             ui.nIncrBtn.disabled = isAuto;
+            if (!isAuto) updateNButtonStates();
             if (isAuto) {
                 if(userBase.mode === 'rational') applySymmetryLock();
                 else updateC(userBase.c); 
@@ -2552,6 +2597,8 @@
         compileFunction();
         updateColorLenAvailability();
         updateColorLenLimits();
+        updateRButtonStates();
+        updateNButtonStates();
         
         if (ui.nAutoValue.checked) {
             applySymmetryLock();
