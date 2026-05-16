@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Square Turns &mdash; Hidden Symmetry in a Walking Sequence
+  </title>
+  <style>
+   :root{ --accent:#00d2ff; --accent2:#ff6b6b; --gold:#ffd700; --bg:#050505; --bg2:#090d12; --panel:#0d1218; --border:#1a2530; --text:#d8e0e8; --text-dim:#6a7a8a; --green:#00e5a0; --purple:#b388ff; } *,*::before,*::after{box-sizing:border-box;margin:0;padding:0} html{scroll-behavior:smooth} body{ font-family:'Georgia',serif; background:var(--bg); color:var(--text); line-height:1.75; overflow-x:hidden; } ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:#050505} ::-webkit-scrollbar-thumb{background:#1a2530;border-radius:3px} /* NAV */ nav{ position:fixed;top:0;left:0;right:0; background:rgba(5,5,5,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); z-index:100; display:flex;align-items:center;justify-content:space-between; padding:0 24px;height:52px; } .nav-brand{color:var(--accent);font-family:'Courier New',monospace;font-size:13px;font-weight:bold;text-decoration:none;letter-spacing:2px} .nav-links{display:flex;gap:20px} .nav-links a{color:var(--text-dim);text-decoration:none;font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;transition:color .2s} .nav-links a:hover{color:var(--accent)} /* HERO */ .hero{ min-height:100vh; display:flex;flex-direction:column; align-items:center;justify-content:center; padding:80px 20px 40px; position:relative; overflow:hidden; } .hero-bg{ position:absolute;inset:0; background:radial-gradient(ellipse at 30% 40%,rgba(0,210,255,0.06) 0%,transparent 60%), radial-gradient(ellipse at 70% 70%,rgba(179,136,255,0.05) 0%,transparent 50%); } .hero-canvas-wrap{ width:min(500px,90vw);height:min(500px,90vw); position:relative;margin-bottom:40px; } #hero-canvas{ width:100%;height:100%; border-radius:50%; border:1px solid var(--border); background:#050505; } .hero-ring{ position:absolute;inset:-4px; border-radius:50%; border:1px solid rgba(0,210,255,0.3); animation:pulse 3s ease-in-out infinite; } @keyframes pulse{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:0.7;transform:scale(1.01)}} .hero-text{text-align:center;max-width:640px;position:relative} .hero-kicker{ font-family:'Courier New',monospace; font-size:11px;letter-spacing:3px; color:var(--accent);text-transform:uppercase;margin-bottom:16px; } .hero-title{ font-size:clamp(2rem,6vw,3.5rem); font-weight:bold;line-height:1.15; margin-bottom:16px; background:linear-gradient(135deg,#fff 0%,var(--accent) 100%); -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; } .hero-sub{ font-size:1.05rem;color:var(--text-dim); margin-bottom:32px;line-height:1.6; } .hero-cta{ display:inline-flex;align-items:center;gap:8px; background:transparent;border:1px solid var(--accent); color:var(--accent);padding:10px 24px;border-radius:4px; font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px; text-decoration:none;cursor:pointer; transition:background .2s,color .2s; } .hero-cta:hover{background:var(--accent);color:#000} /* ARTICLE LAYOUT */ article{max-width:720px;margin:0 auto;padding:0 24px} /* SECTION BLOCKS */ .section{padding:80px 0} .section+.section{border-top:1px solid var(--border)} .section-number{ font-family:'Courier New',monospace;font-size:11px; color:var(--accent);letter-spacing:3px; text-transform:uppercase;margin-bottom:12px;display:block; } h2{ font-size:clamp(1.5rem,4vw,2.2rem); font-weight:bold;line-height:1.2; margin-bottom:24px;color:#fff; } h3{ font-size:1.15rem;font-weight:bold; color:var(--accent);margin:32px 0 12px; } p{margin-bottom:18px;color:var(--text)} p:last-child{margin-bottom:0} strong{color:#fff} em{color:var(--gold);font-style:italic} /* CALLOUT BOXES */ .callout{ background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:20px 24px;margin:28px 0; } .callout.gold{border-left-color:var(--gold)} .callout.green{border-left-color:var(--green)} .callout.red{border-left-color:var(--accent2)} .callout-label{ font-family:'Courier New',monospace;font-size:10px; letter-spacing:2px;text-transform:uppercase; color:var(--accent);margin-bottom:8px;display:block; } .callout.gold .callout-label{color:var(--gold)} .callout.green .callout-label{color:var(--green)} .callout.red .callout-label{color:var(--accent2)} /* MATH DISPLAY */ .math-block{ background:#060b10;border:1px solid var(--border); border-radius:8px;padding:20px 24px; font-family:'Courier New',monospace;font-size:1rem; color:var(--gold);text-align:center;margin:24px 0; line-height:2; } .math-inline{ font-family:'Courier New',monospace; color:var(--gold);font-size:0.92em; } /* PULL QUOTE */ .pull-quote{ border-left:2px solid var(--accent); margin:36px 0;padding:12px 24px; font-size:1.25rem;line-height:1.5; color:#a0c8e0;font-style:italic; } /* INTERACTIVE DEMOS */ .demo-wrap{ background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin:32px 0; } .demo-header{ padding:14px 20px; border-bottom:1px solid var(--border); display:flex;align-items:center;justify-content:space-between; flex-wrap:wrap;gap:8px; } .demo-title{ font-family:'Courier New',monospace;font-size:11px; color:var(--accent);letter-spacing:2px;text-transform:uppercase; } .demo-body{padding:16px 20px} .demo-canvas-row{ display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap; } .demo-canvas-col{flex:1;min-width:200px;display:flex;flex-direction:column;align-items:center;gap:8px} .demo-info-col{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px} /* CANVAS */ .art-canvas{ background:#020608;border-radius:8px; border:1px solid var(--border); display:block;width:100%;aspect-ratio:1; } /* BUTTONS */ .btn-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px} .btn{ padding:7px 14px;border-radius:4px; font-family:'Courier New',monospace;font-size:11px; cursor:pointer;transition:all .15s;border:1px solid; letter-spacing:0.5px; } .btn-primary{ background:var(--accent);color:#000;border-color:var(--accent); } .btn-primary:hover{opacity:0.85} .btn-outline{ background:transparent;color:var(--accent);border-color:var(--accent); } .btn-outline:hover{background:rgba(0,210,255,0.1)} .btn-ghost{ background:transparent;color:var(--text-dim);border-color:var(--border); } .btn-ghost:hover{color:var(--text);border-color:#2a3a4a} .btn-sm{padding:5px 10px;font-size:10px} .btn.active{background:var(--accent);color:#000;border-color:var(--accent)} .btn.inactive{background:rgba(0,210,255,0.08);color:var(--accent);border-color:rgba(0,210,255,0.3)} .btn.drift{background:rgba(255,107,107,0.1);color:var(--accent2);border-color:var(--accent2)} .btn.drift.active{background:var(--accent2);color:#000} /* INFO CARD */ .info-card{ background:#060a0f;border:1px solid var(--border); border-radius:8px;padding:14px 16px; font-family:'Courier New',monospace;font-size:12px; } .info-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0} .info-row+.info-row{border-top:1px solid #0e1a24} .info-key{color:var(--text-dim)} .info-val{color:#fff;font-weight:bold} .info-val.good{color:var(--green)} .info-val.bad{color:var(--accent2)} .info-val.accent{color:var(--accent)} .info-val.gold{color:var(--gold)} /* N PRESET BUTTONS */ .n-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px} .n-btn{ padding:6px 12px;border-radius:4px; font-family:'Courier New',monospace;font-size:12px; cursor:pointer;transition:all .15s; background:#060a0f;border:1px solid var(--border);color:var(--text-dim); } .n-btn:hover{border-color:var(--accent);color:var(--accent)} .n-btn.selected{background:rgba(0,210,255,0.1);border-color:var(--accent);color:var(--accent);font-weight:bold} .n-btn.drift-btn:hover{border-color:var(--accent2);color:var(--accent2)} .n-btn.drift-btn.selected{background:rgba(255,107,107,0.1);border-color:var(--accent2);color:var(--accent2)} /* STEP INDICATORS */ .step-display{ background:#060a0f;border:1px solid var(--border); border-radius:8px;padding:12px 14px;font-family:'Courier New',monospace; } .step-num{font-size:2rem;color:var(--accent);font-weight:bold;line-height:1} .step-label{font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-top:4px} .step-angle{font-size:13px;color:var(--gold);margin-top:8px} /* DIRECTION TABLE */ .dir-table{width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:12px;margin:16px 0} .dir-table th{padding:6px 10px;text-align:left;color:var(--accent);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)} .dir-table td{padding:6px 10px;border-bottom:1px solid #0a1218;color:var(--text-dim)} .dir-table td.highlight{color:#fff;font-weight:bold} .dir-table tr.active-row td{background:rgba(0,210,255,0.05);color:#fff} .dir-table tr.active-row td.highlight{color:var(--accent)} /* GALLERY */ .gallery-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;margin:24px 0; } .gallery-cell{ aspect-ratio:1;background:#020608; border:1px solid var(--border);border-radius:8px; position:relative;overflow:hidden;cursor:pointer; transition:border-color .2s; } .gallery-cell:hover{border-color:var(--accent)} .gallery-cell canvas{width:100%;height:100%;display:block} .gallery-label{ position:absolute;bottom:0;left:0;right:0; background:linear-gradient(transparent,rgba(0,0,0,0.8)); padding:12px 8px 8px; font-family:'Courier New',monospace;font-size:11px; color:var(--accent);text-align:center; } /* LARGE DEMO */ .large-demo{ background:var(--panel);border:1px solid var(--border); border-radius:12px;overflow:hidden;margin:32px 0; } .large-demo-canvas-wrap{ position:relative;width:100%;aspect-ratio:1; background:#020608; } #large-canvas{width:100%;height:100%;display:block} .large-demo-controls{padding:16px 20px;border-top:1px solid var(--border)} .large-n-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px} /* INPUT */ input[type=number],input[type=range]{ background:#060a0f;border:1px solid var(--border); color:var(--text);border-radius:4px; font-family:'Courier New',monospace;font-size:12px;padding:6px 10px; outline:none; } input[type=number]:focus{border-color:var(--accent)} input[type=range]{padding:0;cursor:pointer;accent-color:var(--accent)} /* PETAL TABLE */ .petal-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px} .petal-table th{padding:8px 12px;background:#060a0f;color:var(--accent);font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-align:center;border:1px solid var(--border)} .petal-table td{padding:8px 12px;border:1px solid var(--border);text-align:center;font-family:'Courier New',monospace} .petal-table tr:nth-child(even) td{background:#06090e} .petal-table td.g1{color:var(--text-dim)} /* gcd=1, no close */ .petal-table td.g2{color:#4db8ff} .petal-table td.g3{color:var(--green)} .petal-table td.g6{color:var(--gold)} /* TOC */ .toc{ background:var(--panel);border:1px solid var(--border); border-radius:8px;padding:20px 24px;margin:40px 0; } .toc-title{font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:14px} .toc ol{padding-left:20px;display:flex;flex-direction:column;gap:6px} .toc a{color:var(--text-dim);text-decoration:none;font-size:0.92rem;transition:color .2s} .toc a:hover{color:var(--accent)} /* FOOTER */ footer{ border-top:1px solid var(--border); padding:40px 24px;text-align:center; font-family:'Courier New',monospace;font-size:12px;color:var(--text-dim); } footer a{color:var(--accent);text-decoration:none} /* DIVIDER */ .divider{ display:flex;align-items:center;gap:12px; margin:40px 0;color:var(--text-dim);font-size:12px; } .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)} /* RESPONSIVE */ @media(max-width:600px){ nav{padding:0 16px} article{padding:0 16px} .section{padding:48px 0} h2{font-size:1.5rem} .demo-canvas-row{flex-direction:column} .demo-info-col{width:100%} .hero-canvas-wrap{width:min(320px,85vw);height:min(320px,85vw)} } /* ANNOTATION ARROW */ .annotation{ display:flex;align-items:flex-start;gap:10px; font-size:0.85rem;color:var(--text-dim);font-style:italic; margin-top:8px; } .annotation::before{content:'↑';color:var(--accent);font-style:normal;font-family:'Courier New',monospace} /* HIGHLIGHT PILL */ .pill{ display:inline-block;padding:2px 10px;border-radius:20px; font-family:'Courier New',monospace;font-size:0.8em;font-weight:bold; } .pill-cyan{background:rgba(0,210,255,0.12);color:var(--accent);border:1px solid rgba(0,210,255,0.3)} .pill-gold{background:rgba(255,215,0,0.12);color:var(--gold);border:1px solid rgba(255,215,0,0.3)} .pill-green{background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3)} .pill-red{background:rgba(255,107,107,0.12);color:var(--accent2);border:1px solid rgba(255,107,107,0.3)}
+  </style>
+ </head>
+ <body>
+  <nav>
+   <a class="nav-brand" href="https://adnanbaysal.github.io/index.html">
+    ADNAN BAYSAL
+   </a>
+   <div class="nav-links">
+    <a href="https://adnanbaysal.github.io/index.html">
+     Portfolio
+    </a>
+    <a href="https://adnanbaysal.github.io/about-me.html">
+     About
+    </a>
+   </div>
+  </nav>
+  <!-- HERO -->
+  <section class="hero">
+   <div class="hero-bg">
+   </div>
+   <div class="hero-canvas-wrap">
+    <canvas id="hero-canvas">
+    </canvas>
+    <div class="hero-ring">
+    </div>
+   </div>
+   <div class="hero-text">
+    <div class="hero-kicker">
+     SoME &middot; Mathematical Art
+    </div>
+    <h1 class="hero-title">
+     Square Turns
+    </h1>
+    <p class="hero-sub">
+     A creature walks. At every step, it turns &mdash; not by a fixed angle, but by an amount that
+     <em>
+      grows with the square of the step count
+     </em>
+     . What emerges is astonishing.
+    </p>
+    <a class="hero-cta" href="#intro">
+     Begin the Journey &darr;
+    </a>
+   </div>
+  </section>
+  <article>
+   <!-- TOC -->
+   <div class="toc">
+    <div class="toc-title">
+     Contents
+    </div>
+    <ol>
+     <li>
+      <a href="#turtle">
+       The Walking Rule
+      </a>
+     </li>
+     <li>
+      <a href="#square-turns">
+       Turning by Squares
+      </a>
+     </li>
+     <li>
+      <a href="#gallery-first">
+       Beauty First &mdash; Large N
+      </a>
+     </li>
+     <li>
+      <a href="#closing">
+       When Does the Path Close?
+      </a>
+     </li>
+     <li>
+      <a href="#petals">
+       Counting Petals &mdash; Divisors of 6
+      </a>
+     </li>
+     <li>
+      <a href="#symmetry">
+       The Hidden Symmetry
+      </a>
+     </li>
+     <li>
+      <a href="#twelve">
+       The Mystery of 12 Petals
+      </a>
+     </li>
+     <li>
+      <a href="#deeper">
+       The Deeper Connection
+      </a>
+     </li>
+    </ol>
+   </div>
+   <!-- SECTION 1: TURTLE -->
+   <section class="section" id="turtle">
+    <span class="section-number">
+     01 &mdash; The Setup
+    </span>
+    <h2>
+     The Walking Rule
+    </h2>
+    <p>
+     Imagine a very obedient creature. It lives on a blank plane and follows one instruction:
+     <strong>
+      walk forward one step, then turn.
+     </strong>
+     That's all it ever does.
+    </p>
+    <p>
+     The path it traces depends entirely on
+     <em>
+      how much it turns
+     </em>
+     at each step. Turn always by 90&deg;, and you get a perfect square. Turn by 60&deg;, and you get a hexagon. Turn by some irrational angle, and the path wanders forever without repeating.
+    </p>
+    <p>
+     In the programming world, this kind of creature is called a
+     <strong>
+      turtle
+     </strong>
+     &mdash; it carries its direction with it and updates it at every step. We're going to give our turtle a very specific turning rule, and watch what happens.
+    </p>
+    <p>
+     To make the turns well-defined, we'll divide the full circle into
+     <strong>
+      N equal slices
+     </strong>
+     , each of size 360&deg;/N. Our turtle can only face one of these N directions. At step number
+     <span class="math-inline">
+      n
+     </span>
+     , the turtle adds some amount to its current direction index (measured in those 360&deg;/N slices), then steps forward.
+    </p>
+    <!-- DEMO 1: Step by step walker -->
+    <div class="demo-wrap" id="demo-step">
+     <div class="demo-header">
+      <span class="demo-title">
+       Interactive &mdash; Step-by-Step Walker
+      </span>
+      <span style="font-size:11px;color:var(--text-dim);font-family:'Courier New',monospace">
+       Choose N, then step through
+      </span>
+     </div>
+     <div class="demo-body">
+      <div class="demo-canvas-row">
+       <div class="demo-canvas-col">
+        <canvas class="art-canvas" height="400" id="step-canvas" width="400">
+        </canvas>
+       </div>
+       <div class="demo-info-col">
+        <div style="margin-bottom:8px">
+         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
+          Choose N
+         </div>
+         <div class="n-grid" id="step-n-grid">
+          <button class="n-btn selected" data-n="6">
+           N=6
+          </button>
+          <button class="n-btn" data-n="12">
+           N=12
+          </button>
+          <button class="n-btn" data-n="24">
+           N=24
+          </button>
+         </div>
+        </div>
+        <div class="step-display" id="step-display">
+         <div class="step-num" id="step-num-display">
+          0
+         </div>
+         <div class="step-label">
+          Current Step
+         </div>
+         <div class="step-angle" id="step-angle-display">
+          Heading: 0&deg; (slot 0 of N)
+         </div>
+        </div>
+        <div class="info-card" id="step-info-card">
+         <div class="info-row">
+          <span class="info-key">
+           N (directions)
+          </span>
+          <span class="info-val accent" id="si-N">
+           6
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Slot size
+          </span>
+          <span class="info-val" id="si-slot">
+           60&deg;
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Turn at step n
+          </span>
+          <span class="info-val gold" id="si-turn">
+           n&sup2; slots
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Current slot
+          </span>
+          <span class="info-val accent" id="si-slot-val">
+           0
+          </span>
+         </div>
+        </div>
+        <div class="btn-row">
+         <button class="btn btn-primary" id="step-fwd-btn">
+          Step +1
+         </button>
+         <button class="btn btn-outline" id="step-block-btn">
+          Step +N
+         </button>
+         <button class="btn btn-ghost" id="step-reset-btn">
+          Reset
+         </button>
+        </div>
+        <div class="btn-row">
+         <button class="btn btn-outline btn-sm" id="step-auto-btn">
+          ▶ Auto Play
+         </button>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.5">
+         The
+         <span style="color:var(--accent)">
+          cyan arrow
+         </span>
+         shows current heading.
+         <br/>
+         The
+         <span style="color:var(--gold)">
+          gold dot
+         </span>
+         is the walker's position.
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+    <p>
+     Notice how the turtle doesn't move randomly &mdash; there's a clear pattern forming. Each step is the same length (one unit), but the
+     <em>
+      direction
+     </em>
+     changes systematically. The question that will drive our entire exploration is:
+     <strong>
+      will the turtle ever return to exactly where it started, facing the same way?
+     </strong>
+    </p>
+   </section>
+   <!-- SECTION 2: SQUARE TURNS -->
+   <section class="section" id="square-turns">
+    <span class="section-number">
+     02 &mdash; The Rule
+    </span>
+    <h2>
+     Turning by Squares
+    </h2>
+    <p>
+     Here's the specific rule we'll use. At step number
+     <span class="math-inline">
+      n
+     </span>
+     (starting from
+     <span class="math-inline">
+      n=1
+     </span>
+     ), the turtle increases its direction slot by
+     <span class="math-inline">
+      (n-1)&sup2;
+     </span>
+     , modulo N.
+    </p>
+    <div class="math-block">
+     direction_slot &larr; (direction_slot + (n&minus;1)&sup2;) mod N
+    </div>
+    <p>
+     Let's trace through a small example with
+     <strong>
+      N = 6
+     </strong>
+     (six equally spaced directions, each 60&deg; apart). At step 1, the turn is 0&sup2; = 0. At step 2, it's 1&sup2; = 1 slot. At step 3, it's 2&sup2; = 4 slots. And so on.
+    </p>
+    <!-- Direction table for N=6 -->
+    <div id="dir-table-wrap">
+     <table class="dir-table" id="dir-table-6">
+      <thead>
+       <tr>
+        <th>
+         Step n
+        </th>
+        <th>
+         Turn (n&minus;1)&sup2;
+        </th>
+        <th>
+         Turn mod 6
+        </th>
+        <th>
+         Cumulative slot
+        </th>
+        <th>
+         Direction
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+      </tbody>
+     </table>
+    </div>
+    <p>
+     The key phrase is
+     <em>
+      modulo N
+     </em>
+     . Once the slot index reaches N, it wraps back to 0. With N=6, the slot is always in {0, 1, 2, 3, 4, 5}, corresponding to directions {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}.
+    </p>
+    <div class="callout">
+     <span class="callout-label">
+      Why squares?
+     </span>
+     <p>
+      Many functions could drive the turning &mdash; the linear choice gives spirals, the random choice gives a drunk walk. Squares sit in a beautiful middle ground:
+      <strong>
+       growing fast enough to create variety, but structured enough to create symmetry
+      </strong>
+      . This is what we're here to explore.
+     </p>
+    </div>
+    <p>
+     There's a classical result lurking here. The cumulative slot after exactly
+     <span class="math-inline">
+      j
+     </span>
+     steps is
+     <span class="math-inline">
+      0&sup2; + 1&sup2; + 2&sup2; + ... + (j&minus;1)&sup2;
+     </span>
+     , which equals the famous
+     <strong>
+      sum-of-squares formula
+     </strong>
+     :
+    </p>
+    <div class="math-block">
+     f(j) = j(j&minus;1)(2j&minus;1) / 6
+    </div>
+    <p>
+     This seemingly innocent formula is the key to everything. The "6" in the denominator is not a coincidence &mdash; it will come back to haunt us in the most beautiful way.
+    </p>
+   </section>
+   <!-- SECTION 3: BEAUTY FIRST -->
+   <section class="section" id="gallery-first">
+    <span class="section-number">
+     03 &mdash; The Reveal
+    </span>
+    <h2>
+     Beauty Before Proof
+    </h2>
+    <p>
+     Before we dig into the mathematics, let me show you what this rule produces for large N. These aren't hand-crafted images &mdash; they emerge purely from the square-turn rule applied over tens of thousands of steps.
+    </p>
+    <p>
+     Click any thumbnail to explore it. Notice the petal-like shapes and the striking symmetry &mdash; we'll spend the rest of the article explaining where these come from.
+    </p>
+    <!-- Gallery -->
+    <div class="gallery-grid" id="gallery-grid">
+     <!-- Populated by JS -->
+    </div>
+    <!-- Large viewer -->
+    <div class="large-demo">
+     <div class="large-demo-canvas-wrap">
+      <canvas id="large-canvas">
+      </canvas>
+     </div>
+     <div class="large-demo-controls">
+      <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">
+       Select N
+      </div>
+      <div class="large-n-grid" id="large-n-grid">
+       <!-- Populated by JS -->
+      </div>
+      <div class="info-card" style="margin-top:12px">
+       <div class="info-row">
+        <span class="info-key">
+         N (directions)
+        </span>
+        <span class="info-val accent" id="lg-N">
+         &mdash;
+        </span>
+       </div>
+       <div class="info-row">
+        <span class="info-key">
+         Total steps drawn
+        </span>
+        <span class="info-val" id="lg-steps">
+         &mdash;
+        </span>
+       </div>
+       <div class="info-row">
+        <span class="info-key">
+         Visual petals
+        </span>
+        <span class="info-val gold" id="lg-petals">
+         &mdash;
+        </span>
+       </div>
+       <div class="info-row">
+        <span class="info-key">
+         gcd(N, 6)
+        </span>
+        <span class="info-val green" id="lg-gcd">
+         &mdash;
+        </span>
+       </div>
+      </div>
+     </div>
+    </div>
+    <div class="pull-quote">
+     "The rule is just three words: turn by squares. The result takes your breath away."
+    </div>
+   </section>
+   <!-- SECTION 4: CLOSING -->
+   <section class="section" id="closing">
+    <span class="section-number">
+     04 &mdash; The Mystery
+    </span>
+    <h2>
+     When Does the Path Close?
+    </h2>
+    <p>
+     Not all choices of N produce the beautiful closed rosettes above. For some N, the path
+     <em>
+      drifts endlessly
+     </em>
+     , never returning to the start. Try N = 5 or N = 7 in the demo below &mdash; the path spirals outward, block after block.
+    </p>
+    <p>
+     What separates the closing cases from the drifting ones?
+    </p>
+    <!-- Demo: Closer vs Drifter -->
+    <div class="demo-wrap">
+     <div class="demo-header">
+      <span class="demo-title">
+       Interactive &mdash; Closes or Drifts?
+      </span>
+     </div>
+     <div class="demo-body">
+      <div class="demo-canvas-row">
+       <div class="demo-canvas-col">
+        <canvas class="art-canvas" height="400" id="close-canvas" width="400">
+        </canvas>
+       </div>
+       <div class="demo-info-col">
+        <div style="margin-bottom:8px">
+         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
+          Closing &checkmark;
+         </div>
+         <div class="n-grid" id="close-n-grid">
+          <button class="n-btn" data-n="2">
+           2
+          </button>
+          <button class="n-btn selected" data-n="3">
+           3
+          </button>
+          <button class="n-btn" data-n="4">
+           4
+          </button>
+          <button class="n-btn" data-n="6">
+           6
+          </button>
+          <button class="n-btn" data-n="8">
+           8
+          </button>
+          <button class="n-btn" data-n="9">
+           9
+          </button>
+          <button class="n-btn" data-n="12">
+           12
+          </button>
+          <button class="n-btn" data-n="24">
+           24
+          </button>
+         </div>
+         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;margin-top:8px">
+          Drifting &cross;
+         </div>
+         <div class="n-grid" id="drift-n-grid">
+          <button class="n-btn drift-btn" data-n="5">
+           5
+          </button>
+          <button class="n-btn drift-btn" data-n="7">
+           7
+          </button>
+          <button class="n-btn drift-btn" data-n="11">
+           11
+          </button>
+          <button class="n-btn drift-btn" data-n="13">
+           13
+          </button>
+          <button class="n-btn drift-btn" data-n="25">
+           25
+          </button>
+         </div>
+        </div>
+        <div class="info-card">
+         <div class="info-row">
+          <span class="info-key">
+           N
+          </span>
+          <span class="info-val accent" id="cl-N">
+           3
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           gcd(N, 6)
+          </span>
+          <span class="info-val" id="cl-gcd">
+           3
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Closes?
+          </span>
+          <span class="info-val" id="cl-closes">
+           YES &checkmark;
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Total steps
+          </span>
+          <span class="info-val gold" id="cl-steps">
+           9
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Rotation petals
+          </span>
+          <span class="info-val" id="cl-petals">
+           3
+          </span>
+         </div>
+        </div>
+        <div id="cl-note" style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:8px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
+         This path closes. Each color is one "petal" &mdash; a block of N steps. After all petals, the walker is back exactly where it started.
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+    <h3>
+     The Answer: gcd(N, 6)
+    </h3>
+    <p>
+     The closing condition turns out to be elegantly simple. Compute the
+     <strong>
+      greatest common divisor
+     </strong>
+     of N and 6. If it's greater than 1, the path closes. If it's 1, the path drifts forever.
+    </p>
+    <div class="math-block">
+     Path closes &xhArr; gcd(N, 6) &gt; 1
+    </div>
+    <p>
+     In plain English: the path closes if and only if N shares a factor with 6. Since 6 = 2 &times; 3, this means N must be divisible by 2, by 3, or by both.
+    </p>
+    <div class="callout gold">
+     <span class="callout-label">
+      Why gcd with 6?
+     </span>
+     <p>
+      Look back at the sum-of-squares formula:
+      <span class="math-inline">
+       f(j) = j(j+1)(2j+1)/6
+      </span>
+      . That denominator
+      <strong>
+       6
+      </strong>
+      is doing the work. Whether the path's phase shift after N steps is zero (mod N) depends on how N interacts with this 6. We'll see the full proof shortly.
+     </p>
+    </div>
+    <p>
+     This instantly predicts the behavior of any N:
+    </p>
+    <!-- Petal Table -->
+    <table class="petal-table">
+     <thead>
+      <tr>
+       <th>
+        N
+       </th>
+       <th>
+        gcd(N,6)
+       </th>
+       <th>
+        Closes?
+       </th>
+       <th>
+        Total Steps
+       </th>
+       <th>
+        Petals
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        2
+       </td>
+       <td class="g2">
+        2
+       </td>
+       <td class="g2">
+        Yes
+       </td>
+       <td>
+        4
+       </td>
+       <td>
+        2
+       </td>
+      </tr>
+      <tr>
+       <td>
+        3
+       </td>
+       <td class="g3">
+        3
+       </td>
+       <td class="g3">
+        Yes
+       </td>
+       <td>
+        9
+       </td>
+       <td>
+        3
+       </td>
+      </tr>
+      <tr>
+       <td>
+        4
+       </td>
+       <td class="g2">
+        2
+       </td>
+       <td class="g2">
+        Yes
+       </td>
+       <td>
+        8
+       </td>
+       <td>
+        2
+       </td>
+      </tr>
+      <tr>
+       <td>
+        5
+       </td>
+       <td class="g1">
+        1
+       </td>
+       <td class="g1">
+        No
+       </td>
+       <td>
+        &mdash;
+       </td>
+       <td>
+        &mdash;
+       </td>
+      </tr>
+      <tr>
+       <td>
+        6
+       </td>
+       <td class="g6">
+        6
+       </td>
+       <td class="g6">
+        Yes
+       </td>
+       <td>
+        36
+       </td>
+       <td>
+        6
+       </td>
+      </tr>
+      <tr>
+       <td>
+        7
+       </td>
+       <td class="g1">
+        1
+       </td>
+       <td class="g1">
+        No
+       </td>
+       <td>
+        &mdash;
+       </td>
+       <td>
+        &mdash;
+       </td>
+      </tr>
+      <tr>
+       <td>
+        8
+       </td>
+       <td class="g2">
+        2
+       </td>
+       <td class="g2">
+        Yes
+       </td>
+       <td>
+        16
+       </td>
+       <td>
+        2
+       </td>
+      </tr>
+      <tr>
+       <td>
+        9
+       </td>
+       <td class="g3">
+        3
+       </td>
+       <td class="g3">
+        Yes
+       </td>
+       <td>
+        27
+       </td>
+       <td>
+        3
+       </td>
+      </tr>
+      <tr>
+       <td>
+        10
+       </td>
+       <td class="g2">
+        2
+       </td>
+       <td class="g2">
+        Yes
+       </td>
+       <td>
+        20
+       </td>
+       <td>
+        2
+       </td>
+      </tr>
+      <tr>
+       <td>
+        11
+       </td>
+       <td class="g1">
+        1
+       </td>
+       <td class="g1">
+        No
+       </td>
+       <td>
+        &mdash;
+       </td>
+       <td>
+        &mdash;
+       </td>
+      </tr>
+      <tr>
+       <td>
+        12
+       </td>
+       <td class="g6">
+        6
+       </td>
+       <td class="g6">
+        Yes
+       </td>
+       <td>
+        72
+       </td>
+       <td>
+        6
+       </td>
+      </tr>
+      <tr>
+       <td>
+        24
+       </td>
+       <td class="g6">
+        6
+       </td>
+       <td class="g6">
+        Yes
+       </td>
+       <td>
+        144
+       </td>
+       <td>
+        6
+       </td>
+      </tr>
+     </tbody>
+    </table>
+    <h3>
+     Why Does It Close? The Block Structure
+    </h3>
+    <p>
+     Here's the key insight, without heavy algebra. After the walker completes one block of
+     <strong>
+      N steps
+     </strong>
+     , it arrives at some position in the plane. Whether it has returned to the start depends on the vector sum of all N unit steps taken.
+    </p>
+    <p>
+     Because the squared-turn rule is
+     <em>
+      periodic modulo N
+     </em>
+     in a specific sense, the second block of N steps is identical to the first &mdash; but
+     <strong>
+      rotated by a fixed angle &Delta;&theta;
+     </strong>
+     determined by
+     <span class="math-inline">
+      f(N) mod N
+     </span>
+     . The third block is the same shape, rotated again by &Delta;&theta;, and so on.
+    </p>
+    <p>
+     Think of each N-step block as one "blade" of a fan. The blades are all the same shape, just rotated. The path closes when the blades complete a full rotation &mdash; i.e., when enough rotations of &Delta;&theta; add up to 360&deg;.
+    </p>
+    <div class="math-block">
+     &Delta;&theta; = 360&deg; &times; f(N) / N (mod 360&deg;)
+    </div>
+    <p>
+     For the path to close, &Delta;&theta; must be a rational fraction of 360&deg;. It turns out that &Delta;&theta; is
+     <em>
+      always
+     </em>
+     a multiple of 60&deg; &mdash; and this is precisely because of the 6 in the denominator of f. More on this next.
+    </p>
+   </section>
+   <!-- SECTION 5: PETALS -->
+   <section class="section" id="petals">
+    <span class="section-number">
+     05 &mdash; The Petal Count
+    </span>
+    <h2>
+     Counting Petals &mdash; Divisors of 6
+    </h2>
+    <p>
+     Look at the table above. The petal counts are 2, 3, and 6 &mdash; and for drifting paths, we could say there's "1 petal" that just repeats endlessly. Those four numbers &mdash; 1, 2, 3, 6 &mdash; are exactly the
+     <strong>
+      divisors of 6
+     </strong>
+     .
+    </p>
+    <p>
+     This is no accident. Here's the reasoning in full.
+    </p>
+    <p>
+     The rotation angle between consecutive blocks is
+     <span class="math-inline">
+      &Delta;&theta; = 360&deg; &times; (f(N) mod N) / N
+     </span>
+     . Let's think about what values this can take.
+    </p>
+    <p>
+     We have
+     <span class="math-inline">
+      f(N) = N(N+1)(2N+1)/6
+     </span>
+     , so
+     <span class="math-inline">
+      f(N)/N = (N+1)(2N+1)/6
+     </span>
+     . The denominator is always 6 (before cancellation with the numerator). So
+     <span class="math-inline">
+      f(N)/N
+     </span>
+     is always a multiple of 1/6, which means &Delta;&theta; is always a multiple of
+     <strong>
+      360&deg;/6 = 60&deg;
+     </strong>
+     .
+    </p>
+    <div class="callout green">
+     <span class="callout-label">
+      The Petal Theorem
+     </span>
+     <p>
+      &Delta;&theta; &isin; {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}. The number of rotation petals is
+      <span class="math-inline">
+       360&deg; / &Delta;&theta;
+      </span>
+      , which is always a divisor of 6: either
+      <strong>
+       1, 2, 3, or 6
+      </strong>
+      .
+     </p>
+    </div>
+    <p>
+     Which divisor of 6 you get depends precisely on gcd(N, 6):
+    </p>
+    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
+     <li>
+      <span class="pill pill-cyan">
+       gcd = 1
+      </span>
+      &nbsp; &Delta;&theta; = 0&deg;, the block repeats identically &rarr; path drifts forever
+     </li>
+     <li>
+      <span class="pill pill-gold">
+       gcd = 2
+      </span>
+      &nbsp; &Delta;&theta; = 180&deg; &rarr;
+      <strong>
+       2 petals
+      </strong>
+      (each a 180&deg; rotation of the other)
+     </li>
+     <li>
+      <span class="pill pill-green">
+       gcd = 3
+      </span>
+      &nbsp; &Delta;&theta; = 240&deg; &rarr;
+      <strong>
+       3 petals
+      </strong>
+      (each a 120&deg; rotation)
+     </li>
+     <li>
+      <span class="pill pill-cyan">
+       gcd = 6
+      </span>
+      &nbsp; &Delta;&theta; = 60&deg; &rarr;
+      <strong>
+       6 petals
+      </strong>
+      (each a 60&deg; rotation)
+     </li>
+    </ul>
+    <!-- Demo: Petal explorer by gcd -->
+    <div class="demo-wrap">
+     <div class="demo-header">
+      <span class="demo-title">
+       Interactive &mdash; Petal Explorer
+      </span>
+      <span style="font-size:11px;color:var(--text-dim);font-family:'Courier New',monospace">
+       Click a group to see examples
+      </span>
+     </div>
+     <div class="demo-body">
+      <div style="margin-bottom:12px">
+       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" data-gcd="2" id="gcd2-btn">
+         gcd = 2 &rarr; 2 petals
+        </button>
+        <button class="btn btn-ghost btn-sm" data-gcd="3" id="gcd3-btn">
+         gcd = 3 &rarr; 3 petals
+        </button>
+        <button class="btn btn-ghost btn-sm active" data-gcd="6" id="gcd6-btn">
+         gcd = 6 &rarr; 6 petals
+        </button>
+       </div>
+       <div class="n-grid" id="petal-n-row">
+       </div>
+      </div>
+      <div class="demo-canvas-row">
+       <div class="demo-canvas-col">
+        <canvas class="art-canvas" height="400" id="petal-canvas" width="400">
+        </canvas>
+       </div>
+       <div class="demo-info-col">
+        <div class="info-card">
+         <div class="info-row">
+          <span class="info-key">
+           N
+          </span>
+          <span class="info-val accent" id="pt-N">
+           &mdash;
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           gcd(N, 6)
+          </span>
+          <span class="info-val" id="pt-gcd">
+           &mdash;
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           &Delta;&theta; between petals
+          </span>
+          <span class="info-val gold" id="pt-delta">
+           &mdash;
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Rotation petals
+          </span>
+          <span class="info-val green" id="pt-petals">
+           &mdash;
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Total steps
+          </span>
+          <span class="info-val" id="pt-steps">
+           &mdash;
+          </span>
+         </div>
+        </div>
+        <div id="pt-explain" style="font-size:12px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:10px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
+         Each color in the drawing is one "block" of N steps. The blocks are like the blades of a fan &mdash; all the same shape, just rotated.
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+    <p>
+     But wait &mdash; if there are only 1, 2, 3, or 6 rotation petals, why did you observe
+     <em>
+      12
+     </em>
+     or even
+     <em>
+      4
+     </em>
+     petal-like shapes in some of the images? This is the next surprise.
+    </p>
+   </section>
+   <!-- SECTION 6: SYMMETRY -->
+   <section class="section" id="symmetry">
+    <span class="section-number">
+     06 &mdash; The Symmetry
+    </span>
+    <h2>
+     The Hidden Symmetry
+    </h2>
+    <p>
+     Look carefully at a single petal. It's not just one blob &mdash; it has a
+     <strong>
+      mirror line
+     </strong>
+     running through its middle. Both halves of the petal are reflections of each other.
+    </p>
+    <p>
+     This bilateral symmetry comes from one of the most elegant modular-arithmetic identities you'll ever see:
+    </p>
+    <div class="math-block">
+     x&sup2; &equiv; (N &minus; x)&sup2; (mod N)
+    </div>
+    <p>
+     Why? Expand the right side:
+     <span class="math-inline">
+      (N&minus;x)&sup2; = N&sup2; &minus; 2Nx + x&sup2;
+     </span>
+     . Both
+     <span class="math-inline">
+      N&sup2;
+     </span>
+     and
+     <span class="math-inline">
+      &minus;2Nx
+     </span>
+     are multiples of N, so they vanish modulo N, leaving
+     <span class="math-inline">
+      x&sup2;
+     </span>
+     . &checkmark;
+    </p>
+    <p>
+     What does this mean for our turtle? It says that the turn at step
+     <span class="math-inline">
+      n
+     </span>
+     is
+     <em>
+      identical
+     </em>
+     to the turn at step
+     <span class="math-inline">
+      N &minus; n
+     </span>
+     , modulo N. In other words:
+     <strong>
+      the sequence of turns in each N-step block is palindromic
+     </strong>
+     . The first turn equals the last, the second equals the second-to-last, and so on.
+    </p>
+    <p>
+     A palindromic sequence of directions means the path traces out and then
+     <em>
+      retraces
+     </em>
+     in a mirrored fashion &mdash; which is exactly what bilateral symmetry means for a curve. This is true for
+     <strong>
+      every single N
+     </strong>
+     , not just special cases.
+    </p>
+    <div class="callout">
+     <span class="callout-label">
+      The Exact Identity
+     </span>
+     <p>
+      There's an even stronger result. Define the cumulative sum
+      <span class="math-inline">
+       f(j) = 1&sup2; + 2&sup2; + &middot;&middot;&middot; + j&sup2;
+      </span>
+      . Then for any N and any step j:
+     </p>
+     <div style="font-family:'Courier New',monospace;color:var(--gold);text-align:center;padding:10px">
+      f(j&minus;1) + f(N&minus;j) &equiv; f(N&minus;1) (mod N)
+     </div>
+     <p>
+      The sum of cumulative phases at symmetric steps is always the same constant. This constant defines the angle of the mirror axis of each petal.
+     </p>
+    </div>
+    <p>
+     So every petal has a bilateral symmetry. Now, 2 petals with bilateral symmetry look like 4 lobes. 6 petals with bilateral symmetry look like 12 lobes. That's the mystery of 12 solved &mdash; but there's an even deeper level to this story.
+    </p>
+   </section>
+   <!-- SECTION 7: THE 12-PETAL MYSTERY -->
+   <section class="section" id="twelve">
+    <span class="section-number">
+     07 &mdash; Going Deeper
+    </span>
+    <h2>
+     The Mystery of 12 Petals
+    </h2>
+    <p>
+     For N = 24, each petal (block of 24 steps) already has bilateral symmetry. But when you look closely, each petal seems to consist of
+     <strong>
+      two smaller sub-petals
+     </strong>
+     , each with their own bilateral symmetry. Why?
+    </p>
+    <!-- Demo: N=24 petal anatomy -->
+    <div class="demo-wrap">
+     <div class="demo-header">
+      <span class="demo-title">
+       Interactive &mdash; Petal Anatomy (N=24)
+      </span>
+     </div>
+     <div class="demo-body">
+      <div class="demo-canvas-row">
+       <div class="demo-canvas-col">
+        <canvas class="art-canvas" height="400" id="anat-canvas" width="400">
+        </canvas>
+       </div>
+       <div class="demo-info-col">
+        <div style="margin-bottom:8px">
+         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
+          What to show
+         </div>
+         <div class="n-grid">
+          <button class="n-btn selected" id="anat-full-btn">
+           Full shape (N=24)
+          </button>
+          <button class="n-btn" id="anat-one-btn">
+           One petal only
+          </button>
+          <button class="n-btn" id="anat-half-btn">
+           One sub-petal
+          </button>
+         </div>
+        </div>
+        <div class="info-card" id="anat-info">
+         <div class="info-row">
+          <span class="info-key">
+           Showing
+          </span>
+          <span class="info-val accent" id="anat-label">
+           Full rosette (144 steps)
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           N
+          </span>
+          <span class="info-val">
+           24
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Rotation petals
+          </span>
+          <span class="info-val gold">
+           6
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Steps per petal
+          </span>
+          <span class="info-val">
+           24
+          </span>
+         </div>
+         <div class="info-row">
+          <span class="info-key">
+           Steps per sub-petal
+          </span>
+          <span class="info-val">
+           12
+          </span>
+         </div>
+        </div>
+        <div id="anat-explain" style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:10px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
+         The full rosette has 6 petals of 24 steps each. Click "One petal" to isolate one, and "One sub-petal" to see how each petal splits into two symmetric halves.
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+    <h3>
+     The Second Shift Identity
+    </h3>
+    <p>
+     The palindrome property (
+     <span class="math-inline">
+      x&sup2; &equiv; (N&minus;x)&sup2;
+     </span>
+     ) gives each petal its outer bilateral symmetry. But there's a
+     <em>
+      second
+     </em>
+     modular identity that creates the sub-petal structure:
+    </p>
+    <div class="math-block">
+     (x + N/2)&sup2; &equiv; x&sup2; (mod N) if and only if 4 divides N
+    </div>
+    <p>
+     Proof:
+     <span class="math-inline">
+      (x + N/2)&sup2; = x&sup2; + Nx + N&sup2;/4
+     </span>
+     . The term
+     <span class="math-inline">
+      Nx
+     </span>
+     vanishes mod N. The term
+     <span class="math-inline">
+      N&sup2;/4
+     </span>
+     vanishes mod N if and only if 4 divides N. ∎
+    </p>
+    <p>
+     What this says is: when 4 divides N, the squared increments at step
+     <span class="math-inline">
+      j
+     </span>
+     and at step
+     <span class="math-inline">
+      j + N/2
+     </span>
+     are
+     <em>
+      equal modulo N
+     </em>
+     . The second half of each petal has the same sequence of directions as the first half &mdash; just starting from a rotated position.
+    </p>
+    <p>
+     In other words:
+     <strong>
+      the second half of each petal is a rotated copy of the first half
+     </strong>
+     . Two congruent halves, each itself bilaterally symmetric. That's why N=24 (divisible by 4) shows sub-petal structure, while N=6 (not divisible by 4) doesn't.
+    </p>
+    <div class="callout green">
+     <span class="callout-label">
+      Summary: What Creates Petal Structure
+     </span>
+     <p>
+      <strong>
+       Outer symmetry
+      </strong>
+      (each petal has a mirror line): Always true. Comes from
+      <span class="math-inline">
+       x&sup2; &equiv; (N&minus;x)&sup2;
+      </span>
+      .
+     </p>
+     <p style="margin-top:8px">
+      <strong>
+       Sub-petal splitting
+      </strong>
+      (the petal has two congruent halves): Requires 4 | N. Comes from
+      <span class="math-inline">
+       (x+N/2)&sup2; &equiv; x&sup2;
+      </span>
+      .
+     </p>
+     <p style="margin-top:8px">
+      <strong>
+       Visual petal count &asymp; 2 &times; rotation petals
+      </strong>
+      when bilateral symmetry makes each petal look like two lobes.
+     </p>
+    </div>
+    <p>
+     This explains the full story of petal counts. You expect divisors of 6: {2, 3, 6}. But bilateral symmetry can visually double {2, 6} &rarr; {4, 12}. And 3-petal shapes retain 3 (the bilateral symmetry is present but each petal looks like a single elongated leaf). So the observable counts are
+     <strong>
+      {1, 2, 3, 4, 6, 12}
+     </strong>
+     &mdash; precisely the divisors of 12.
+    </p>
+    <div class="callout gold">
+     <span class="callout-label">
+      Why Divisors of 12?
+     </span>
+     <p>
+      The rotation symmetry (from the 6 in the denominator) gives divisors of 6. The reflection symmetry (from x&sup2; &equiv; (N&minus;x)&sup2;) adds a factor of 2, extending the range to divisors of 12. The denominator 6 = 2 &times; 3, and reflection adds another factor of 2, giving 12 = 2 &times; 6 as the "full symmetry group" size.
+     </p>
+    </div>
+    <!-- Side by side: N=6 vs N=12 vs N=24 -->
+    <h3>
+     Seeing It Side-by-Side
+    </h3>
+    <div class="gallery-grid" id="anat-compare-grid">
+     <!-- Populated by JS -->
+    </div>
+   </section>
+   <!-- SECTION 8: DEEPER CONNECTION -->
+   <section class="section" id="deeper">
+    <span class="section-number">
+     08 &mdash; The Deep End
+    </span>
+    <h2>
+     The Deeper Connection
+    </h2>
+    <p>
+     Everything we've discovered &mdash; the closing condition, the petal count, the bilateral symmetry &mdash; can be unified under a single mathematical framework:
+     <strong>
+      exponential sums
+     </strong>
+     .
+    </p>
+    <p>
+     If you think of each step's direction as a complex number on the unit circle, the partial sum after J steps is:
+    </p>
+    <div class="math-block">
+     S(J) = &Sigma;
+     <sub>
+      j=0
+     </sub>
+     <sup>
+      J&minus;1
+     </sup>
+     e
+     <sup>
+      2&pi;i&middot;f(j)/N
+     </sup>
+    </div>
+    <p>
+     This is an
+     <em>
+      exponential sum with cubic polynomial phase
+     </em>
+     &mdash; because f(j) is a cubic polynomial in j. The study of such sums is deep, going back to Gauss and Weil.
+    </p>
+    <p>
+     Our key results translate directly:
+    </p>
+    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:12px">
+     <li>
+      <strong>
+       The block structure
+      </strong>
+      : S(mN) = S
+      <sub>
+       N
+      </sub>
+      &times; (geometric series in &rho;), where &rho; = e^(2&pi;i&middot;f(N)/N).
+     </li>
+     <li>
+      <strong>
+       The closing condition
+      </strong>
+      : The path closes iff the geometric series terminates &mdash; i.e., &rho; is a root of unity of finite order, i.e., gcd(N,6) &gt; 1.
+     </li>
+     <li>
+      <strong>
+       The Weil bound
+      </strong>
+      : For prime N not dividing 6, |S
+      <sub>
+       N
+      </sub>
+      | &le; 2&radic;N. This is why even the drifting paths have bounded "error" per block &mdash; they drift slowly relative to the number of steps.
+     </li>
+    </ul>
+    <div class="callout">
+     <span class="callout-label">
+      Weil's Theorem (1948)
+     </span>
+     <p>
+      For any prime N &gt; 3 and any cubic polynomial with nonzero leading coefficient, the corresponding exponential sum is bounded in absolute value by 2&radic;N. This bound is essentially tight &mdash; beautiful shapes live right at the edge of this bound.
+     </p>
+    </div>
+    <p>
+     The Weil bound tells us something visually striking: for large prime N (which gives drifting paths), the walker's displacement after N steps has magnitude at most 2&radic;N. The walker takes N unit steps but only makes net progress of order &radic;N &mdash; it's almost random, yet not quite.
+    </p>
+    <h3>
+     Future Directions
+    </h3>
+    <p>
+     Many natural questions remain open for exploration:
+    </p>
+    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px;color:var(--text-dim)">
+     <li>
+      Can we use exponential sum theory to compute the
+      <em>
+       exact shape
+      </em>
+      of the petals analytically?
+     </li>
+     <li>
+      What happens with other polynomial turning functions &mdash; cubics, quartics?
+     </li>
+     <li>
+      The closing condition gcd(N,6) &gt; 1 depended on the 6 in the denominator of the sum-of-squares formula. What closing conditions arise from other polynomial sums?
+     </li>
+     <li>
+      The bilateral petal symmetry came from x&sup2; &equiv; (N&minus;x)&sup2;. Does every even-degree polynomial turning function produce this symmetry?
+     </li>
+    </ul>
+    <div class="callout">
+     <span class="callout-label">
+      Try It Yourself
+     </span>
+     <p>
+      The full interactive tool with many more options &mdash; different turning functions, animation, color modes &mdash; is available at
+      <a href="https://adnanbaysal.github.io" style="color:var(--accent)">
+       adnanbaysal.github.io
+      </a>
+      .
+     </p>
+    </div>
+    <div class="divider">
+     ∎
+    </div>
+    <p style="color:var(--text-dim);font-size:0.9rem">
+     This article was written for the Summer of Math Exposition (SoME) community. The mathematics draws on classical results in exponential sums and modular arithmetic. The visualizations are generated entirely in-browser using HTML5 Canvas.
+    </p>
+   </section>
+  </article>
+  <footer>
+   <p>
+    <a href="https://adnanbaysal.github.io">
+     Adnan Baysal
+    </a>
+    &middot; 2025 &middot; Built with Vanilla JS &amp; Canvas
+   </p>
+   <p style="margin-top:8px;font-size:10px">
+    All visualizations generated in-browser. No libraries used.
+   </p>
+  </footer>
+  <script>
+    // =========================================================
+    // CORE MATH ENGINE
+    // =========================================================
+
+    function gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b) {
+            let t = b;
+            b = a % b;
+            a = t;
+        }
+        return a;
+    }
+
+    // Generate path points for `steps` iterations with N directions and n^2 turn rule.
+    function generatePath(steps, N) {
+        const pts = new Float64Array((steps + 1) * 2);
+        let phaseNum = 0;
+        let x = 0;
+        let y = 0;
+        let minX = 0;
+        let maxX = 0;
+        let minY = 0;
+        let maxY = 0;
+        pts[0] = 0;
+        pts[1] = 0;
+        const TPiN = 2 * Math.PI / N;
+        for (let n = 1; n <= steps; n++) {
+            const inc = ((n - 1) * (n - 1)) % N;
+            phaseNum = (phaseNum + inc) % N;
+            x += Math.cos(phaseNum * TPiN);
+            y += Math.sin(phaseNum * TPiN);
+            if (x < minX) minX = x;
+            else if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            else if (y > maxY) maxY = y;
+            pts[n * 2] = x;
+            pts[n * 2 + 1] = y;
+        }
+        return { pts, minX, maxX, minY, maxY };
+    }
+
+    // Get closure info for given N
+    function getClosureInfo(N) {
+        const g = gcd(N, 6);
+        if (g === 1) return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
+        // Use user's formula: sumAngle = 60 * (N+1) * (2N+1), deltaTheta = sumAngle % 360
+        const sumAngle = 60 * (N + 1) * (2 * N + 1);
+        let dT = sumAngle % 360;
+        if (dT < 0) dT += 360;
+        if (dT === 0) dT = 360;
+        const gd = gcd(360, Math.round(dT));
+        const petals = Math.round(360 / gd);
+        const total = N * petals;
+        return { closes: true, petals, totalSteps: total, delta: dT, mStar: petals };
+    }
+
+    // =========================================================
+    // CANVAS RENDERING
+    // =========================================================
+
+    function drawPath(canvas, pts, totalSteps, N, opts = {}) {
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        const style = opts.style || 'neon';
+        const petalColors = opts.petalColors || false;
+        const highlightPetal = opts.highlightPetal != null ? opts.highlightPetal : -1;
+        const maxPetal = opts.maxPetal || Infinity;
+
+        // Bounds
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (let i = 0; i <= totalSteps; i++) {
+            const px = pts[i * 2];
+            const py = pts[i * 2 + 1];
+            if (px < minX) minX = px;
+            if (px > maxX) maxX = px;
+            if (py < minY) minY = py;
+            if (py > maxY) maxY = py;
+        }
+
+        const pad = 32;
+        const dx = maxX - minX || 1;
+        const dy = maxY - minY || 1;
+        const sc = Math.min((W - 2 * pad) / dx, (H - 2 * pad) / dy);
+        const cx = (maxX + minX) / 2;
+        const cy = (maxY + minY) / 2;
+        const tx = p => W / 2 + (p - cx) * sc;
+        const ty = p => H / 2 - (p - cy) * sc;
+
+        // Background
+        ctx.fillStyle = '#020608';
+        ctx.fillRect(0, 0, W, H);
+
+        const lw = Math.max(0.5, Math.min(3, 120000 / totalSteps / sc * 1.5));
+        ctx.save();
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        if (style === 'neon') ctx.globalCompositeOperation = 'lighter';
+
+        // Draw segments
+        const numPetals = opts.totalPetals || 1;
+        for (let i = 1; i <= totalSteps; i++) {
+            const petalIdx = Math.floor((i - 1) / N);
+            if (petalIdx >= maxPetal) break;
+            if (highlightPetal >= 0 && petalIdx !== highlightPetal) {
+                // Draw dimly
+                if (i % N === 1 || i === 1) {
+                    ctx.beginPath();
+                    const segStart = i;
+                    const segEnd = Math.min(totalSteps, (petalIdx + 1) * N);
+                    ctx.moveTo(tx(pts[(segStart - 1) * 2]), ty(pts[(segStart - 1) * 2 + 1]));
+                    for (let j = segStart; j <= segEnd; j++) ctx.lineTo(tx(pts[j * 2]), ty(pts[j * 2 + 1]));
+                    ctx.lineWidth = lw * 0.5;
+                    ctx.strokeStyle = 'rgba(30,50,70,0.5)';
+                    ctx.stroke();
+                    i = segEnd;
+                }
+                continue;
+            }
+            // Draw one segment at a time for coloring
+            const isFirstOfPetal = (i === 1 || (i - 1) % N === 0);
+            if (isFirstOfPetal) {
+                const segEnd = Math.min(totalSteps, i + N - 1, maxPetal * N);
+                ctx.beginPath();
+                ctx.moveTo(tx(pts[(i - 1) * 2]), ty(pts[(i - 1) * 2 + 1]));
+                for (let j = i; j <= segEnd; j++) ctx.lineTo(tx(pts[j * 2]), ty(pts[j * 2 + 1]));
+                ctx.lineWidth = lw;
+                if (style === 'neon') {
+                    if (petalColors) {
+                        const hue = (petalIdx / numPetals) * 360;
+                        ctx.strokeStyle = `hsla(${hue},90%,60%,0.7)`;
+                    } else {
+                        ctx.strokeStyle = 'rgba(0,210,255,0.55)';
+                    }
+                    ctx.stroke();
+                    ctx.lineWidth = lw * 0.35;
+                    ctx.strokeStyle = 'rgba(200,240,255,0.6)';
+                    ctx.stroke();
+                } else if (style === 'rainbow') {
+                    const hue = (petalIdx / numPetals) * 360;
+                    ctx.strokeStyle = `hsl(${hue},85%,60%)`;
+                    ctx.stroke();
+                } else {
+                    ctx.strokeStyle = 'rgba(200,220,240,0.8)';
+                    ctx.stroke();
+                }
+                i = segEnd;
+            }
+        }
+
+        // Origin dot
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.beginPath();
+        ctx.arc(tx(0), ty(0), 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,210,255,0.8)';
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // Draw with direction arrow (for step demo)
+    function drawStepWalk(canvas, pts, step, N, phaseNum) {
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        // Compute bounds from all known points
+        let minX = 0;
+        let maxX = 0;
+        let minY = 0;
+        let maxY = 0;
+        for (let i = 0; i <= step; i++) {
+            const px = pts[i * 2];
+            const py = pts[i * 2 + 1];
+            if (px < minX) minX = px;
+            if (px > maxX) maxX = px;
+            if (py < minY) minY = py;
+            if (py > maxY) maxY = py;
+        }
+
+        // Add generous padding for arrow
+        const pad = 48;
+        const dx = Math.max(maxX - minX, 2);
+        const dy = Math.max(maxY - minY, 2);
+        const sc = Math.min((W - 2 * pad) / dx, (H - 2 * pad) / dy, 60);
+        const cx = (maxX + minX) / 2;
+        const cy = (maxY + minY) / 2;
+        const tx = p => W / 2 + (p - cx) * sc;
+        const ty = p => H / 2 - (p - cy) * sc;
+
+        ctx.fillStyle = '#020608';
+        ctx.fillRect(0, 0, W, H);
+
+        if (step === 0) {
+            // Just draw origin
+            ctx.beginPath();
+            ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#00d2ff';
+            ctx.fill();
+            // Draw arrow showing direction 0
+            const angle = 0;
+            const ex = tx(0) + Math.cos(angle) * 40;
+            const ey = ty(0) - Math.sin(angle) * 40;
+            drawArrow(ctx, tx(0), ty(0), ex, ey, '#00d2ff');
+            return;
+        }
+
+        // Grid lines lightly
+        ctx.strokeStyle = 'rgba(30,50,70,0.3)';
+        ctx.lineWidth = 0.5;
+        for (let i = -20; i <= 20; i++) {
+            ctx.beginPath();
+            ctx.moveTo(tx(i - 0.5), 0);
+            ctx.lineTo(tx(i - 0.5), H);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, ty(i - 0.5));
+            ctx.lineTo(W, ty(i - 0.5));
+            ctx.stroke();
+        }
+
+        // Path
+        ctx.beginPath();
+        ctx.moveTo(tx(pts[0]), ty(pts[1]));
+        for (let i = 1; i < step; i++) ctx.lineTo(tx(pts[i * 2]), ty(pts[i * 2 + 1]));
+        ctx.strokeStyle = 'rgba(0,150,200,0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        // Last step (highlighted)
+        ctx.beginPath();
+        ctx.moveTo(tx(pts[(step - 1) * 2]), ty(pts[(step - 1) * 2 + 1]));
+        ctx.lineTo(tx(pts[step * 2]), ty(pts[step * 2 + 1]));
+        ctx.strokeStyle = '#00d2ff';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Walker position (gold dot)
+        const wx = tx(pts[step * 2]);
+        const wy = ty(pts[step * 2 + 1]);
+        ctx.beginPath();
+        ctx.arc(wx, wy, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffd700';
+        ctx.fill();
+
+        // Direction arrow
+        const angle = phaseNum * 2 * Math.PI / N;
+        const ex = wx + Math.cos(angle) * 36;
+        const ey = wy - Math.sin(angle) * 36;
+        drawArrow(ctx, wx, wy, ex, ey, '#00d2ff');
+
+        // Origin
+        ctx.beginPath();
+        ctx.arc(tx(0), ty(0), 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,210,255,0.5)';
+        ctx.fill();
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, color) {
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const len = Math.hypot(x2 - x1, y2 - y1);
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        const hs = 8;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - hs * Math.cos(angle - 0.4), y2 - hs * Math.sin(angle - 0.4));
+        ctx.lineTo(x2 - hs * Math.cos(angle + 0.4), y2 - hs * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // =========================================================
+    // DIRECTION TABLE (N=6)
+    // =========================================================
+
+    (function buildDirTable() {
+        const N = 6;
+        const tbody = document.querySelector('#dir-table-6 tbody');
+        if (!tbody) return;
+        let phase = 0;
+        const rows = 8;
+        for (let n = 1; n <= rows; n++) {
+            const turn = (n - 1) * (n - 1);
+            const turnMod = turn % N;
+            phase = (phase + turnMod) % N;
+            const dirDeg = Math.round(phase * 360 / N);
+            const tr = document.createElement('tr');
+            if (n <= rows) {
+                tr.innerHTML = `
+                    <td class="highlight">${n}</td>
+                    <td>${turn}</td>
+                    <td class="highlight">${turnMod}</td>
+                    <td class="highlight">${phase}</td>
+                    <td>${dirDeg}°</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+        // Add ellipsis
+        const ellipsis = document.createElement('tr');
+        ellipsis.innerHTML = '<td colspan="5" style="text-align:center;color:var(--text-dim)">…</td>';
+        tbody.appendChild(ellipsis);
+    })();
+
+    // =========================================================
+    // HERO CANVAS
+    // =========================================================
+
+    (function initHero() {
+        const canvas = document.getElementById('hero-canvas');
+        if (!canvas) return;
+        // Size to CSS
+        const resize = () => {
+            const w = canvas.offsetWidth;
+            canvas.width = w;
+            canvas.height = w;
+            const N = 90;
+            const info = getClosureInfo(N);
+            if (!info.closes) return;
+            const { pts } = generatePath(info.totalSteps, N);
+            drawPath(canvas, pts, info.totalSteps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
+        };
+        setTimeout(resize, 50);
+        window.addEventListener('resize', resize);
+    })();
+
+    // =========================================================
+    // DEMO 1: STEP WALKER
+    // =========================================================
+
+    (function initStepDemo() {
+        const canvas = document.getElementById('step-canvas');
+        if (!canvas) return;
+        const resize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetWidth;
+        };
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 50);
+
+        let N = 6;
+        let stepN = 0;
+        let phaseNum = 0;
+        let pts = new Float64Array(2001 * 2);
+        let autoInterval = null;
+
+        function reset() {
+            stepN = 0;
+            phaseNum = 0;
+            pts.fill(0);
+            updateDisplay();
+            redraw();
+        }
+
+        function doStep(count = 1) {
+            for (let k = 0; k < count; k++) {
+                if (stepN >= 2000) return;
+                const n = stepN + 1;
+                const inc = ((n - 1) * (n - 1)) % N;
+                phaseNum = (phaseNum + inc) % N;
+                const angle = phaseNum * 2 * Math.PI / N;
+                const px = pts[stepN * 2] + Math.cos(angle);
+                const py = pts[stepN * 2 + 1] + Math.sin(angle);
+                stepN++;
+                pts[stepN * 2] = px;
+                pts[stepN * 2 + 1] = py;
+            }
+            updateDisplay();
+            redraw();
+        }
+
+        function updateDisplay() {
+            const el = (id) => document.getElementById(id);
+            el('step-num-display').textContent = stepN;
+            const deg = Math.round(phaseNum * 360 / N);
+            el('step-angle-display').textContent = `Heading: ${deg}° (slot ${phaseNum} of ${N})`;
+            el('si-N').textContent = N;
+            el('si-slot').textContent = (360 / N).toFixed(1) + '°';
+            el('si-slot-val').textContent = phaseNum;
+        }
+
+        function redraw() {
+            const cW = canvas.offsetWidth || 300;
+            if (canvas.width !== cW) {
+                canvas.width = cW;
+                canvas.height = cW;
+            }
+            drawStepWalk(canvas, pts, stepN, N, phaseNum);
+        }
+
+        // N buttons
+        document.getElementById('step-n-grid').addEventListener('click', e => {
+            const btn = e.target.closest('.n-btn');
+            if (!btn) return;
+            document.querySelectorAll('#step-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            N = parseInt(btn.dataset.n);
+            reset();
+        });
+
+        document.getElementById('step-fwd-btn').onclick = () => doStep(1);
+        document.getElementById('step-block-btn').onclick = () => doStep(N);
+        document.getElementById('step-reset-btn').onclick = () => {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                document.getElementById('step-auto-btn').textContent = '▶ Auto Play';
+            }
+            reset();
+        };
+
+        document.getElementById('step-auto-btn').onclick = function() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                this.textContent = '▶ Auto Play';
+            } else {
+                this.textContent = '⏸ Pause';
+                autoInterval = setInterval(() => {
+                    if (stepN >= 200) {
+                        clearInterval(autoInterval);
+                        autoInterval = null;
+                        document.getElementById('step-auto-btn').textContent = '▶ Auto Play';
+                        return;
+                    }
+                    doStep(1);
+                }, 120);
+            }
+        };
+
+        reset();
+    })();
+
+    // =========================================================
+    // GALLERY (Section 3)
+    // =========================================================
+
+    const LARGE_N_PRESETS = [
+        { N: 90, label: 'N = 90', note: '6 petals' },
+        { N: 180, label: 'N = 180', note: '6 petals' },
+        { N: 360, label: 'N = 360', note: '6 petals' },
+        { N: 720, label: 'N = 720', note: '6 petals' },
+        { N: 1260, label: 'N = 1,260', note: '6 petals' },
+        { N: 2520, label: 'N = 2,520', note: '6 petals' },
+        { N: 5040, label: 'N = 5,040', note: '6 petals' },
+        { N: 9240, label: 'N = 9,240', note: '6 petals' },
+    ];
+
+    (function initGallery() {
+        const grid = document.getElementById('gallery-grid');
+        const largeCanvas = document.getElementById('large-canvas');
+        if (!grid || !largeCanvas) return;
+
+        // Size large canvas
+        function sizeLarge() {
+            const w = largeCanvas.parentElement.offsetWidth;
+            largeCanvas.width = w;
+            largeCanvas.height = w;
+        }
+        window.addEventListener('resize', sizeLarge);
+        setTimeout(sizeLarge, 60);
+
+        let currentN = LARGE_N_PRESETS[0].N;
+
+        function drawLarge(N) {
+            currentN = N;
+            sizeLarge();
+            const info = getClosureInfo(N);
+            if (!info.closes) return;
+            const steps = Math.min(info.totalSteps, 60000);
+            const { pts } = generatePath(steps, N);
+            drawPath(largeCanvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
+            document.getElementById('lg-N').textContent = N.toLocaleString();
+            document.getElementById('lg-steps').textContent = info.totalSteps.toLocaleString();
+            document.getElementById('lg-petals').textContent = info.petals;
+            document.getElementById('lg-gcd').textContent = gcd(N, 6);
+        }
+
+        // Build large-n-grid buttons
+        const lgGrid = document.getElementById('large-n-grid');
+        LARGE_N_PRESETS.forEach((p, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'n-btn' + (idx === 0 ? ' selected' : '');
+            btn.textContent = p.label;
+            btn.onclick = () => {
+                document.querySelectorAll('#large-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                drawLarge(p.N);
+            };
+            lgGrid.appendChild(btn);
+        });
+
+        // Build gallery thumbnails
+        const GALLERY_N = [90, 360, 1260, 5040, 9240];
+        GALLERY_N.forEach(N => {
+            const cell = document.createElement('div');
+            cell.className = 'gallery-cell';
+            const c = document.createElement('canvas');
+            c.width = 200;
+            c.height = 200;
+            const lbl = document.createElement('div');
+            lbl.className = 'gallery-label';
+            lbl.textContent = 'N = ' + N.toLocaleString();
+            cell.appendChild(c);
+            cell.appendChild(lbl);
+            grid.appendChild(cell);
+
+            // Draw thumbnail
+            setTimeout(() => {
+                const info = getClosureInfo(N);
+                if (!info.closes) return;
+                const steps = Math.min(info.totalSteps, 30000);
+                const { pts } = generatePath(steps, N);
+                drawPath(c, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
+            }, 100);
+
+            cell.onclick = () => {
+                document.querySelectorAll('#large-n-grid .n-btn').forEach(b => {
+                    b.classList.toggle('selected', b.textContent.replace(/,/g, '').includes(String(N)));
+                });
+                drawLarge(N);
+                document.getElementById('large-canvas').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            };
+        });
+
+        // Initial draw
+        setTimeout(() => drawLarge(LARGE_N_PRESETS[0].N), 200);
+    })();
+
+    // =========================================================
+    // DEMO 2: CLOSING EXPLORER
+    // =========================================================
+
+    (function initCloseDemo() {
+        const canvas = document.getElementById('close-canvas');
+        if (!canvas) return;
+        const resize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetWidth;
+        };
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 60);
+
+        let currentN = 3;
+
+        function drawN(N, isDrift) {
+            currentN = N;
+            const cW = canvas.offsetWidth || 350;
+            if (canvas.width !== cW) {
+                canvas.width = cW;
+                canvas.height = cW;
+            }
+            const info = getClosureInfo(N);
+            let steps;
+            let style;
+            if (info.closes) {
+                steps = info.totalSteps;
+                style = 'rainbow';
+            } else {
+                steps = N * 4; // Show 4 drift blocks
+                style = 'rainbow';
+            }
+            const { pts } = generatePath(steps, N);
+            drawPath(canvas, pts, steps, N, { style, petalColors: true, totalPetals: info.closes ? info.petals : 4 });
+
+            // Update info
+            const g = gcd(N, 6);
+            document.getElementById('cl-N').textContent = N;
+            document.getElementById('cl-gcd').textContent = g;
+            const closesEl = document.getElementById('cl-closes');
+            closesEl.textContent = info.closes ? 'YES ✓' : 'NO ✗';
+            closesEl.className = 'info-val ' + (info.closes ? 'good' : 'bad');
+            document.getElementById('cl-steps').textContent = info.closes ? info.totalSteps : '∞';
+            document.getElementById('cl-petals').textContent = info.closes ? info.petals : '—';
+
+            const note = document.getElementById('cl-note');
+            if (info.closes) {
+                note.style.borderColor = 'var(--green)';
+                note.innerHTML = `<span style="color:var(--green)">Closes at step ${info.totalSteps}.</span> Each color is one block of ${N} steps. After ${info.petals} block${info.petals === 1 ? '' : 's'}, the walker returns to the origin.`;
+            } else {
+                note.style.borderColor = 'var(--accent2)';
+                note.innerHTML = `<span style="color:var(--accent2)">Never closes at a multiple of N.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
+            }
+        }
+
+        // Closing buttons
+        document.getElementById('close-n-grid').addEventListener('click', e => {
+            const btn = e.target.closest('.n-btn');
+            if (!btn) return;
+            document.querySelectorAll('#close-n-grid .n-btn, #drift-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            drawN(parseInt(btn.dataset.n), false);
+        });
+
+        document.getElementById('drift-n-grid').addEventListener('click', e => {
+            const btn = e.target.closest('.n-btn');
+            if (!btn) return;
+            document.querySelectorAll('#close-n-grid .n-btn, #drift-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            drawN(parseInt(btn.dataset.n), true);
+        });
+
+        setTimeout(() => drawN(3, false), 120);
+    })();
+
+    // =========================================================
+    // DEMO 3: PETAL EXPLORER
+    // =========================================================
+
+    const GCD_GROUPS = {
+        2: [4, 8, 10, 14, 16, 22, 26, 28],
+        3: [9, 15, 21, 27, 33, 39, 45],
+        6: [6, 12, 18, 24, 30, 42, 54, 60]
+    };
+
+    (function initPetalDemo() {
+        const canvas = document.getElementById('petal-canvas');
+        if (!canvas) return;
+        const resize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetWidth;
+        };
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 60);
+
+        let currentGcd = 6;
+        let currentN = 6;
+
+        function buildNRow(g) {
+            const row = document.getElementById('petal-n-row');
+            row.innerHTML = '';
+            GCD_GROUPS[g].forEach((N, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'n-btn' + (i === 0 ? ' selected' : '');
+                btn.textContent = 'N=' + N;
+                btn.dataset.n = N;
+                btn.onclick = () => {
+                    row.querySelectorAll('.n-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    drawPetal(N, g);
+                };
+                row.appendChild(btn);
+            });
+            drawPetal(GCD_GROUPS[g][0], g);
+        }
+
+        function drawPetal(N, g) {
+            currentN = N;
+            const cW = canvas.offsetWidth || 350;
+            if (canvas.width !== cW) {
+                canvas.width = cW;
+                canvas.height = cW;
+            }
+            const info = getClosureInfo(N);
+            if (!info.closes) return;
+            const { pts } = generatePath(info.totalSteps, N);
+            drawPath(canvas, pts, info.totalSteps, N, { style: 'rainbow', petalColors: true, totalPetals: info.petals });
+
+            document.getElementById('pt-N').textContent = N;
+            document.getElementById('pt-gcd').textContent = g;
+            document.getElementById('pt-delta').textContent = info.delta + '°';
+            document.getElementById('pt-petals').textContent = info.petals;
+            document.getElementById('pt-steps').textContent = info.totalSteps.toLocaleString();
+
+            const dT = info.delta;
+            const explain = {
+                60: `Δθ = 60° → 6 rotation petals (360°/60° = 6). Each block rotates 60° from the previous.`,
+                120: `Δθ = 120° → 3 rotation petals (360°/120° = 3). Each block rotates 120°.`,
+                180: `Δθ = 180° → 2 rotation petals (360°/180° = 2). The second block is flipped 180° from the first.`,
+                240: `Δθ = 240° → 3 rotation petals (rotates 240° = −120° each time).`,
+                300: `Δθ = 300° → 6 rotation petals (rotates 300° = −60° each time).`,
+            };
+            document.getElementById('pt-explain').textContent = explain[dT] || `Δθ = ${dT}°`;
+        }
+
+        // GCD group buttons
+        ['gcd2-btn', 'gcd3-btn', 'gcd6-btn'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', function() {
+                ['gcd2-btn', 'gcd3-btn', 'gcd6-btn'].forEach(bid => {
+                    const b = document.getElementById(bid);
+                    if (b) b.classList.remove('active');
+                });
+                this.classList.add('active');
+                currentGcd = parseInt(this.dataset.gcd);
+                buildNRow(currentGcd);
+            });
+        });
+
+        buildNRow(6);
+    })();
+
+    // =========================================================
+    // DEMO 4: PETAL ANATOMY (N=24)
+    // =========================================================
+
+    (function initAnatDemo() {
+        const canvas = document.getElementById('anat-canvas');
+        if (!canvas) return;
+        const resize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetWidth;
+        };
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 60);
+
+        const N = 24;
+        const info = getClosureInfo(N); // 144 steps, 6 petals
+        let pathData = null;
+
+        function ensurePath() {
+            if (!pathData) pathData = generatePath(info.totalSteps, N);
+            return pathData;
+        }
+
+        function drawMode(mode) {
+            const cW = canvas.offsetWidth || 350;
+            if (canvas.width !== cW) {
+                canvas.width = cW;
+                canvas.height = cW;
+            }
+            const { pts } = ensurePath();
+            const labelEl = document.getElementById('anat-label');
+            const explainEl = document.getElementById('anat-explain');
+
+            if (mode === 'full') {
+                drawPath(canvas, pts, info.totalSteps, N, { style: 'rainbow', petalColors: true, totalPetals: info.petals });
+                labelEl.textContent = 'Full rosette (144 steps)';
+                explainEl.textContent = 'The complete shape: 6 petals of 24 steps each. Each color is one petal (one block of N steps). Notice that every petal has the same shape — they\'re all the same curve, just rotated by 60°.';
+            } else if (mode === 'one') {
+                // Draw one petal (first 24 steps) against dim background
+                const { pts: pts2 } = generatePath(info.totalSteps, N);
+                drawPath(canvas, pts2, info.totalSteps, N, { style: 'rainbow', petalColors: true, totalPetals: info.petals, highlightPetal: 0 });
+                labelEl.textContent = 'First petal only (steps 1–24)';
+                explainEl.textContent = 'Isolating one petal of 24 steps (highlighted). This single petal has bilateral symmetry — it\'s mirror-symmetric around a central axis. This comes from x² ≡ (N−x)² mod N.';
+            } else if (mode === 'half') {
+                // Draw first half of first petal (steps 1-12)
+                const { pts: pts3 } = generatePath(12, N);
+                drawPath(canvas, pts3, 12, N, { style: 'neon', petalColors: false, totalPetals: 1 });
+                labelEl.textContent = 'First sub-petal only (steps 1–12)';
+                explainEl.textContent = 'The first half of the first petal (12 steps). This sub-petal is ALSO bilaterally symmetric. Because 4 divides N=24, (x+12)² ≡ x² mod 24, making the second 12 steps a rotation copy of the first.';
+            }
+        }
+
+        document.getElementById('anat-full-btn').onclick = function() {
+            document.querySelectorAll('#anat-full-btn, #anat-one-btn, #anat-half-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            drawMode('full');
+        };
+
+        document.getElementById('anat-one-btn').onclick = function() {
+            document.querySelectorAll('#anat-full-btn, #anat-one-btn, #anat-half-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            drawMode('one');
+        };
+
+        document.getElementById('anat-half-btn').onclick = function() {
+            document.querySelectorAll('#anat-full-btn, #anat-one-btn, #anat-half-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            drawMode('half');
+        };
+
+        setTimeout(() => drawMode('full'), 100);
+    })();
+
+    // =========================================================
+    // ANATOMY COMPARE GRID (N=6, N=12, N=24)
+    // =========================================================
+
+    (function initAnatCompare() {
+        const grid = document.getElementById('anat-compare-grid');
+        if (!grid) return;
+
+        const cases = [
+            { N: 6, label: 'N = 6', sub: '4|N? No. No sub-petal split.' },
+            { N: 12, label: 'N = 12', sub: '4|N? Yes. Sub-petals appear.' },
+            { N: 24, label: 'N = 24', sub: '4|N? Yes. Clear sub-structure.' },
+        ];
+
+        cases.forEach(({ N, label, sub }) => {
+            const cell = document.createElement('div');
+            cell.className = 'gallery-cell';
+            const c = document.createElement('canvas');
+            c.width = 200;
+            c.height = 200;
+            const lbl = document.createElement('div');
+            lbl.className = 'gallery-label';
+            lbl.style.fontSize = '10px';
+            lbl.innerHTML = `<span style="color:#fff">${label}</span> <br>${sub}`;
+            cell.appendChild(c);
+            cell.appendChild(lbl);
+            grid.appendChild(cell);
+
+            setTimeout(() => {
+                const info = getClosureInfo(N);
+                const { pts } = generatePath(info.totalSteps, N);
+                drawPath(c, pts, info.totalSteps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
+            }, 200);
+        });
+    })();
+
+    // =========================================================
+    // RESPONSIVE CANVAS RESIZER
+    // =========================================================
+
+    window.addEventListener('resize', () => {
+        // Trigger hero redraw
+        const hc = document.getElementById('hero-canvas');
+        if (hc) {
+            const w = hc.offsetWidth;
+            hc.width = w;
+            hc.height = w;
+            const info = getClosureInfo(90);
+            const { pts } = generatePath(info.totalSteps, 90);
+            drawPath(hc, pts, info.totalSteps, 90, { style: 'neon', petalColors: true, totalPetals: 6 });
+        }
+    });
+  </script>
+ </body>
+</html>
