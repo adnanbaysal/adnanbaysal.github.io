@@ -4,32 +4,35 @@ Because of unknown reasons, this turtle has a pen attached to its body, touching
 As the turtle moves, it draws lines to the plane. 
 You can command this turtle to either change its direction by any degree, or move a step forward.
 This is the basic idea behind "Turtle graphics", although it is a resticted version of it. 
-It's already known that even with this very basic set of instructions, we can draw very complicated shapes.
+It's already known that even with this very basic set of instructions, we can draw very complicated shapes. 
 
-This article will show a specific family of drawings that uses the essence of turtle graphics, 
-combined with very simple mathematical functions, which creates beautiful, 
-symmetric images which has both symmetry and chaotic nature. 
+But complicated drawings require a complicated algorithm to instruct the turtle, right. 
+This article will prove that may not be the case. We'll draw very detailed and beautiful images 
+which combines symmetry and chaos with a very simple algorithm that is based on some nice mathematical structure. 
 With only two integers as input, the algorithm outputs an infinite variety of stunning results. 
 Here are a few selected examples:
 
 {{
-AGENT: Put a horizontally slided list of images. We can generate them using the algorithm. Make the code tweakable so that I can choose which images to show later.
+AGENT: Put an interactive section here showing some predefined set of images by clicking the corresponding button.
 }}
 
-As you can see, these graphs has rosette-like symmetric structures with some chaotic behaivor and has some number of "petals" that repeats. 
-After showing the algorithm that generates them, we'll analyze the mathematical reason behind these symmetries.
+As you can see, these graphs has rosette-like symmetric structures with some chaotic behaivor. 
+The images have repeating patterns in a circular way, which we call "petals". 
+In the next section, we'll explain the algorithm that generates them. 
+Next, we'll analyze the mathematical reason behind these symmetries.
 
 Section 2: The Algorithm
+Assume our turtle is facing to the east, but any other direction works as well.
+Choose two relatively prime integers r and s, i.e. with no common (positive) divisors except 1.
+Although not a restriction, it's enough to consider the case 1 <= r < s.
 
-Our algorithm is very simple, as promised: 
-* Turtle starts facing east, but any other direction works as well.
-* Choose two relatively prime integers r and s, i.e. with no common (positive) divisors except 1.
-* Let N be the maximum number of steps that whe turtle will move. 
-  N depends on s whose relation will be given later. 
-  N is at most 6s and is an integer multiple of s.
+* Calculate the number of steps N using s using a formula that will be given later. 
+  The formula will result in a positive integer multiple of N that is at most 6s.
+* Calculate the unit angle of rotation c = 2 * PI * r / s radians, or ecuivalently 360 * r / s degrees.
+  Note that this rotation is r / s of a full turn, that's one reason why we select them coprime and r < s.
 * For n from 1 to N, turtle repeats the following:
     - Move one step forward in the curent facing direction
-    - Rotate facing direction clockwise by n^2 * 360 * r / s degrees (or equivalently n^2 * 2 * PI * r / s radians)
+    - Rotate facing direction clockwise by n^2 * c radians.
 
 For simplicity of analysis, we can assume turtle starts at origin and faces towards positive x-axis.
 Lets see some small examples where 1 <= s <= 12. Also we'll set r = 1 for now. 
@@ -40,7 +43,8 @@ AGENT: Put an interactive section here. User should be able to select s value an
 }}
 
 From these simple cases, we see all graphs has reflectional symmetries, and most of them also have rotational symmetries. 
-Here is a table of symmetry groups (rotations and reflections) that each graph belongs to:
+Mathematically, these graphs form a Dihedral group: Groups with rotational and reflectional symmetries. 
+Here is a table of Dihedral groups that each graph belongs to:
 
 {{
     AGENT: Give a table showing s, N, symmetry group that the graph belongs to.
@@ -48,20 +52,24 @@ Here is a table of symmetry groups (rotations and reflections) that each graph b
 
 We see that the rotational symmmetries has order 1, 2, 3, 4, 6, and 12, which are divisors of 12. 
 Besides, repeating petal like structures all have reflection symmetries. 
-Let's see why this happens in the next section.
+We'll see why this happens in the next section.
 
-Section 3: The Math of Symmetry
+Section 3: The Math Behind the Symmetries
 
 {{
     AGENT: In this section, simply explain why we see symmetric shapes. 
     First, derive the formula for the heading angle after n steps. 
-    Then prove that the change of angles (i.e. relative rotations) are s periodic, 
-    and heading angle is k*s periodic for k is a divisor of 6.
+    Then show that for both angle change and cumulative orientation, we can simplify arithmetic in modulo s.
+    After that, prove that the change of angles (i.e. relative rotations) are s-periodic, 
+    and heading angle is k*s periodic for some k which is a divisor of 6.
     Explain what those periodicities mean geometrically.
-    Then explain the palindromic nature of n^2 and prove that this and the above two periodicity 
-    makes almost all of the symmetric images we see before (I'm not sure this is true, so verify it).
+    Then explain the palindromic nature of n^2 mod s, and prove that this and the above two periodicity 
+    makes almost all of the symmetric images we see before (I'm not sure this is true, so verify it first).
     Also create a random turtle walk having the same set of properties as the n^2 angle change: 
-    s and k*s periodicity and palindromic nature of s length sub walks.
+        - s-period for angle change, 
+        - a multiple of 2PI/6 as offset after s steps, 
+        - k*s period for total angle, and 
+        - palindromic nature of s length sub walks.
     After that, show a few example with degree 4 and degree 12 symmetry, and emphasize these are not divisors of 6.
     Next, show that when 4 | s, we have also s/2 shift equivalence property which makes some graphs with 4 and 12 symmetries.
 }}
