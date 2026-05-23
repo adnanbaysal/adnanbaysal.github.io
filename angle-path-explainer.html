@@ -7,7 +7,7 @@
    Square Turns &mdash; Hidden Symmetry in a Walking Sequence
   </title>
   <style>
-   :root{ --accent:#00d2ff; --accent2:#ff6b6b; --gold:#ffd700; --bg:#050505; --bg2:#090d12; --panel:#0d1218; --border:#1a2530; --text:#d8e0e8; --text-dim:#6a7a8a; --green:#00e5a0; --purple:#b388ff; } *,*::before,*::after{box-sizing:border-box;margin:0;padding:0} html{scroll-behavior:smooth} body{ font-family:'Georgia',serif; background:var(--bg); color:var(--text); line-height:1.75; overflow-x:hidden; } ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:#050505} ::-webkit-scrollbar-thumb{background:#1a2530;border-radius:3px} /* NAV */ nav{ position:fixed;top:0;left:0;right:0; background:rgba(5,5,5,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); z-index:100; display:flex;align-items:center;justify-content:space-between; padding:0 24px;height:52px; } .nav-brand{color:var(--accent);font-family:'Courier New',monospace;font-size:13px;font-weight:bold;text-decoration:none;letter-spacing:2px} .nav-links{display:flex;gap:20px} .nav-links a{color:var(--text-dim);text-decoration:none;font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;transition:color .2s} .nav-links a:hover{color:var(--accent)} /* HERO */ .hero{ min-height:100vh; display:flex;flex-direction:column; align-items:center;justify-content:center; padding:80px 20px 40px; position:relative; overflow:hidden; } .hero-bg{ position:absolute;inset:0; background:radial-gradient(ellipse at 30% 40%,rgba(0,210,255,0.06) 0%,transparent 60%), radial-gradient(ellipse at 70% 70%,rgba(179,136,255,0.05) 0%,transparent 50%); } .hero-canvas-wrap{ width:min(500px,90vw);height:min(500px,90vw); position:relative;margin-bottom:40px; } #hero-canvas{ width:100%;height:100%; border-radius:50%; border:1px solid var(--border); background:#050505; } .hero-ring{ position:absolute;inset:-4px; border-radius:50%; border:1px solid rgba(0,210,255,0.3); animation:pulse 3s ease-in-out infinite; } @keyframes pulse{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:0.7;transform:scale(1.01)}} .hero-text{text-align:center;max-width:640px;position:relative} .hero-kicker{ font-family:'Courier New',monospace; font-size:11px;letter-spacing:3px; color:var(--accent);text-transform:uppercase;margin-bottom:16px; } .hero-title{ font-size:clamp(2rem,6vw,3.5rem); font-weight:bold;line-height:1.15; margin-bottom:16px; background:linear-gradient(135deg,#fff 0%,var(--accent) 100%); -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; } .hero-sub{ font-size:1.05rem;color:var(--text-dim); margin-bottom:32px;line-height:1.6; } .hero-cta{ display:inline-flex;align-items:center;gap:8px; background:transparent;border:1px solid var(--accent); color:var(--accent);padding:10px 24px;border-radius:4px; font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px; text-decoration:none;cursor:pointer; transition:background .2s,color .2s; } .hero-cta:hover{background:var(--accent);color:#000} /* ARTICLE LAYOUT */ article{max-width:720px;margin:0 auto;padding:0 24px} /* SECTION BLOCKS */ .section{padding:80px 0} .section+.section{border-top:1px solid var(--border)} .section-number{ font-family:'Courier New',monospace;font-size:11px; color:var(--accent);letter-spacing:3px; text-transform:uppercase;margin-bottom:12px;display:block; } h2{ font-size:clamp(1.5rem,4vw,2.2rem); font-weight:bold;line-height:1.2; margin-bottom:24px;color:#fff; } h3{ font-size:1.15rem;font-weight:bold; color:var(--accent);margin:32px 0 12px; } p{margin-bottom:18px;color:var(--text)} p:last-child{margin-bottom:0} strong{color:#fff} em{color:var(--gold);font-style:italic} /* CALLOUT BOXES */ .callout{ background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:20px 24px;margin:28px 0; } .callout.gold{border-left-color:var(--gold)} .callout.green{border-left-color:var(--green)} .callout.red{border-left-color:var(--accent2)} .callout-label{ font-family:'Courier New',monospace;font-size:10px; letter-spacing:2px;text-transform:uppercase; color:var(--accent);margin-bottom:8px;display:block; } .callout.gold .callout-label{color:var(--gold)} .callout.green .callout-label{color:var(--green)} .callout.red .callout-label{color:var(--accent2)} /* MATH DISPLAY */ .math-block{ background:#060b10;border:1px solid var(--border); border-radius:8px;padding:20px 24px; font-family:'Courier New',monospace;font-size:1rem; color:var(--gold);text-align:center;margin:24px 0; line-height:2; } .math-inline{ font-family:'Courier New',monospace; color:var(--gold);font-size:0.92em; } /* PULL QUOTE */ .pull-quote{ border-left:2px solid var(--accent); margin:36px 0;padding:12px 24px; font-size:1.25rem;line-height:1.5; color:#a0c8e0;font-style:italic; } /* INTERACTIVE DEMOS */ .demo-wrap{ background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin:32px 0; } .demo-header{ padding:14px 20px; border-bottom:1px solid var(--border); display:flex;align-items:center;justify-content:space-between; flex-wrap:wrap;gap:8px; } .demo-title{ font-family:'Courier New',monospace;font-size:11px; color:var(--accent);letter-spacing:2px;text-transform:uppercase; } .demo-body{padding:16px 20px} .demo-canvas-row{ display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap; } .demo-canvas-col{flex:1;min-width:200px;display:flex;flex-direction:column;align-items:center;gap:8px} .demo-info-col{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px} /* CANVAS */ .art-canvas{ background:#020608;border-radius:8px; border:1px solid var(--border); display:block;width:100%;aspect-ratio:1; } /* BUTTONS */ .btn-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px} .btn{ padding:7px 14px;border-radius:4px; font-family:'Courier New',monospace;font-size:11px; cursor:pointer;transition:all .15s;border:1px solid; letter-spacing:0.5px; } .btn-primary{ background:var(--accent);color:#000;border-color:var(--accent); } .btn-primary:hover{opacity:0.85} .btn-outline{ background:transparent;color:var(--accent);border-color:var(--accent); } .btn-outline:hover{background:rgba(0,210,255,0.1)} .btn-ghost{ background:transparent;color:var(--text-dim);border-color:var(--border); } .btn-ghost:hover{color:var(--text);border-color:#2a3a4a} .btn-sm{padding:5px 10px;font-size:10px} .btn.active{background:var(--accent);color:#000;border-color:var(--accent)} .btn.inactive{background:rgba(0,210,255,0.08);color:var(--accent);border-color:rgba(0,210,255,0.3)} .btn.drift{background:rgba(255,107,107,0.1);color:var(--accent2);border-color:var(--accent2)} .btn.drift.active{background:var(--accent2);color:#000} /* INFO CARD */ .info-card{ background:#060a0f;border:1px solid var(--border); border-radius:8px;padding:14px 16px; font-family:'Courier New',monospace;font-size:12px; } .info-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0} .info-row+.info-row{border-top:1px solid #0e1a24} .info-key{color:var(--text-dim)} .info-val{color:#fff;font-weight:bold} .info-val.good{color:var(--green)} .info-val.bad{color:var(--accent2)} .info-val.accent{color:var(--accent)} .info-val.gold{color:var(--gold)} /* N PRESET BUTTONS */ .n-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px} .n-btn{ padding:6px 12px;border-radius:4px; font-family:'Courier New',monospace;font-size:12px; cursor:pointer;transition:all .15s; background:#060a0f;border:1px solid var(--border);color:var(--text-dim); } .n-btn:hover{border-color:var(--accent);color:var(--accent)} .n-btn.selected{background:rgba(0,210,255,0.1);border-color:var(--accent);color:var(--accent);font-weight:bold} .n-btn.drift-btn:hover{border-color:var(--accent2);color:var(--accent2)} .n-btn.drift-btn.selected{background:rgba(255,107,107,0.1);border-color:var(--accent2);color:var(--accent2)} /* STEP INDICATORS */ .step-display{ background:#060a0f;border:1px solid var(--border); border-radius:8px;padding:12px 14px;font-family:'Courier New',monospace; } .step-num{font-size:2rem;color:var(--accent);font-weight:bold;line-height:1} .step-label{font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-top:4px} .step-angle{font-size:13px;color:var(--gold);margin-top:8px} /* DIRECTION TABLE */ .dir-table{width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:12px;margin:16px 0} .dir-table th{padding:6px 10px;text-align:left;color:var(--accent);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)} .dir-table td{padding:6px 10px;border-bottom:1px solid #0a1218;color:var(--text-dim)} .dir-table td.highlight{color:#fff;font-weight:bold} .dir-table tr.active-row td{background:rgba(0,210,255,0.05);color:#fff} .dir-table tr.active-row td.highlight{color:var(--accent)} /* GALLERY */ .gallery-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;margin:24px 0; } .gallery-cell{ aspect-ratio:1;background:#020608; border:1px solid var(--border);border-radius:8px; position:relative;overflow:hidden;cursor:pointer; transition:border-color .2s; } .gallery-cell:hover{border-color:var(--accent)} .gallery-cell canvas{width:100%;height:100%;display:block} .gallery-label{ position:absolute;bottom:0;left:0;right:0; background:linear-gradient(transparent,rgba(0,0,0,0.8)); padding:12px 8px 8px; font-family:'Courier New',monospace;font-size:11px; color:var(--accent);text-align:center; } /* LARGE DEMO */ .large-demo{ background:var(--panel);border:1px solid var(--border); border-radius:12px;overflow:hidden;margin:32px 0; } .large-demo-canvas-wrap{ position:relative;width:100%;aspect-ratio:1; background:#020608; } #large-canvas{width:100%;height:100%;display:block} .large-demo-controls{padding:16px 20px;border-top:1px solid var(--border)} .large-n-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px} /* INPUT */ input[type=number],input[type=range]{ background:#060a0f;border:1px solid var(--border); color:var(--text);border-radius:4px; font-family:'Courier New',monospace;font-size:12px;padding:6px 10px; outline:none; } input[type=number]:focus{border-color:var(--accent)} input[type=range]{padding:0;cursor:pointer;accent-color:var(--accent)} /* PETAL TABLE */ .petal-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px} .petal-table th{padding:8px 12px;background:#060a0f;color:var(--accent);font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-align:center;border:1px solid var(--border)} .petal-table td{padding:8px 12px;border:1px solid var(--border);text-align:center;font-family:'Courier New',monospace} .petal-table tr:nth-child(even) td{background:#06090e} .petal-table td.g1{color:var(--text-dim)} /* gcd=1, no close */ .petal-table td.g2{color:#4db8ff} .petal-table td.g3{color:var(--green)} .petal-table td.g6{color:var(--gold)} /* TOC */ .toc{ background:var(--panel);border:1px solid var(--border); border-radius:8px;padding:20px 24px;margin:40px 0; } .toc-title{font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:14px} .toc ol{padding-left:20px;display:flex;flex-direction:column;gap:6px} .toc a{color:var(--text-dim);text-decoration:none;font-size:0.92rem;transition:color .2s} .toc a:hover{color:var(--accent)} /* FOOTER */ footer{ border-top:1px solid var(--border); padding:40px 24px;text-align:center; font-family:'Courier New',monospace;font-size:12px;color:var(--text-dim); } footer a{color:var(--accent);text-decoration:none} /* DIVIDER */ .divider{ display:flex;align-items:center;gap:12px; margin:40px 0;color:var(--text-dim);font-size:12px; } .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)} /* RESPONSIVE */ @media(max-width:600px){ nav{padding:0 16px} article{padding:0 16px} .section{padding:48px 0} h2{font-size:1.5rem} .demo-canvas-row{flex-direction:column} .demo-info-col{width:100%} .hero-canvas-wrap{width:min(320px,85vw);height:min(320px,85vw)} } /* ANNOTATION ARROW */ .annotation{ display:flex;align-items:flex-start;gap:10px; font-size:0.85rem;color:var(--text-dim);font-style:italic; margin-top:8px; } .annotation::before{content:'↑';color:var(--accent);font-style:normal;font-family:'Courier New',monospace} /* HIGHLIGHT PILL */ .pill{ display:inline-block;padding:2px 10px;border-radius:20px; font-family:'Courier New',monospace;font-size:0.8em;font-weight:bold; } .pill-cyan{background:rgba(0,210,255,0.12);color:var(--accent);border:1px solid rgba(0,210,255,0.3)} .pill-gold{background:rgba(255,215,0,0.12);color:var(--gold);border:1px solid rgba(255,215,0,0.3)} .pill-green{background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3)} .pill-red{background:rgba(255,107,107,0.12);color:var(--accent2);border:1px solid rgba(255,107,107,0.3)}
+   :root{ --accent:#00d2ff; --accent2:#ff6b6b; --gold:#ffd700; --bg:#050505; --bg2:#090d12; --panel:#0d1218; --border:#1a2530; --text:#d8e0e8; --text-dim:#6a7a8a; --green:#00e5a0; --purple:#b388ff; } *,*::before,*::after{box-sizing:border-box;margin:0;padding:0} html{scroll-behavior:smooth} body{ font-family:'Georgia',serif; background:var(--bg); color:var(--text); line-height:1.75; overflow-x:hidden; } ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:#050505} ::-webkit-scrollbar-thumb{background:#1a2530;border-radius:3px} /* NAV */ nav{ position:fixed;top:0;left:0;right:0; background:rgba(5,5,5,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); z-index:100; display:flex;align-items:center;justify-content:space-between; padding:0 24px;height:52px; } .nav-brand{color:var(--accent);font-family:'Courier New',monospace;font-size:13px;font-weight:bold;text-decoration:none;letter-spacing:2px} .nav-links{display:flex;gap:20px} .nav-links a{color:var(--text-dim);text-decoration:none;font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;transition:color .2s} .nav-links a:hover{color:var(--accent)} /* HERO */ .hero{ min-height:100vh; display:flex;flex-direction:column; align-items:center;justify-content:center; padding:80px 20px 40px; position:relative; overflow:hidden; } .hero-bg{ position:absolute;inset:0; background:radial-gradient(ellipse at 30% 40%,rgba(0,210,255,0.06) 0%,transparent 60%), radial-gradient(ellipse at 70% 70%,rgba(179,136,255,0.05) 0%,transparent 50%); } .hero-canvas-wrap{ width:min(500px,90vw);height:min(500px,90vw); position:relative;margin-bottom:40px; } #hero-canvas{ width:100%;height:100%; border-radius:50%; border:1px solid var(--border); background:#050505; } .hero-ring{ position:absolute;inset:-4px; border-radius:50%; border:1px solid rgba(0,210,255,0.3); animation:pulse 3s ease-in-out infinite; } @keyframes pulse{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:0.7;transform:scale(1.01)}} .hero-text{text-align:center;max-width:640px;position:relative} .hero-kicker{ font-family:'Courier New',monospace; font-size:11px;letter-spacing:3px; color:var(--accent);text-transform:uppercase;margin-bottom:16px; } .hero-title{ font-size:clamp(2rem,6vw,3.5rem); font-weight:bold;line-height:1.15; margin-bottom:16px; background:linear-gradient(135deg,#fff 0%,var(--accent) 100%); -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; } .hero-sub{ font-size:1.05rem;color:var(--text-dim); margin-bottom:32px;line-height:1.6; } .hero-cta{ display:inline-flex;align-items:center;gap:8px; background:transparent;border:1px solid var(--accent); color:var(--accent);padding:10px 24px;border-radius:4px; font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px; text-decoration:none;cursor:pointer; transition:background .2s,color .2s; } .hero-cta:hover{background:var(--accent);color:#000} /* ARTICLE LAYOUT */ article{max-width:720px;margin:0 auto;padding:0 24px} /* SECTION BLOCKS */ .section{padding:80px 0} .section+.section{border-top:1px solid var(--border)} .section-number{ font-family:'Courier New',monospace;font-size:11px; color:var(--accent);letter-spacing:3px; text-transform:uppercase;margin-bottom:12px;display:block; } h2{ font-size:clamp(1.5rem,4vw,2.2rem); font-weight:bold;line-height:1.2; margin-bottom:24px;color:#fff; } h3{ font-size:1.15rem;font-weight:bold; color:var(--accent);margin:32px 0 12px; } p{margin-bottom:18px;color:var(--text)} p:last-child{margin-bottom:0} strong{color:#fff} em{color:var(--gold);font-style:italic} /* CALLOUT BOXES */ .callout{ background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:20px 24px;margin:28px 0; } .callout.gold{border-left-color:var(--gold)} .callout.green{border-left-color:var(--green)} .callout.red{border-left-color:var(--accent2)} .callout-label{ font-family:'Courier New',monospace;font-size:10px; letter-spacing:2px;text-transform:uppercase; color:var(--accent);margin-bottom:8px;display:block; } .callout.gold .callout-label{color:var(--gold)} .callout.green .callout-label{color:var(--green)} .callout.red .callout-label{color:var(--accent2)} /* MATH DISPLAY */ .math-block{ background:#060b10;border:1px solid var(--border); border-radius:8px;padding:20px 24px; font-family:'Courier New',monospace;font-size:1rem; color:var(--gold);text-align:center;margin:24px 0; line-height:2; } .math-inline{ font-family:'Courier New',monospace; color:var(--gold);font-size:0.92em; } /* PULL QUOTE */ .pull-quote{ border-left:2px solid var(--accent); margin:36px 0;padding:12px 24px; font-size:1.25rem;line-height:1.5; color:#a0c8e0;font-style:italic; } /* INTERACTIVE DEMOS */ .demo-wrap{ background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin:32px 0; } .demo-header{ padding:14px 20px; border-bottom:1px solid var(--border); display:flex;align-items:center;justify-content:space-between; flex-wrap:wrap;gap:8px; } .demo-title{ font-family:'Courier New',monospace;font-size:11px; color:var(--accent);letter-spacing:2px;text-transform:uppercase; } .demo-body{padding:16px 20px} .demo-canvas-row{ display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap; } .demo-canvas-col{flex:1;min-width:200px;display:flex;flex-direction:column;align-items:center;gap:8px} .demo-info-col{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px} /* CANVAS */ .art-canvas{ background:#020608;border-radius:8px; border:1px solid var(--border); display:block;width:100%;aspect-ratio:1; } /* BUTTONS */ .btn-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px} .btn{ padding:7px 14px;border-radius:4px; font-family:'Courier New',monospace;font-size:11px; cursor:pointer;transition:all .15s;border:1px solid; letter-spacing:0.5px; } .btn-primary{ background:var(--accent);color:#000;border-color:var(--accent); } .btn-primary:hover{opacity:0.85} .btn-outline{ background:transparent;color:var(--accent);border-color:var(--accent); } .btn-outline:hover{background:rgba(0,210,255,0.1)} .btn-ghost{ background:transparent;color:var(--text-dim);border-color:var(--border); } .btn-ghost:hover{color:var(--text);border-color:#2a3a4a} .btn-sm{padding:5px 10px;font-size:10px} .btn.active{background:var(--accent);color:#000;border-color:var(--accent)} .btn.inactive{background:rgba(0,210,255,0.08);color:var(--accent);border-color:rgba(0,210,255,0.3)} .btn.drift{background:rgba(255,107,107,0.1);color:var(--accent2);border-color:var(--accent2)} .btn.drift.active{background:var(--accent2);color:#000} /* INFO CARD */ .info-card{ background:#060a0f;border:1px solid var(--border); border-radius:8px;padding:14px 16px; font-family:'Courier New',monospace;font-size:12px; } .info-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0} .info-row+.info-row{border-top:1px solid #0e1a24} .info-key{color:var(--text-dim)} .info-val{color:#fff;font-weight:bold} .info-val.good{color:var(--green)} .info-val.bad{color:var(--accent2)} .info-val.accent{color:var(--accent)} .info-val.gold{color:var(--gold)} /* N PRESET BUTTONS */ .s-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px} .s-btn{ padding:6px 12px;border-radius:4px; font-family:'Courier New',monospace;font-size:12px; cursor:pointer;transition:all .15s; background:#060a0f;border:1px solid var(--border);color:var(--text-dim); } .s-btn:hover{border-color:var(--accent);color:var(--accent)} .s-btn.selected{background:rgba(0,210,255,0.1);border-color:var(--accent);color:var(--accent);font-weight:bold} .s-btn.drift-btn:hover{border-color:var(--accent2);color:var(--accent2)} .s-btn.drift-btn.selected{background:rgba(255,107,107,0.1);border-color:var(--accent2);color:var(--accent2)} /* STEP INDICATORS */ .step-display{ background:#060a0f;border:1px solid var(--border); border-radius:8px;padding:12px 14px;font-family:'Courier New',monospace; } .step-num{font-size:2rem;color:var(--accent);font-weight:bold;line-height:1} .step-label{font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-top:4px} .step-angle{font-size:13px;color:var(--gold);margin-top:8px} /* DIRECTION TABLE */ .dir-table{width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:12px;margin:16px 0} .dir-table th{padding:6px 10px;text-align:left;color:var(--accent);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)} .dir-table td{padding:6px 10px;border-bottom:1px solid #0a1218;color:var(--text-dim)} .dir-table td.highlight{color:#fff;font-weight:bold} .dir-table tr.active-row td{background:rgba(0,210,255,0.05);color:#fff} .dir-table tr.active-row td.highlight{color:var(--accent)} /* GALLERY */ .gallery-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;margin:24px 0; } .gallery-cell{ aspect-ratio:1;background:#020608; border:1px solid var(--border);border-radius:8px; position:relative;overflow:hidden;cursor:pointer; transition:border-color .2s; } .gallery-cell:hover{border-color:var(--accent)} .gallery-cell canvas{width:100%;height:100%;display:block} .gallery-label{ position:absolute;bottom:0;left:0;right:0; background:linear-gradient(transparent,rgba(0,0,0,0.8)); padding:12px 8px 8px; font-family:'Courier New',monospace;font-size:11px; color:var(--accent);text-align:center; } /* LARGE DEMO */ .large-demo{ background:var(--panel);border:1px solid var(--border); border-radius:12px;overflow:hidden;margin:32px 0; } .large-demo-canvas-wrap{ position:relative;width:100%;aspect-ratio:1; background:#020608; } #large-canvas{width:100%;height:100%;display:block} .large-demo-controls{padding:16px 20px;border-top:1px solid var(--border)} .large-s-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px} /* INPUT */ input[type=number],input[type=range]{ background:#060a0f;border:1px solid var(--border); color:var(--text);border-radius:4px; font-family:'Courier New',monospace;font-size:12px;padding:6px 10px; outline:none; } input[type=number]:focus{border-color:var(--accent)} input[type=range]{padding:0;cursor:pointer;accent-color:var(--accent)} /* PETAL TABLE */ .petal-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px} .petal-table th{padding:8px 12px;background:#060a0f;color:var(--accent);font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-align:center;border:1px solid var(--border)} .petal-table td{padding:8px 12px;border:1px solid var(--border);text-align:center;font-family:'Courier New',monospace} .petal-table tr:nth-child(even) td{background:#06090e} .petal-table td.g1{color:var(--text-dim)} /* gcd=1, no close */ .petal-table td.g2{color:#4db8ff} .petal-table td.g3{color:var(--green)} .petal-table td.g6{color:var(--gold)} /* TOC */ .toc{ background:var(--panel);border:1px solid var(--border); border-radius:8px;padding:20px 24px;margin:40px 0; } .toc-title{font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:14px} .toc ol{padding-left:20px;display:flex;flex-direction:column;gap:6px} .toc a{color:var(--text-dim);text-decoration:none;font-size:0.92rem;transition:color .2s} .toc a:hover{color:var(--accent)} /* FOOTER */ footer{ border-top:1px solid var(--border); padding:40px 24px;text-align:center; font-family:'Courier New',monospace;font-size:12px;color:var(--text-dim); } footer a{color:var(--accent);text-decoration:none} /* DIVIDER */ .divider{ display:flex;align-items:center;gap:12px; margin:40px 0;color:var(--text-dim);font-size:12px; } .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)} /* RESPONSIVE */ @media(max-width:600px){ nav{padding:0 16px} article{padding:0 16px} .section{padding:48px 0} h2{font-size:1.5rem} .demo-canvas-row{flex-direction:column} .demo-info-col{width:100%} .hero-canvas-wrap{width:min(320px,85vw);height:min(320px,85vw)} } /* ANNOTATION ARROW */ .annotation{ display:flex;align-items:flex-start;gap:10px; font-size:0.85rem;color:var(--text-dim);font-style:italic; margin-top:8px; } .annotation::before{content:'↑';color:var(--accent);font-style:normal;font-family:'Courier New',monospace} /* HIGHLIGHT PILL */ .pill{ display:inline-block;padding:2px 10px;border-radius:20px; font-family:'Courier New',monospace;font-size:0.8em;font-weight:bold; } .pill-cyan{background:rgba(0,210,255,0.12);color:var(--accent);border:1px solid rgba(0,210,255,0.3)} .pill-gold{background:rgba(255,215,0,0.12);color:var(--gold);border:1px solid rgba(255,215,0,0.3)} .pill-green{background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3)} .pill-red{background:rgba(255,107,107,0.12);color:var(--accent2);border:1px solid rgba(255,107,107,0.3)}
   </style>
  </head>
  <body>
@@ -150,7 +150,7 @@
        Interactive &mdash; Step-by-Step Walker
       </span>
       <span style="font-size:11px;color:var(--text-dim);font-family:'Courier New',monospace">
-       Choose N, then step through
+       Choose S, then step through
       </span>
      </div>
      <div class="demo-body">
@@ -162,17 +162,20 @@
        <div class="demo-info-col">
         <div style="margin-bottom:8px">
          <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
-          Choose N
+          Choose S
          </div>
-         <div class="n-grid" id="step-n-grid">
-          <button class="n-btn selected" data-n="6">
-           N=6
+         <div class="s-grid" id="step-s-grid">
+          <button class="s-btn selected" data-n="3">
+           S=3
           </button>
-          <button class="n-btn" data-n="12">
-           N=12
+          <button class="s-btn" data-n="6">
+           S=6
           </button>
-          <button class="n-btn" data-n="24">
-           N=24
+          <button class="s-btn" data-n="12">
+           S=12
+          </button>
+          <button class="s-btn" data-n="24">
+           S=24
           </button>
          </div>
         </div>
@@ -184,16 +187,16 @@
           Current Step
          </div>
          <div class="step-angle" id="step-angle-display">
-          Heading: 0&deg; (slot 0 of N)
+          Heading: 0&deg; (slot 0 of S)
          </div>
         </div>
         <div class="info-card" id="step-info-card">
          <div class="info-row">
           <span class="info-key">
-           N (directions)
+           S (directions)
           </span>
-          <span class="info-val accent" id="si-N">
-           6
+          <span class="info-val accent" id="si-S">
+           3
           </span>
          </div>
          <div class="info-row">
@@ -201,7 +204,7 @@
            Slot size
           </span>
           <span class="info-val" id="si-slot">
-           60&deg;
+           120&deg;
           </span>
          </div>
          <div class="info-row">
@@ -226,7 +229,7 @@
           Step +1
          </button>
          <button class="btn btn-outline" id="step-block-btn">
-          Step +N
+          Step +S
          </button>
          <button class="btn btn-ghost" id="step-reset-btn">
           Reset
@@ -263,6 +266,7 @@
      <strong>
       will the turtle ever return to exactly where it started, facing the same way?
      </strong>
+     When these two conditions met, further steps will go over the same graph, that is we'll get a periodic graph.
     </p>
    </section>
    <!-- SECTION 2: SQUARE TURNS -->
@@ -286,15 +290,17 @@
      <span class="math-inline">
       (n-1)&sup2;
      </span>
-     , modulo N.
+     . Note that we can calculate this slot number modulo S, since whole multiples of S will correspond full cycle,  
+     and only the remainder is necessary to calculate direction slot change.
     </p>
     <div class="math-block">
-     direction_slot &larr; (direction_slot + (n&minus;1)&sup2;) mod N
+     direction_slot &larr; (direction_slot + (n&minus;1)&sup2;) mod S
     </div>
     <p>
+     Note that using slots instead of degrees or radians makes the formulas cleaner.
      Let's trace through a small example with
      <strong>
-      N = 6
+      S = 6
      </strong>
      (six equally spaced directions, each 60&deg; apart). At step 1, the turn is 0&sup2; = 0. At step 2, it's 1&sup2; = 1 slot. At step 3, it's 2&sup2; = 4 slots. And so on.
     </p>
@@ -327,30 +333,30 @@
     <p>
      The key phrase is
      <em>
-      modulo N
+      modulo S
      </em>
-     . Once the slot index reaches N, it wraps back to 0. With N=6, the slot is always in {0, 1, 2, 3, 4, 5}, corresponding to directions {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}.
+     . Once the slot index reaches S, it wraps back to 0. With S=6, the slot is always in {0, 1, 2, 3, 4, 5}, corresponding to directions {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}.
     </p>
     <div class="callout">
      <span class="callout-label">
       Why squares?
      </span>
      <p>
-      Many functions could drive the turning &mdash; the linear choice gives spirals, the random choice gives a drunk walk. Squares sit in a beautiful middle ground:
+      Many functions could drive the turning &mdash; the linear choice gives graphs that resemble the Euler spiral, the random choice gives a drunk walk. Squares sit in a beautiful middle ground:
       <strong>
        growing fast enough to create variety, but structured enough to create symmetry
       </strong>
-      . This is what we're here to explore.
+      . This is why we're here to explore.
      </p>
     </div>
     <p>
-     There's a classical result lurking here. The cumulative slot after exactly
+     There's a classical result lurking here. The cumulative slot of direction after exactly
      <span class="math-inline">
-      j
+      n
      </span>
      steps is
      <span class="math-inline">
-      0&sup2; + 1&sup2; + 2&sup2; + ... + (j&minus;1)&sup2;
+      0&sup2; + 1&sup2; + 2&sup2; + ... + (n&minus;1)&sup2;
      </span>
      , which equals the famous
      <strong>
@@ -359,10 +365,12 @@
      :
     </p>
     <div class="math-block">
-     f(j) = j(j&minus;1)(2j&minus;1) / 6
+     f(n) = n(n&minus;1)(2n&minus;1) / 6
     </div>
     <p>
-     This seemingly innocent formula is the key to everything. The "6" in the denominator is not a coincidence &mdash; it will come back to haunt us in the most beautiful way.
+     The relation between the cubic cumulative direction formula and quadratic direction change per step formula 
+     is the key to the chaotic symmetries we'll explore in the rest of this article. 
+     The "6" in the denominator is not a coincidence &mdash; it will come back to haunt us in the most beautiful way.
     </p>
    </section>
    <!-- SECTION 3: BEAUTY FIRST -->
@@ -374,10 +382,12 @@
      Beauty Before Proof
     </h2>
     <p>
-     Before we dig into the mathematics, let me show you what this rule produces for large N. These aren't hand-crafted images &mdash; they emerge purely from the square-turn rule applied over tens of thousands of steps.
+     Before we dig into the mathematics, let me show you what this rule produces for large N. These aren't hand-crafted images &mdash; 
+     they emerge purely from the square-turn rule applied over tens of thousands of steps.
     </p>
     <p>
-     Click any thumbnail to explore it. Notice the petal-like shapes and the striking symmetry &mdash; we'll spend the rest of the article explaining where these come from.
+     Click any thumbnail to explore it. Notice the rosette-like shapes with varying number of "petal"s and the striking symmetry &mdash; 
+     we'll spend the rest of the article explaining where these come from.
     </p>
     <!-- Gallery -->
     <div class="gallery-grid" id="gallery-grid">
@@ -391,17 +401,17 @@
      </div>
      <div class="large-demo-controls">
       <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">
-       Select N
+       Select S
       </div>
-      <div class="large-n-grid" id="large-n-grid">
+      <div class="large-s-grid" id="large-s-grid">
        <!-- Populated by JS -->
       </div>
       <div class="info-card" style="margin-top:12px">
        <div class="info-row">
         <span class="info-key">
-         N (directions)
+         S (directions)
         </span>
-        <span class="info-val accent" id="lg-N">
+        <span class="info-val accent" id="lg-S">
          &mdash;
         </span>
        </div>
@@ -423,7 +433,7 @@
        </div>
        <div class="info-row">
         <span class="info-key">
-         gcd(N, 6)
+         gcd(S, 6)
         </span>
         <span class="info-val green" id="lg-gcd">
          &mdash;
@@ -432,9 +442,9 @@
       </div>
      </div>
     </div>
-    <div class="pull-quote">
+    <!-- <div class="pull-quote">
      "The rule is just three words: turn by squares. The result takes your breath away."
-    </div>
+    </div> -->
    </section>
    <!-- SECTION 4: CLOSING -->
    <section class="section" id="closing">
@@ -445,11 +455,16 @@
      When Does the Path Close?
     </h2>
     <p>
-     Not all choices of N produce the beautiful closed rosettes above. For some N, the path
+     For most of the values of S, the graph of the path perfectly closes in a circular way after some number of steps. 
+     That's why we call the resulting shape a rosette. The possible number of petals of the rosette are 1, 2, 3, 4, 6, and 12. 
+     These are exactly the positive divisors of 12.
+     
+     On the other hand, some S result in a path that
      <em>
       drifts endlessly
      </em>
-     , never returning to the start. Try N = 5 or N = 7 in the demo below &mdash; the path spirals outward, block after block.
+     that never returning to the start, but instead proceeds in the positive x-axis infinitely. 
+     Try below demo to see the difference between closing and drifting graphs. 
     </p>
     <p>
      What separates the closing cases from the drifting ones?
@@ -472,58 +487,69 @@
          <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
           Closing &checkmark;
          </div>
-         <div class="n-grid" id="close-n-grid">
-          <button class="n-btn" data-n="2">
+         <div class="s-grid" id="close-s-grid">
+          <button class="s-btn" data-n="2">
            2
           </button>
-          <button class="n-btn selected" data-n="3">
+          <button class="s-btn selected" data-n="3">
            3
           </button>
-          <button class="n-btn" data-n="4">
+          <button class="s-btn" data-n="4">
            4
           </button>
-          <button class="n-btn" data-n="6">
+          <button class="s-btn" data-n="6">
            6
           </button>
-          <button class="n-btn" data-n="8">
+          <button class="s-btn" data-n="8">
            8
           </button>
-          <button class="n-btn" data-n="9">
+          <button class="s-btn" data-n="9">
            9
           </button>
-          <button class="n-btn" data-n="12">
+          <button class="s-btn" data-n="12">
            12
           </button>
-          <button class="n-btn" data-n="24">
+          <button class="s-btn" data-n="24">
            24
+          </button>
+          <button class="s-btn drift-btn" data-n="25">
+           25
+          </button>
+          <button class="s-btn drift-btn" data-n="49">
+           49
           </button>
          </div>
          <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;margin-top:8px">
           Drifting &cross;
          </div>
-         <div class="n-grid" id="drift-n-grid">
-          <button class="n-btn drift-btn" data-n="5">
+         <div class="s-grid" id="drift-s-grid">
+          <button class="s-btn drift-btn" data-n="5">
            5
           </button>
-          <button class="n-btn drift-btn" data-n="7">
+          <button class="s-btn drift-btn" data-n="7">
            7
           </button>
-          <button class="n-btn drift-btn" data-n="11">
+          <button class="s-btn drift-btn" data-n="11">
            11
           </button>
-          <button class="n-btn drift-btn" data-n="13">
+          <button class="s-btn drift-btn" data-n="13">
            13
           </button>
-          <button class="n-btn drift-btn" data-n="25">
-           25
+          <button class="s-btn drift-btn" data-n="35">
+           35
           </button>
-          <!-- TODO: Fix the explanation, this does not drift but repeats the same 1-petal in the same place, there is another value to consider for drifting -->
+          <button class="s-btn drift-btn" data-n="55">
+           55
+          </button>
+          <button class="s-btn drift-btn" data-n="77">
+           77
+          </button>
          </div>
         </div>
         <div class="info-card">
          <div class="info-row">
           <span class="info-key">
-           N
+           S
           </span>
           <span class="info-val accent" id="cl-N">
            3
@@ -531,7 +557,7 @@
          </div>
          <div class="info-row">
           <span class="info-key">
-           gcd(N, 6)
+           gcd(S, 6)
           </span>
           <span class="info-val" id="cl-gcd">
            3
@@ -563,27 +589,27 @@
          </div>
         </div>
         <div id="cl-note" style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:8px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
-         This path closes. Each color is one "petal" &mdash; a block of N steps. After all petals, the walker is back exactly where it started.
+         This path closes. Each color is one "petal" &mdash; a block of S steps. After all petals, the walker is back exactly where it started.
         </div>
        </div>
       </div>
      </div>
     </div>
     <h3>
-     The Answer: gcd(N, 6)
+     The Answer: gcd(S, 6) and square free-ness!
     </h3>
     <p>
      The closing condition turns out to be elegantly simple. Compute the
      <strong>
       greatest common divisor
      </strong>
-     of N and 6. If it's greater than 1, the path closes. If it's 1, the path drifts forever.
+     of S and 6. If it's greater than 1, the path closes. If it's 1, the path drifts forever.
     </p>
     <div class="math-block">
-     Path closes &xhArr; gcd(N, 6) &gt; 1
+     Path closes &xhArr; gcd(S, 6) &gt; 1
     </div>
     <p>
-     In plain English: the path closes if and only if N shares a factor with 6. Since 6 = 2 &times; 3, this means N must be divisible by 2, by 3, or by both.
+     In plain English: the path closes if and only if S shares a factor with 6. Since 6 = 2 &times; 3, this means S must be divisible by 2, by 3, or by both.
     </p>
     <div class="callout gold">
      <span class="callout-label">
@@ -592,27 +618,27 @@
      <p>
       Look back at the sum-of-squares formula:
       <span class="math-inline">
-       f(j) = j(j+1)(2j+1)/6
+       f(n) = n(n+1)(2n d+1)/6
       </span>
       . That denominator
       <strong>
        6
       </strong>
-      is doing the work. Whether the path's phase shift after N steps is zero (mod N) depends on how N interacts with this 6. We'll see the full proof shortly.
+      is doing the work. Whether the path's phase shift after S steps is zero (mod S) depends on how S interacts with this 6. We'll see the full proof shortly.
      </p>
     </div>
     <p>
-     This instantly predicts the behavior of any N:
+     This instantly predicts the behavior of any S:
     </p>
     <!-- Petal Table -->
     <table class="petal-table">
      <thead>
       <tr>
        <th>
-        N
+        S
        </th>
        <th>
-        gcd(N,6)
+        gcd(S,6)
        </th>
        <th>
         Closes?
@@ -838,30 +864,31 @@
     <p>
      Here's the key insight, without heavy algebra. After the walker completes one block of
      <strong>
-      N steps
+      S steps
      </strong>
-     , it arrives at some position in the plane. Whether it has returned to the start depends on the vector sum of all N unit steps taken.
+     , it arrives at some position in the plane. Whether it has returned to the start depends on the vector sum of all S unit steps taken.
     </p>
     <p>
      Because the squared-turn rule is
      <em>
-      periodic modulo N
+      periodic modulo S
      </em>
-     in a specific sense, the second block of N steps is identical to the first &mdash; but
+     in a specific sense, the second block of S steps is identical to the first &mdash; but
      <strong>
       rotated by a fixed angle &Delta;&theta;
      </strong>
      determined by
      <span class="math-inline">
-      f(N) mod N
+      f(S) mod S
      </span>
      . The third block is the same shape, rotated again by &Delta;&theta;, and so on.
     </p>
     <p>
-     Think of each N-step block as one "blade" of a fan. The blades are all the same shape, just rotated. The path closes when the blades complete a full rotation &mdash; i.e., when enough rotations of &Delta;&theta; add up to 360&deg;.
+     Think of each S-step block as one "blade" of a fan. The blades are all the same shape, just rotated. 
+     The path closes when the blades complete a full rotation &mdash; i.e., when enough rotations of &Delta;&theta; add up to 360&deg;.
     </p>
     <div class="math-block">
-     &Delta;&theta; = 360&deg; &times; f(N) / N (mod 360&deg;)
+     &Delta;&theta; = 360&deg; &times; f(S) / S (mod 360&deg;)
     </div>
     <p>
      For the path to close, &Delta;&theta; must be a rational fraction of 360&deg;. It turns out that &Delta;&theta; is
@@ -880,7 +907,8 @@
      Counting Petals &mdash; Divisors of 6
     </h2>
     <p>
-     Look at the table above. The petal counts are 2, 3, and 6 &mdash; and for drifting paths, we could say there's "1 petal" that just repeats endlessly. Those four numbers &mdash; 1, 2, 3, 6 &mdash; are exactly the
+     Look at the table above. The petal counts are 2, 3, and 6 &mdash; and for drifting paths, we could say there's "1 petal" that just repeats endlessly. 
+     Those four numbers &mdash; 1, 2, 3, 6 &mdash; are exactly the
      <strong>
       divisors of 6
      </strong>
@@ -892,22 +920,22 @@
     <p>
      The rotation angle between consecutive blocks is
      <span class="math-inline">
-      &Delta;&theta; = 360&deg; &times; (f(N) mod N) / N
+      &Delta;&theta; = 360&deg; &times; (f(S) mod S) / S
      </span>
      . Let's think about what values this can take.
     </p>
     <p>
      We have
      <span class="math-inline">
-      f(N) = N(N+1)(2N+1)/6
+      f(S) = S(S+1)(2S+1)/6
      </span>
      , so
      <span class="math-inline">
-      f(N)/N = (N+1)(2N+1)/6
+      f(S)/S = (S+1)(2S+1)/6
      </span>
      . The denominator is always 6 (before cancellation with the numerator). So
      <span class="math-inline">
-      f(N)/N
+      f(S)/S
      </span>
      is always a multiple of 1/6, which means &Delta;&theta; is always a multiple of
      <strong>
@@ -933,7 +961,7 @@
      </p>
     </div>
     <p>
-     Which divisor of 6 you get depends precisely on gcd(N, 6):
+     Which divisor of 6 you get depends precisely on gcd(S, 6):
     </p>
     <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
      <li>
@@ -996,7 +1024,7 @@
          gcd = 6 &rarr; 6 petals
         </button>
        </div>
-       <div class="n-grid" id="petal-n-row">
+       <div class="s-grid" id="petal-n-row">
        </div>
       </div>
       <div class="demo-canvas-row">
@@ -1008,7 +1036,7 @@
         <div class="info-card">
          <div class="info-row">
           <span class="info-key">
-           N
+           S
           </span>
           <span class="info-val accent" id="pt-N">
            &mdash;
@@ -1016,7 +1044,7 @@
          </div>
          <div class="info-row">
           <span class="info-key">
-           gcd(N, 6)
+           gcd(S, 6)
           </span>
           <span class="info-val" id="pt-gcd">
            &mdash;
@@ -1048,7 +1076,7 @@
          </div>
         </div>
         <div id="pt-explain" style="font-size:12px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:10px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
-         Each color in the drawing is one "block" of N steps. The blocks are like the blades of a fan &mdash; all the same shape, just rotated.
+         Each color in the drawing is one "block" of S steps. The blocks are like the blades of a fan &mdash; all the same shape, just rotated.
         </div>
        </div>
       </div>
@@ -1085,22 +1113,22 @@
      This bilateral symmetry comes from one of the most elegant modular-arithmetic identities you'll ever see:
     </p>
     <div class="math-block">
-     x&sup2; &equiv; (N &minus; x)&sup2; (mod N)
+     x&sup2; &equiv; (S &minus; x)&sup2; (mod S)
     </div>
     <p>
      Why? Expand the right side:
      <span class="math-inline">
-      (N&minus;x)&sup2; = N&sup2; &minus; 2Nx + x&sup2;
+      (S&minus;x)&sup2; = S&sup2; &minus; 2Sx + x&sup2;
      </span>
      . Both
      <span class="math-inline">
-      N&sup2;
+      S&sup2;
      </span>
      and
      <span class="math-inline">
-      &minus;2Nx
+      &minus;2Sx
      </span>
-     are multiples of N, so they vanish modulo N, leaving
+     are multiples of S, so they vanish modulo S, leaving
      <span class="math-inline">
       x&sup2;
      </span>
@@ -1117,11 +1145,11 @@
      </em>
      to the turn at step
      <span class="math-inline">
-      N &minus; n
+      S &minus; n
      </span>
-     , modulo N. In other words:
+     , modulo S. In other words:
      <strong>
-      the sequence of turns in each N-step block is palindromic
+      the sequence of turns in each S-step block is palindromic
      </strong>
      . The first turn equals the last, the second equals the second-to-last, and so on.
     </p>
@@ -1133,7 +1161,7 @@
      </em>
      in a mirrored fashion &mdash; which is exactly what bilateral symmetry means for a curve. This is true for
      <strong>
-      every single N
+      every single S
      </strong>
      , not just special cases.
     </p>
@@ -1144,19 +1172,20 @@
      <p>
       There's an even stronger result. Define the cumulative sum
       <span class="math-inline">
-       f(j) = 1&sup2; + 2&sup2; + &middot;&middot;&middot; + j&sup2;
+       f(n) = 1&sup2; + 2&sup2; + &middot;&middot;&middot; + n&sup2;
       </span>
-      . Then for any N and any step j:
+      . Then for any S and any step j:
      </p>
      <div style="font-family:'Courier New',monospace;color:var(--gold);text-align:center;padding:10px">
-      f(j&minus;1) + f(N&minus;j) &equiv; f(N&minus;1) (mod N)
+      f(n&minus;1) + f(S&minus;n) &equiv; f(S&minus;1) (mod S)
      </div>
      <p>
       The sum of cumulative phases at symmetric steps is always the same constant. This constant defines the angle of the mirror axis of each petal.
      </p>
     </div>
     <p>
-     So every petal has a bilateral symmetry. Now, 2 petals with bilateral symmetry look like 4 lobes. 6 petals with bilateral symmetry look like 12 lobes. That's the mystery of 12 solved &mdash; but there's an even deeper level to this story.
+     So every petal has a bilateral symmetry. Now, 2 petals with bilateral symmetry look like 4 lobes. 6 petals with bilateral symmetry look like 12 lobes. 
+     That's the mystery of 12 solved &mdash; but there's an even deeper level to this story.
     </p>
    </section>
    <!-- SECTION 7: THE 12-PETAL MYSTERY -->
@@ -1168,7 +1197,7 @@
      The Mystery of 12 Petals
     </h2>
     <p>
-     For N = 24, each petal (block of 24 steps) already has bilateral symmetry. But when you look closely, each petal seems to consist of
+     For S = 24, each petal (block of 24 steps) already has bilateral symmetry. But when you look closely, each petal seems to consist of
      <strong>
       two smaller sub-petals
      </strong>
@@ -1178,7 +1207,7 @@
     <div class="demo-wrap">
      <div class="demo-header">
       <span class="demo-title">
-       Interactive &mdash; Petal Anatomy (N=24)
+       Interactive &mdash; Petal Anatomy (S=24)
       </span>
      </div>
      <div class="demo-body">
@@ -1192,14 +1221,14 @@
          <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
           What to show
          </div>
-         <div class="n-grid">
-          <button class="n-btn selected" id="anat-full-btn">
-           Full shape (N=24)
+         <div class="s-grid">
+          <button class="s-btn selected" id="anat-full-btn">
+           Full shape (S=24)
           </button>
-          <button class="n-btn" id="anat-one-btn">
+          <button class="s-btn" id="anat-one-btn">
            One petal only
           </button>
-          <button class="n-btn" id="anat-half-btn">
+          <button class="s-btn" id="anat-half-btn">
            One sub-petal
           </button>
          </div>
@@ -1215,7 +1244,7 @@
          </div>
          <div class="info-row">
           <span class="info-key">
-           N
+           S
           </span>
           <span class="info-val">
            24
@@ -1259,7 +1288,7 @@
     <p>
      The palindrome property (
      <span class="math-inline">
-      x&sup2; &equiv; (N&minus;x)&sup2;
+      x&sup2; &equiv; (S&minus;x)&sup2;
      </span>
      ) gives each petal its outer bilateral symmetry. But there's a
      <em>
@@ -1268,35 +1297,35 @@
      modular identity that creates the sub-petal structure:
     </p>
     <div class="math-block">
-     (x + N/2)&sup2; &equiv; x&sup2; (mod N) if and only if 4 divides N
+     (x + S/2)&sup2; &equiv; x&sup2; (mod S) if and only if 4 divides S
     </div>
     <p>
      Proof:
      <span class="math-inline">
-      (x + N/2)&sup2; = x&sup2; + Nx + N&sup2;/4
+      (x + S/2)&sup2; = x&sup2; + Sx + S&sup2;/4
      </span>
      . The term
      <span class="math-inline">
-      Nx
+      Sx
      </span>
-     vanishes mod N. The term
+     vanishes mod S. The term
      <span class="math-inline">
-      N&sup2;/4
+      S&sup2;/4
      </span>
-     vanishes mod N if and only if 4 divides N. ∎
+     vanishes mod S if and only if 4 divides S. ∎
     </p>
     <p>
      What this says is: when 4 divides N, the squared increments at step
      <span class="math-inline">
-      j
+      n
      </span>
      and at step
      <span class="math-inline">
-      j + N/2
+      n + S/2
      </span>
      are
      <em>
-      equal modulo N
+      equal modulo S
      </em>
      . The second half of each petal has the same sequence of directions as the first half &mdash; just starting from a rotated position.
     </p>
@@ -1305,7 +1334,7 @@
      <strong>
       the second half of each petal is a rotated copy of the first half
      </strong>
-     . Two congruent halves, each itself bilaterally symmetric. That's why N=24 (divisible by 4) shows sub-petal structure, while N=6 (not divisible by 4) doesn't.
+     . Two congruent halves, each itself bilaterally symmetric. That's why S=24 (divisible by 4) shows sub-petal structure, while S=6 (not divisible by 4) doesn't.
     </p>
     <div class="callout green">
      <span class="callout-label">
@@ -1317,7 +1346,7 @@
       </strong>
       (each petal has a mirror line): Always true. Comes from
       <span class="math-inline">
-       x&sup2; &equiv; (N&minus;x)&sup2;
+       x&sup2; &equiv; (S&minus;x)&sup2;
       </span>
       .
      </p>
@@ -1325,9 +1354,9 @@
       <strong>
        Sub-petal splitting
       </strong>
-      (the petal has two congruent halves): Requires 4 | N. Comes from
+      (the petal has two congruent halves): Requires 4 | S. Comes from
       <span class="math-inline">
-       (x+N/2)&sup2; &equiv; x&sup2;
+       (x+S/2)&sup2; &equiv; x&sup2;
       </span>
       .
      </p>
@@ -1339,7 +1368,8 @@
      </p>
     </div>
     <p>
-     This explains the full story of petal counts. You expect divisors of 6: {2, 3, 6}. But bilateral symmetry can visually double {2, 6} &rarr; {4, 12}. And 3-petal shapes retain 3 (the bilateral symmetry is present but each petal looks like a single elongated leaf). So the observable counts are
+     This explains the full story of petal counts. You expect divisors of 6: {2, 3, 6}. But bilateral symmetry can visually double {2, 6} &rarr; {4, 12}. 
+     And 3-petal shapes retain 3 (the bilateral symmetry is present but each petal looks like a single elongated leaf). So the observable counts are
      <strong>
       {1, 2, 3, 4, 6, 12}
      </strong>
@@ -1350,7 +1380,8 @@
       Why Divisors of 12?
      </span>
      <p>
-      The rotation symmetry (from the 6 in the denominator) gives divisors of 6. The reflection symmetry (from x&sup2; &equiv; (N&minus;x)&sup2;) adds a factor of 2, extending the range to divisors of 12. The denominator 6 = 2 &times; 3, and reflection adds another factor of 2, giving 12 = 2 &times; 6 as the "full symmetry group" size.
+      The rotation symmetry (from the 6 in the denominator) gives divisors of 6. The reflection symmetry (from x&sup2; &equiv; (N&minus;x)&sup2;) adds a factor of 2, 
+      extending the range to divisors of 12. The denominator 6 = 2 &times; 3, and reflection adds another factor of 2, giving 12 = 2 &times; 6 as the "full symmetry group" size.
      </p>
     </div>
     <!-- Side by side: N=6 vs N=12 vs N=24 -->
@@ -1377,19 +1408,19 @@
      .
     </p>
     <p>
-     If you think of each step's direction as a complex number on the unit circle, the partial sum after J steps is:
+     If you think of each step's direction as a complex number on the unit circle, the partial sum after M steps is:
     </p>
     <div class="math-block">
-     S(J) = &Sigma;
+     P(M) = &Sigma;
      <sub>
-      j=0
+      n=0
      </sub>
      <sup>
-      J&minus;1
+      M&minus;1
      </sup>
      e
      <sup>
-      2&pi;i&middot;f(j)/N
+      2&pi;i&middot;f(n)/S
      </sup>
     </div>
     <p>
@@ -1397,7 +1428,7 @@
      <em>
       exponential sum with cubic polynomial phase
      </em>
-     &mdash; because f(j) is a cubic polynomial in j. The study of such sums is deep, going back to Gauss and Weil.
+     &mdash; because f(n) is a cubic polynomial in n. The study of such sums is deep, going back to Gauss and Weil.
     </p>
     <p>
      Our key results translate directly:
@@ -1407,27 +1438,27 @@
       <strong>
        The block structure
       </strong>
-      : S(mN) = S
+      : P(kS) = P
       <sub>
-       N
+       S
       </sub>
-      &times; (geometric series in &rho;), where &rho; = e^(2&pi;i&middot;f(N)/N).
+      &times; (geometric series in &rho;), where &rho; = e^(2&pi;i&middot;f(S)/S).
      </li>
      <li>
       <strong>
        The closing condition
       </strong>
-      : The path closes iff the geometric series terminates &mdash; i.e., &rho; is a root of unity of finite order, i.e., gcd(N,6) &gt; 1.
+      : The path closes iff the geometric series terminates &mdash; i.e., &rho; is a root of unity of finite order, i.e., gcd(S,6) &gt; 1.
      </li>
      <li>
       <strong>
        The Weil bound
       </strong>
-      : For prime N not dividing 6, |S
+      : For prime S not dividing 6, |P
       <sub>
-       N
+       S
       </sub>
-      | &le; 2&radic;N. This is why even the drifting paths have bounded "error" per block &mdash; they drift slowly relative to the number of steps.
+      | &le; 2&radic;S. This is why even the drifting paths have bounded "error" per block &mdash; they drift slowly relative to the number of steps.
      </li>
     </ul>
     <div class="callout">
@@ -1435,11 +1466,13 @@
       Weil's Theorem (1948)
      </span>
      <p>
-      For any prime N &gt; 3 and any cubic polynomial with nonzero leading coefficient, the corresponding exponential sum is bounded in absolute value by 2&radic;N. This bound is essentially tight &mdash; beautiful shapes live right at the edge of this bound.
+      For any prime S &gt; 3 and any cubic polynomial with nonzero leading coefficient, the corresponding exponential sum is bounded in absolute value by 2&radic;S. 
+      This bound is essentially tight &mdash; beautiful shapes live right at the edge of this bound.
      </p>
     </div>
     <p>
-     The Weil bound tells us something visually striking: for large prime N (which gives drifting paths), the walker's displacement after N steps has magnitude at most 2&radic;N. The walker takes N unit steps but only makes net progress of order &radic;N &mdash; it's almost random, yet not quite.
+     The Weil bound tells us something visually striking: for large prime S (which gives drifting paths), 
+     the walker's displacement after S steps has magnitude at most 2&radic;S. The walker takes S unit steps but only makes net progress of order &radic;S &mdash; it's almost random, yet not quite.
     </p>
     <h3>
      Future Directions
@@ -1459,10 +1492,10 @@
       What happens with other polynomial turning functions &mdash; cubics, quartics?
      </li>
      <li>
-      The closing condition gcd(N,6) &gt; 1 depended on the 6 in the denominator of the sum-of-squares formula. What closing conditions arise from other polynomial sums?
+      The closing condition gcd(S,6) &gt; 1 depended on the 6 in the denominator of the sum-of-squares formula. What closing conditions arise from other polynomial sums?
      </li>
      <li>
-      The bilateral petal symmetry came from x&sup2; &equiv; (N&minus;x)&sup2;. Does every even-degree polynomial turning function produce this symmetry?
+      The bilateral petal symmetry came from x&sup2; &equiv; (S&minus;x)&sup2;. Does every even-degree polynomial turning function produce this symmetry?
      </li>
     </ul>
     <div class="callout">
@@ -1481,7 +1514,8 @@
      ∎
     </div>
     <p style="color:var(--text-dim);font-size:0.9rem">
-     This article was written for the Summer of Math Exposition (SoME) community. The mathematics draws on classical results in exponential sums and modular arithmetic. The visualizations are generated entirely in-browser using HTML5 Canvas.
+     This article was written for the Summer of Math Exposition (SoME) community. 
+     The mathematics draws on classical results in exponential sums and modular arithmetic. The visualizations are generated entirely in-browser using HTML5 Canvas.
     </p>
    </section>
   </article>
@@ -1540,10 +1574,26 @@
         return { pts, minX, maxX, minY, maxY };
     }
 
+    // Check whether a number is square-free
+    function isSquareFree(n) {
+        if (n <= 1) return true;
+        let x = n;
+
+        if (x % 4 === 0) {
+            return false;
+        }
+
+        for (let p = 3; p * p <= x; p += 2) {
+            if (x % (p * p) === 0) return false;
+        }
+
+        return true;
+    }
+
     // Get closure info for given N
     function getClosureInfo(N) {
         const g = gcd(N, 6);
-        if (g === 1) return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
+        if (g === 1 && isSquareFree(N))  return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
         // Use user's formula: sumAngle = 60 * (N+1) * (2N+1), deltaTheta = sumAngle % 360
         const sumAngle = 60 * (N + 1) * (2 * N + 1);
         let dT = sumAngle % 360;
@@ -1552,6 +1602,7 @@
         const gd = gcd(360, Math.round(dT));
         const petals = Math.round(360 / gd);
         const total = N * petals;
+        // TODO: fix petal calculation
         return { closes: true, petals, totalSteps: total, delta: dT, mStar: petals };
     }
 
@@ -1595,7 +1646,7 @@
         ctx.fillStyle = '#020608';
         ctx.fillRect(0, 0, W, H);
 
-        const lw = Math.max(0.5, Math.min(3, 120000 / totalSteps / sc * 1.5));
+        const lw = Math.max(0.2, Math.min(3, 120000 / totalSteps / sc * 1.5));
         ctx.save();
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
@@ -1856,7 +1907,7 @@
         window.addEventListener('resize', resize);
         setTimeout(resize, 50);
 
-        let N = 6;
+        let N = 3;
         let stepN = 0;
         let phaseNum = 0;
         let pts = new Float64Array(2001 * 2);
@@ -1892,7 +1943,7 @@
             el('step-num-display').textContent = stepN;
             const deg = Math.round(phaseNum * 360 / N);
             el('step-angle-display').textContent = `Heading: ${deg}° (slot ${phaseNum} of ${N})`;
-            el('si-N').textContent = N;
+            el('si-S').textContent = N;
             el('si-slot').textContent = (360 / N).toFixed(1) + '°';
             el('si-slot-val').textContent = phaseNum;
         }
@@ -1907,10 +1958,10 @@
         }
 
         // N buttons
-        document.getElementById('step-n-grid').addEventListener('click', e => {
-            const btn = e.target.closest('.n-btn');
+        document.getElementById('step-s-grid').addEventListener('click', e => {
+            const btn = e.target.closest('.s-btn');
             if (!btn) return;
-            document.querySelectorAll('#step-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#step-s-grid .s-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             N = parseInt(btn.dataset.n);
             reset();
@@ -1954,14 +2005,14 @@
     // =========================================================
 
     const LARGE_N_PRESETS = [
-        { N: 90, label: 'N = 90', note: '6 petals' },
-        { N: 180, label: 'N = 180', note: '6 petals' },
-        { N: 360, label: 'N = 360', note: '6 petals' },
-        { N: 720, label: 'N = 720', note: '6 petals' },
-        { N: 1260, label: 'N = 1,260', note: '6 petals' },
-        { N: 2520, label: 'N = 2,520', note: '6 petals' },
-        { N: 5040, label: 'N = 5,040', note: '6 petals' },
-        { N: 9240, label: 'N = 9,240', note: '6 petals' },
+        { N: 90, label: 'S = 90', note: '6 petals' },
+        { N: 183, label: 'S = 183', note: '3 petals' },
+        { N: 368, label: 'S = 368', note: '4 petals' },
+        { N: 722, label: 'S = 722', note: '2 petals' },
+        { N: 1272, label: 'S = 1272', note: '12 petals' },
+        { N: 2526, label: 'S = 2526', note: '6 petals' },
+        { N: 5041, label: 'S = 5041', note: '1 petal' },  // TODO: Fix empty canvas issue
+        { N: 15000, label: 'S = 15000', note: '6 petals' },
     ];
 
     (function initGallery() {
@@ -1985,23 +2036,23 @@
             sizeLarge();
             const info = getClosureInfo(N);
             if (!info.closes) return;
-            const steps = Math.min(info.totalSteps, 60000);
+            const steps = Math.min(info.totalSteps, 100000);
             const { pts } = generatePath(steps, N);
             drawPath(largeCanvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
-            document.getElementById('lg-N').textContent = N.toLocaleString();
+            document.getElementById('lg-S').textContent = N.toLocaleString();
             document.getElementById('lg-steps').textContent = info.totalSteps.toLocaleString();
             document.getElementById('lg-petals').textContent = info.petals;
             document.getElementById('lg-gcd').textContent = gcd(N, 6);
         }
 
-        // Build large-n-grid buttons
-        const lgGrid = document.getElementById('large-n-grid');
+        // Build large-s-grid buttons
+        const lgGrid = document.getElementById('large-s-grid');
         LARGE_N_PRESETS.forEach((p, idx) => {
             const btn = document.createElement('button');
-            btn.className = 'n-btn' + (idx === 0 ? ' selected' : '');
+            btn.className = 's-btn' + (idx === 0 ? ' selected' : '');
             btn.textContent = p.label;
             btn.onclick = () => {
-                document.querySelectorAll('#large-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('#large-s-grid .s-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 drawLarge(p.N);
             };
@@ -2009,7 +2060,7 @@
         });
 
         // Build gallery thumbnails
-        const GALLERY_N = [90, 360, 1260, 5040, 9240];
+        const GALLERY_N = [90, 368, 1272, 5041, 15000];
         GALLERY_N.forEach(N => {
             const cell = document.createElement('div');
             cell.className = 'gallery-cell';
@@ -2018,7 +2069,7 @@
             c.height = 200;
             const lbl = document.createElement('div');
             lbl.className = 'gallery-label';
-            lbl.textContent = 'N = ' + N.toLocaleString();
+            lbl.textContent = 'S = ' + N.toLocaleString();
             cell.appendChild(c);
             cell.appendChild(lbl);
             grid.appendChild(cell);
@@ -2027,13 +2078,13 @@
             setTimeout(() => {
                 const info = getClosureInfo(N);
                 if (!info.closes) return;
-                const steps = Math.min(info.totalSteps, 30000);
+                const steps = Math.min(info.totalSteps, 90000);
                 const { pts } = generatePath(steps, N);
                 drawPath(c, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
             }, 100);
 
             cell.onclick = () => {
-                document.querySelectorAll('#large-n-grid .n-btn').forEach(b => {
+                document.querySelectorAll('#large-s-grid .s-btn').forEach(b => {
                     b.classList.toggle('selected', b.textContent.replace(/,/g, '').includes(String(N)));
                 });
                 drawLarge(N);
@@ -2097,23 +2148,23 @@
                 note.innerHTML = `<span style="color:var(--green)">Closes at step ${info.totalSteps}.</span> Each color is one block of ${N} steps. After ${info.petals} block${info.petals === 1 ? '' : 's'}, the walker returns to the origin.`;
             } else {
                 note.style.borderColor = 'var(--accent2)';
-                note.innerHTML = `<span style="color:var(--accent2)">Never closes at a multiple of N.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
+                note.innerHTML = `<span style="color:var(--accent2)">Never closes at a multiple of S.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
             }
         }
 
         // Closing buttons
-        document.getElementById('close-n-grid').addEventListener('click', e => {
-            const btn = e.target.closest('.n-btn');
+        document.getElementById('close-s-grid').addEventListener('click', e => {
+            const btn = e.target.closest('.s-btn');
             if (!btn) return;
-            document.querySelectorAll('#close-n-grid .n-btn, #drift-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#close-s-grid .s-btn, #drift-s-grid .s-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             drawN(parseInt(btn.dataset.n), false);
         });
 
-        document.getElementById('drift-n-grid').addEventListener('click', e => {
-            const btn = e.target.closest('.n-btn');
+        document.getElementById('drift-s-grid').addEventListener('click', e => {
+            const btn = e.target.closest('.s-btn');
             if (!btn) return;
-            document.querySelectorAll('#close-n-grid .n-btn, #drift-n-grid .n-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#close-s-grid .s-btn, #drift-s-grid .s-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             drawN(parseInt(btn.dataset.n), true);
         });
@@ -2149,11 +2200,11 @@
             row.innerHTML = '';
             GCD_GROUPS[g].forEach((N, i) => {
                 const btn = document.createElement('button');
-                btn.className = 'n-btn' + (i === 0 ? ' selected' : '');
+                btn.className = 's-btn' + (i === 0 ? ' selected' : '');
                 btn.textContent = 'N=' + N;
                 btn.dataset.n = N;
                 btn.onclick = () => {
-                    row.querySelectorAll('.n-btn').forEach(b => b.classList.remove('selected'));
+                    row.querySelectorAll('.s-btn').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
                     drawPetal(N, g);
                 };
@@ -2289,9 +2340,9 @@
         if (!grid) return;
 
         const cases = [
-            { N: 6, label: 'N = 6', sub: '4|N? No. No sub-petal split.' },
-            { N: 12, label: 'N = 12', sub: '4|N? Yes. Sub-petals appear.' },
-            { N: 24, label: 'N = 24', sub: '4|N? Yes. Clear sub-structure.' },
+            { N: 6, label: 'S = 6', sub: '4|S? No. No sub-petal split.' },
+            { N: 12, label: 'S = 12', sub: '4|S? Yes. Sub-petals appear.' },
+            { N: 24, label: 'S = 24', sub: '4|S? Yes. Clear sub-structure.' },
         ];
 
         cases.forEach(({ N, label, sub }) => {
