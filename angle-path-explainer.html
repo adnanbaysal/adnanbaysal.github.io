@@ -36,19 +36,19 @@
    </div>
    <div class="hero-text">
     <div class="hero-kicker">
-     SoME &middot; Mathematical Art
+     SoME5 &middot; Mathematical Art
     </div>
     <h1 class="hero-title">
      Square Turns
     </h1>
     <p class="hero-sub">
-     A creature walks. At every step, it turns &mdash; not by a fixed angle, but by an amount that
+     A turtle walks. At every step, it turns &mdash; not by a fixed angle, but by an amount that
      <em>
       grows with the square of the step count
      </em>
-     . What emerges is astonishing.
+     . What emerges is surprisingly astonishing.
     </p>
-    <a class="hero-cta" href="#intro">
+    <a class="hero-cta" href="#turtle">
      Begin the Journey &darr;
     </a>
    </div>
@@ -113,7 +113,7 @@
     <p>
      Imagine a very obedient creature. It lives on a blank plane and follows one instruction:
      <strong>
-      walk forward one step, then turn.
+      walk forward one step, then turn by an angle of your wish.
      </strong>
      That's all it ever does.
     </p>
@@ -122,7 +122,8 @@
      <em>
       how much it turns
      </em>
-     at each step. Turn always by 90&deg;, and you get a perfect square. Turn by 60&deg;, and you get a hexagon. Turn by some irrational angle, and the path wanders forever without repeating.
+     at each step. Turn always by 90&deg;, and you get a perfect square. Turn by 60&deg;, and you get a hexagon. 
+     Turn by some irrational angle, and the path wanders forever without passing on the same step again.
     </p>
     <p>
      In the programming world, this kind of creature is called a
@@ -134,13 +135,13 @@
     <p>
      To make the turns well-defined, we'll divide the full circle into
      <strong>
-      N equal slices
+      <em>S</em> equal angle slices
      </strong>
-     , each of size 360&deg;/N. Our turtle can only face one of these N directions. At step number
+     , each of size 360&deg;/S. Our turtle can only face one of these N directions. At step number
      <span class="math-inline">
       n
      </span>
-     , the turtle adds some amount to its current direction index (measured in those 360&deg;/N slices), then steps forward.
+     , the turtle adds some amount to its current direction index (measured in those 360&deg;/S slices), then steps forward.
     </p>
     <!-- DEMO 1: Step by step walker -->
     <div class="demo-wrap" id="demo-step">
@@ -1845,8 +1846,12 @@
         const canvas = document.getElementById('step-canvas');
         if (!canvas) return;
         const resize = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetWidth;
+            const w = canvas.offsetWidth;
+            if (canvas.width !== w || canvas.height !== w) {
+                canvas.width = w;
+                canvas.height = w;
+                redraw();
+            }
         };
         window.addEventListener('resize', resize);
         setTimeout(resize, 50);
