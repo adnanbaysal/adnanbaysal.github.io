@@ -1066,7 +1066,7 @@
      <strong>
       <em>S</em> equal angle slices
      </strong>
-     , each of size 360&deg;/S. Our turtle can only face one of these N directions. At step number
+     , each of size 360&deg;/S, for varying values of S. Our turtle can only face one of these S directions. At step number
      <span class="math-inline">
       n
      </span>
@@ -1392,7 +1392,7 @@
      <em>
       drifts endlessly
      </em>
-     that never returning to the start, but instead proceeds in the positive x-axis infinitely. 
+     that never returning to the start, but instead proceeds in either the positive or the negative x-axis direction forever. 
      Try below demo to see the difference between closing and drifting graphs. 
     </p>
     <p>
@@ -1473,6 +1473,12 @@
           <button class="s-btn drift-btn" data-n="77">
            77
           </button>
+          <button class="s-btn drift-btn" data-n="121">
+           121
+          </button>
+          <button class="s-btn drift-btn" data-n="169">
+           169
+          </button>
          </div>
         </div>
         <div class="info-card">
@@ -1524,272 +1530,121 @@
       </div>
      </div>
     </div>
+    
     <h3>
-     The Answer: gcd(S, 6) and square free-ness!
+     When gcd(S, 6) > 1
     </h3>
     <p>
-     The closing condition turns out to be elegantly simple. Compute the
-     <strong>
-      greatest common divisor
-     </strong>
-     of S and 6. If it's greater than 1, the path closes. If it's 1, the path drifts forever.
+     This is the easier case. When 2, or 3, or both divides S, the path always closes in a rosette like shape and repeates periodically after that.
+     In this case, number of petals is either gcd(S, 6) or 2 x gcd(S, 6). In any case, the path closes after exactly S x gcd(S, 6) steps.
+     For simplicty, I'll call a single consecutive S steps as a "block".  I'll come to why visible number of petals can be double the value of gcd later. 
     </p>
     <div class="math-block">
-     Path closes &xhArr; gcd(S, 6) &gt; 1
+     gcd(S, 6) &gt; 1  &rArr; path closes in a rosette shape
     </div>
-    <p>
-     In plain English: the path closes if and only if S shares a factor with 6. Since 6 = 2 &times; 3, this means S must be divisible by 2, by 3, or by both.
-    </p>
-    <div class="callout gold">
-     <span class="callout-label">
-      Why gcd with 6?
-     </span>
-     <p>
-      Look back at the sum-of-squares formula:
-      <span class="math-inline">
-       f(n) = n(n+1)(2n d+1)/6
-      </span>
-      . That denominator
-      <strong>
-       6
-      </strong>
-      is doing the work. Whether the path's phase shift after S steps is zero (mod S) depends on how S interacts with this 6. We'll see the full proof shortly.
-     </p>
-    </div>
-    <p>
-     This instantly predicts the behavior of any S:
-    </p>
-    <!-- Petal Table -->
-    <table class="petal-table">
-     <thead>
-      <tr>
-       <th>
-        S
-       </th>
-       <th>
-        gcd(S,6)
-       </th>
-       <th>
-        Closes?
-       </th>
-       <th>
-        Total Steps
-       </th>
-       <th>
-        Petals
-       </th>
-      </tr>
-     </thead>
-     <tbody>
-      <tr>
-       <td>
-        2
-       </td>
-       <td class="g2">
-        2
-       </td>
-       <td class="g2">
-        Yes
-       </td>
-       <td>
-        4
-       </td>
-       <td>
-        2
-       </td>
-      </tr>
-      <tr>
-       <td>
-        3
-       </td>
-       <td class="g3">
-        3
-       </td>
-       <td class="g3">
-        Yes
-       </td>
-       <td>
-        9
-       </td>
-       <td>
-        3
-       </td>
-      </tr>
-      <tr>
-       <td>
-        4
-       </td>
-       <td class="g2">
-        2
-       </td>
-       <td class="g2">
-        Yes
-       </td>
-       <td>
-        8
-       </td>
-       <td>
-        2
-       </td>
-      </tr>
-      <tr>
-       <td>
-        5
-       </td>
-       <td class="g1">
-        1
-       </td>
-       <td class="g1">
-        No
-       </td>
-       <td>
-        &mdash;
-       </td>
-       <td>
-        &mdash;
-       </td>
-      </tr>
-      <tr>
-       <td>
-        6
-       </td>
-       <td class="g6">
-        6
-       </td>
-       <td class="g6">
-        Yes
-       </td>
-       <td>
-        36
-       </td>
-       <td>
-        6
-       </td>
-      </tr>
-      <tr>
-       <td>
-        7
-       </td>
-       <td class="g1">
-        1
-       </td>
-       <td class="g1">
-        No
-       </td>
-       <td>
-        &mdash;
-       </td>
-       <td>
-        &mdash;
-       </td>
-      </tr>
-      <tr>
-       <td>
-        8
-       </td>
-       <td class="g2">
-        2
-       </td>
-       <td class="g2">
-        Yes
-       </td>
-       <td>
-        16
-       </td>
-       <td>
-        2
-       </td>
-      </tr>
-      <tr>
-       <td>
-        9
-       </td>
-       <td class="g3">
-        3
-       </td>
-       <td class="g3">
-        Yes
-       </td>
-       <td>
-        27
-       </td>
-       <td>
-        3
-       </td>
-      </tr>
-      <tr>
-       <td>
-        10
-       </td>
-       <td class="g2">
-        2
-       </td>
-       <td class="g2">
-        Yes
-       </td>
-       <td>
-        20
-       </td>
-       <td>
-        2
-       </td>
-      </tr>
-      <tr>
-       <td>
-        11
-       </td>
-       <td class="g1">
-        1
-       </td>
-       <td class="g1">
-        No
-       </td>
-       <td>
-        &mdash;
-       </td>
-       <td>
-        &mdash;
-       </td>
-      </tr>
-      <tr>
-       <td>
-        12
-       </td>
-       <td class="g6">
-        6
-       </td>
-       <td class="g6">
-        Yes
-       </td>
-       <td>
-        72
-       </td>
-       <td>
-        6
-       </td>
-      </tr>
-      <tr>
-       <td>
-        24
-       </td>
-       <td class="g6">
-        6
-       </td>
-       <td class="g6">
-        Yes
-       </td>
-       <td>
-        144
-       </td>
-       <td>
-        6
-       </td>
-      </tr>
-     </tbody>
-    </table>
+    
     <h3>
-     Why Does It Close? The Block Structure
+     When gcd(S, 6) = 1
     </h3>
+    <p>
+        This case is more complicated. Visually analyzing the behavior for some small S values, I discovered following:
+        <ul>
+            <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 35 = 5x7, S = 77 = 7x11</li>
+            <li>If all even powered prime factors of S belong to a special set of primes, then the graph drifts. 
+                For example S = 11x11 = 121
+            </li>
+            <li>
+                Otherwise, if S has an even powered prime factor that is out of the above set of primes, then the graph closes with a 1 petal shape. 
+                For example S = 7x7 = 49
+            </li>
+        </ul>
+        Experimentally, I found that the following primes belongs to the special set mentioned above: 11,13,23,37,47,59,61,71,73, ...
+        This set is probably infinite, and a search on <a href="www.oeis.org">oeis.org</a> give 4 potential candidates for this sequence. 
+        Honestly, I don't know which one of those sequences' 
+        definition match the best for the underlying reason of this result. That would be a good future work. 
+    </p>
+    
+    <h3>Why gcd with 6?</h3>
+
+    <p>
+        Let's look back at the sum-of-squares formula:
+        <span class="math-inline">
+        f(n) = n(n+1)(2n+1)/6
+        </span>
+        . That denominator
+        <strong>
+        6
+        </strong>
+        seems to be related to this. To understand this better, let's make a few observations about the formulas for relative slot change and cumulative direction formulas.
+        Before proceeding to deal with the formulas, let's give name to the orientation change, and cumulative orientation formulas.
+    </p>
+
+    <ul>
+        <li>
+            Let <span class="math-inline">&Delta;&theta;(n) = n&sup2;</span> denote the amount of direction slot change at step n of the walk. 
+        </li>
+
+        <li>
+            Let <span class="math-inline">&theta;(n) = 1&sup2; + 2&sup2; + ... + n&sup2; = n(n+1)(2n+1) / 6</span> denote the cumulative direction at step n of the walk. 
+        </li>
+    </ul>
+
+    <p>
+        As before, each slot corresponds to <span class="math-inline">1/S</span> of a full turn. Therefore, we only need to consider 
+        <span class="math-inline">&Delta;&theta;(n) mod S</span> and <span class="math-inline">&theta;(n) mod S</span> as full turns 
+        correspond to no turn at all. 
+    </p>
+
+    <h3>
+     <span class="math-inline">&Delta;&theta;(n)</span> is periodic
+    </h3>
+    <p>
+        Our first observation is that the amount of relative orientation changes is periodic with a period of <span class="math-inline">S</span> steps. 
+        The following simple observation shows this:
+    </p>
+
+    <div class="math-block">
+     &Delta;&theta;(n + S) = (n + S)&sup2; = n&sup2; + 2Sn + S&sup2; = n&sup2; mod S = &Delta;&theta;(n)
+    </div>
+
+    <p>
+        Now let's think what this means geometrically. After <span class="math-inline">S</span> steps of walk, the turtle is positioned 
+        at some location in the plane and has an orientation that is the sum of all changes up to that point. The turtle 
+        has so far already drawn a graph. Thinking of this last position and orientation as the starting state, 
+        it will draw exactly the same shape in a rotated and translated manner in the next <span class="math-inline">S</span> steps.
+    </p> 
+    <p>
+        So it's clear that this single <span class="math-inline">S</span>-periodicity
+        of <span class="math-inline">&Delta;&theta;(n)</span> is enough to explain the repeating rotated+translated patterns in our graphs. 
+        But there are more than that in what we saw in the graphs. For example, as we saw, the path closes for almost all choices of 
+        <span class="math-inline">S</span>. Besides, each <span class="math-inline">S</span>-step block has reflection symmetry too,
+        which cannot be explained by this periodicity alone. We'll see the reasons in the following sections.
+    </p>
+    
+    <h3>
+     <span class="math-inline">&theta;(n)</span> is periodic
+    </h3>
+
+    <p>
+        just like we did for <span class="math-inline">&Delta;&theta;(n + S)</span>, let's check <span class="math-inline">&theta;(n + S)</span>
+        to see if we get <span class="math-inline">S</span>-periodicity.
+        To make working with formulas easier, we'll use the expanded form of the sum of squares formula: 
+        <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. Here we go:
+    </p>
+
+    <div class="math-block">
+     &theta;(n + S) = [2(n + S)&sup3; + 3(n + S)&sup2; + (n + S)] / 6 = 
+     
+     [2(n&sup3; + 3n&sup2;S  + 3nS&sup2; + S&sup3;) + 3(n&sup2; + 2nS + S&sup2;) + (n + S)] / 6 =
+     
+     [2n&sup3; + 3n&sup2; + n) / 6] + [(6n&sup2;S  + 6nS&sup2; + 6nS) / 6] + [(2S&sup3; + 3S&sup2; + S) / 6] =
+     
+     &theta;(n) + S(n&sup2; + nS + 6n) + (2S&sup3; + 3S&sup2; + S) / 6 = 
+     
+     &theta;(n) + (2S&sup3; + 3S&sup2; + S) / 6 mod S
+    </div>
+
+    <!--  -->
     <p>
      Here's the key insight, without heavy algebra. After the walker completes one block of
      <strong>
@@ -2519,10 +2374,24 @@
         return true;
     }
 
+    // NOTE: The following "special" primes cause drift if they occur as a square in the factorization of n
+    // NOTE: OEIS seach results in 3 potential candidate with similar subsequence
+    function hasSpecialPrimeSquareFactor(n) {
+        const specialPrimes = [
+            11, 13, 23, 37, 47, 59, 61, 71, 73, 83, 97, 107, 109, 131, 157, 167, 179, 
+            181, 191, 193, 227, 229, 239, 241, 251, 263, 277, 311, 313, 337, 347, 349, 
+            359, 373, 383, 397, 409, 419, 421, 431, 433, 443, 457, 467, 479, 491, 503
+        ];
+        for (const p of specialPrimes) {
+            if (n % (p * p) === 0) return true;
+        }
+        return false;
+    } 
+
     // Get closure info for given N
     function getClosureInfo(N) {
         const g = gcd(N, 6);
-        if (g === 1 && isSquareFree(N))  return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
+        if (g === 1 && (isSquareFree(N) || hasSpecialPrimeSquareFactor(N)))  return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
         // Use user's formula: sumAngle = 60 * (N+1) * (2N+1), deltaTheta = sumAngle % 360
         const sumAngle = 60 * (N + 1) * (2 * N + 1);
         let dT = sumAngle % 360;
@@ -2808,7 +2677,7 @@
             const w = canvas.offsetWidth;
             canvas.width = w;
             canvas.height = w;
-            const N = 90;
+            const N = 258;
             const info = getClosureInfo(N);
             if (!info.closes) return;
             const { pts } = generatePath(info.totalSteps, N);
