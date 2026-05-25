@@ -328,6 +328,26 @@
      font-size: 0.92em;
    }
 
+   .fraction {
+     display: inline-flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     line-height: 1;
+     vertical-align: middle;
+     margin: 0 0.2em;
+   }
+
+   .fraction .fraction-num,
+   .fraction .fraction-den {
+     display: block;
+     padding: 0 0.25em;
+   }
+
+   .fraction .fraction-num {
+     border-bottom: 1px solid currentColor;
+   }
+
    /* PULL QUOTE */
    .pull-quote {
      border-left: 2px solid var(--accent);
@@ -1633,15 +1653,102 @@
     </p>
 
     <div class="math-block">
-     &theta;(n + S) = [2(n + S)&sup3; + 3(n + S)&sup2; + (n + S)] / 6 = 
-     
-     [2(n&sup3; + 3n&sup2;S  + 3nS&sup2; + S&sup3;) + 3(n&sup2; + 2nS + S&sup2;) + (n + S)] / 6 =
-     
-     [2n&sup3; + 3n&sup2; + n) / 6] + [(6n&sup2;S  + 6nS&sup2; + 6nS) / 6] + [(2S&sup3; + 3S&sup2; + S) / 6] =
-     
-     &theta;(n) + S(n&sup2; + nS + 6n) + (2S&sup3; + 3S&sup2; + S) / 6 = 
-     
-     &theta;(n) + (2S&sup3; + 3S&sup2; + S) / 6 mod S
+     <div style="display:inline-block; text-align:left;">
+      &theta;(n + S) = <span class="fraction">
+        <span class="fraction-num">2(n + S)&sup3; + 3(n + S)&sup2; + (n + S)</span>
+        <span class="fraction-den">6</span>
+      </span><br><br>
+
+      = <span class="fraction">
+            <span class="fraction-num">2(n&sup3; + 3n&sup2;S + 3nS&sup2; + S&sup3;) + 3(n&sup2; + 2nS + S&sup2;) + (n + S)</span>
+            <span class="fraction-den">6</span>
+        </span><br><br>
+      
+     = <span class="fraction">
+        <span class="fraction-num">2n&sup3; + 6n&sup2;S + 6nS&sup2; + 2S&sup3; + 3n&sup2; + 6nS + 3S&sup2; + n + S</span>
+        <span class="fraction-den">6</span>
+        </span><br><br>
+
+      = <span class="fraction">
+            <span class="fraction-num">2n&sup3; + 3n&sup2; + n</span>
+            <span class="fraction-den">6</span>
+        </span> + 
+        <span class="fraction">
+            <span class="fraction-num">6n&sup2;S + 6nS&sup2; + 6nS</span>
+            <span class="fraction-den">6</span>
+        </span> + 
+        <span class="fraction">
+            <span class="fraction-num">2S&sup3; + 3S&sup2; + S</span>
+            <span class="fraction-den">6</span>
+        </span><br><br>
+
+      = &theta;(n) + S(n&sup2; + nS + n) + 
+        <span class="fraction">
+            <span class="fraction-num">2S&sup3; + 3S&sup2; + S</span>
+            <span class="fraction-den">6</span>
+        </span><br><br>
+
+      = &theta;(n) + <span class="fraction">
+            <span class="fraction-num">2S&sup3; + 3S&sup2; + S</span>
+            <span class="fraction-den">6</span>
+        </span> mod S<br>
+    
+      = &theta;(n) + &theta;(S) mod S
+     </div>
+    </div>
+
+    <p>
+        The above identities show that after each block of <span class="math-inline">S</span>-step, the turtle's orientation is rotated by 
+        <span class="math-inline">&theta;(S) mod S</span> slots. Since <span class="math-inline">&theta;(S) = <span class="fraction">
+            <span class="fraction-num">2S&sup3; + 3S&sup2; + S</span>
+            <span class="fraction-den">6</span>
+        </span> = <span class="fraction">
+            <span class="fraction-num">S(S+1)(2S+1)</span>
+            <span class="fraction-den">6</span>
+        </span></span>, it's guaranteed that the orientation returns back to the original orientation (positive x-axis) after <span class="math-inline">6S</span> steps. 
+        In fact, we can do better, and find the exact minimum period for cumulative orientations to repeat.
+    </p>
+
+    <p>
+        To understand that, let's analyze <span class="math-inline">&theta;(S) mod S</span> in more detail:
+
+        We know that <span class="math-inline">&theta;(S)</span> is an integer since its the sum of first <span class="math-inline">S</span> squares.
+        If we seperate the multiplier <span class="math-inline">S</span> in the formula, we get <span class="math-inline">&theta;(S) mod S = S<span class="fraction">
+            <span class="fraction-num">(S+1)(2S+1)</span>
+            <span class="fraction-den">6</span>
+        </span> mod S</span>. If we call <span class="math-inline">k<sub>S</sub> = (S+1)(2S+1)</span>, 
+        we see that we can calculate <span class="math-inline">&theta;(S) mod S</span> by just considering the remainder of 
+        <span class="math-inline">k<sub>S</sub> mod 6</span>, because integer multiples of S will be equivalent to 0 mod <span class="math-inline">S</span>.
+        Whatever that value is, we'll get a fraction of <span class="math-inline">S</span>, which will help to find the minimal period as the number of 
+        <span class="math-inline">S</span>-step blocks. For that, we just need to check possible values of <span class="math-inline">S mod 6</span>:
+    </p>
+
+    <div class="math-block">
+     <div style="display:inline-block; text-align:left;">
+        S = 0 mod 6 &Implies; k<sub>S</sub> = (0 + 1)(2&times;0 + 1) = 1 &Implies; &theta;(S) mod S = <span class="fraction">
+            <span class="fraction-num">1</span>
+            <span class="fraction-den">6</span>
+        </span>S mod S<br>
+
+        S = 1 mod 6 &Implies; k<sub>S</sub> = (1 + 1)(2&times;1 + 1) = 6 &Implies; &theta;(S) mod S = 0 mod S<br>
+
+        S = 2 mod 6 &Implies; k<sub>S</sub> = 15 = 3 mod 6 &Implies; &theta;(S) mod S = <span class="fraction">
+            <span class="fraction-num">1</span>
+            <span class="fraction-den">2</span>
+        </span>S mod S<br>
+
+        S = 3 mod 6 &Implies; k<sub>S</sub> = 28 = 4 mod 6 &Implies; &theta;(S) mod S = <span class="fraction">
+            <span class="fraction-num">2</span>
+            <span class="fraction-den">3</span>
+        </span>S mod S<br>
+
+        S = 4 mod 6 &Implies; k<sub>S</sub> = 45 = 3 mod 6 &Implies; &theta;(S) mod S = <span class="fraction">
+            <span class="fraction-num">1</span>
+            <span class="fraction-den">2</span>
+        </span>S mod S<br>
+
+        S = 5 mod 6 &Implies; k<sub>S</sub> = 66 = 0 mod 6 &Implies; &theta;(S) mod S = 0 mod S<br>
+     </div>
     </div>
 
     <!--  -->
