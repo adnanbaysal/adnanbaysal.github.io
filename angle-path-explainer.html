@@ -1605,7 +1605,7 @@
         </li>
 
         <li>
-            Let <span class="math-inline">&theta;(n) = 1&sup2; + 2&sup2; + ... + n&sup2; = n(n+1)(2n+1) / 6</span> denote the cumulative direction at step n of the walk. 
+            Let <span class="math-inline">&theta;(n) = 1&sup2; + 2&sup2; + ... + n&sup2; = n(n+1)(2n+1) / 6</span> denote the cumulative direction slot at step n of the walk. 
         </li>
     </ul>
 
@@ -1616,7 +1616,7 @@
     </p>
 
     <h3>
-     <span class="math-inline">&Delta;&theta;(n)</span> is periodic
+     &Delta;&theta;(n) is periodic
     </h3>
     <p>
         Our first observation is that the amount of relative orientation changes is periodic with a period of <span class="math-inline">S</span> steps. 
@@ -1642,7 +1642,7 @@
     </p>
     
     <h3>
-     <span class="math-inline">&theta;(n)</span> is periodic
+     &theta;(n) is periodic
     </h3>
 
     <p>
@@ -1705,7 +1705,7 @@
         </span> = <span class="fraction">
             <span class="fraction-num">S(S+1)(2S+1)</span>
             <span class="fraction-den">6</span>
-        </span></span>, it's guaranteed that the orientation returns back to the original orientation (positive x-axis) after <span class="math-inline">6S</span> steps. 
+        </span></span>, it's guaranteed that the orientation returns back to the original orientation (facing positive x-axis) after at most <span class="math-inline">6S</span> steps. 
         In fact, we can do better, and find the exact minimum period for cumulative orientations to repeat.
     </p>
 
@@ -1723,7 +1723,7 @@
         <span class="math-inline">S</span>-step blocks. For that, we just need to check possible values of <span class="math-inline">S mod 6</span>:
     </p>
 
-    <div class="math-block">
+    <!-- <div class="math-block">
      <div style="display:inline-block; text-align:left;">
         S = 0 mod 6 &Implies; k<sub>S</sub> = (0 + 1)(2&times;0 + 1) = 1 &Implies; &theta;(S) mod S = <span class="fraction">
             <span class="fraction-num">1</span>
@@ -1749,7 +1749,37 @@
 
         S = 5 mod 6 &Implies; k<sub>S</sub> = 66 = 0 mod 6 &Implies; &theta;(S) mod S = 0 mod S<br>
      </div>
+    </div> -->
+
+    <div id="smod6-table-wrap">
+     <table class="dir-table" id="smod6-table">
+      <thead>
+       <tr>
+        <th>
+         S mod 6
+        </th>
+        <th>
+         K<sub>S</sub>
+        </th>
+        <th>
+         K<sub>S</sub> mod 6
+        </th>
+        <th>
+         &theta;(S) mod S
+        </th>
+        <th>
+         Period
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+      </tbody>
+     </table>
     </div>
+
+    <p>
+      Note that right hand sides are all integers as expected because the denominator of all fractions cancelled out with <span class="math-inline">S</span>.
+    </p>
 
     <!--  -->
     <p>
@@ -2740,7 +2770,7 @@
     }
 
     // =========================================================
-    // DIRECTION TABLE (N=6)
+    // DIRECTION TABLE (S=6)
     // =========================================================
 
     (function buildDirTable() {
@@ -2770,6 +2800,36 @@
         const ellipsis = document.createElement('tr');
         ellipsis.innerHTML = '<td colspan="5" style="text-align:center;color:var(--text-dim)">…</td>';
         tbody.appendChild(ellipsis);
+    })();
+
+    // =========================================================
+    // S MOD 6 TABLE
+    // =========================================================
+
+    (function buildSMod6Table() {
+        const tbody = document.querySelector('#smod6-table tbody');
+        if (!tbody) return;
+        let phase = 0;
+        const rows = 6;
+        for (let n = 0; n < rows; n++) {
+            const ks = (n + 1) * (2 * n + 1);
+            const ksMod6 = ks % 6;
+            const _gcd = gcd(ksMod6, 6);
+            const nom = ksMod6 / _gcd;
+            const denom = 6 / _gcd;
+            const period = ksMod6 === 0 ? 1 : denom;
+            const tr = document.createElement('tr');
+            const frac = `<span class="fraction"><span class="fraction-num">${nom}</span><span class="fraction-den">${denom}</span></span>`;
+            const thetaModS = ksMod6 === 0 ? "0" : frac;
+            tr.innerHTML = `
+                <td class="highlight">${n}</td>
+                <td class="highlight">${ks}</td>
+                <td class="highlight">${ksMod6}</td>
+                <td class="highlight">${thetaModS} S</td>
+                <td class="highlight">${period} S</td>
+            `;
+            tbody.appendChild(tr);
+        }
     })();
 
     // =========================================================
