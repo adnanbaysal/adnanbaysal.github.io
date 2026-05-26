@@ -1573,15 +1573,15 @@
     </h3>
     <p>
       This case is more complicated. Visually analyzing the behavior for some small S values, I discovered following:
-      <ul>
-          <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 35 = 5x7, S = 77 = 7x11</li>
-          <li>If all even powered prime factors of S belong to a special set of primes, then the graph drifts. 
-              For example S = 11x11 = 121
-          </li>
-          <li>
-              Otherwise, if S has an even powered prime factor that is out of the above set of primes, then the graph closes with a 1 petal shape. 
-              For example S = 7x7 = 49
-          </li>
+      <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
+        <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 35 = 5x7, S = 77 = 7x11</li>
+        <li>If all even powered prime factors of S belong to a special set of primes, then the graph drifts. 
+          For example S = 11x11 = 121
+        </li>
+        <li>
+          Otherwise, if S has an even powered prime factor that is out of the above set of primes, then the graph closes with a 1 petal shape. 
+          For example S = 7x7 = 49
+        </li>
       </ul>
       Experimentally, I found that the following primes belongs to the special set mentioned above: 11, 13, 23, 37, 47, 59, 61, 71, 73, ...
       This set is probably infinite, and a search on <a href="www.oeis.org" style="color: #00d2ff;">oeis.org</a> give 4 potential candidates for this sequence. 
@@ -1612,7 +1612,7 @@
       Before proceeding to deal with the formulas, let's give name to the orientation change, and cumulative orientation formulas.
     </p>
 
-    <ul>
+    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
       <li>
         Let <span class="math-inline">&Delta;&theta;(n) = n&sup2;</span> denote the amount of direction slot change at step n of the walk. 
       </li>
@@ -1812,10 +1812,10 @@
     </p>
 
   </section>
-   <!-- SECTION 5: PETALS -->
+   <!-- SECTION 6: PETALS -->
    <section class="section" id="petals">
     <span class="section-number">
-     05 &mdash; The Petal Count
+     06 &mdash; The Petal Count
     </span>
     <h2>
      Counting Petals &mdash; Divisors of 6
@@ -1823,6 +1823,23 @@
     
     As we saw before, number of closure of the graphs and the number of petals are directly related to GCD(S, 6).
     We'll analyze these two properties in this section. 
+
+    <h3>
+      Closure when GCD(S, 6) = 1
+    </h3>
+    <p>
+      As we saw in the section <a href="#closing" style="color: #00d2ff;">When Does the Path Close?</a>, this case has 
+      intricacies. For some S, the path drifts in the positive x-axis direction. For others, it forms a closed shape and 
+      the turtle moves over the same closed graph forever.
+    </p>
+
+    <p>
+      For this case, we have <span class="math-inline">&theta;(S) = 0 mod S</span>, so the orientation after S-steps is 
+      the same as the starting orientation. When the position of turtle after S-steps is also the starting position, 
+      we'll get a <strong>1-petal</strong> closing graph. When the position is different, the graph drifts in some orientation.
+      I'll call both of these cases as a 1-petal shape, to make talking about petals and GCD(S, 6) the same thing.
+      I'll also leave analyzing when and why graph drifts vs closes as future work, to keep the scope of this article short.
+    </p>
 
     <h3>
       Closure when GCD(S, 6) > 1
@@ -1851,67 +1868,30 @@
      <span class="math-inline">GCD(S, 6)</span>, the angle of rotation is one of 1/2, 2/3, or 1/6 of full cycle. 
     </p>
 
-    <ul>
+    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
       <li>
-        When <span class="math-inline">GCD(S, 6) = 6</span>, we have <span class="math-inline">&theta;(S) = S / 6 mod S</span>,
-        so by the definition of &theta;, this is 1/6 of full cycle. In this case, Turtle closes the path after 6S steps in a six-petal
+        <span class="pill pill-cyan">GCD = 6 &Implies; &theta;(S) = S / 6 mod S</span>
+        By the definition of &theta;, this is 1/6 of full cycle. In this case, Turtle closes the path after 6S steps in a six-petal
         <strong>hexagonal</strong> shape.
       </li>
       
       <li>
-        When <span class="math-inline">GCD(S, 6) = 3</span>, we have <span class="math-inline">&theta;(S) = 2S / 3 mod S</span>,
-        so this will correspond to 2/3 of full cycle, whic is infact 1/3 of full cycle in counter clockwise direction. 
+        <span class="pill pill-green">GCD = 3 &Implies; &theta;(S) = 2S / 3 mod S</span>
+        This is 2/3 of full cycle, which is infact 1/3 of full cycle in counter clockwise direction. 
         In this case, Turtle closes the path after 3S steps in a three-petal <strong>equilateral triangle</strong> shape.
       </li>
 
       <li>
-        When <span class="math-inline">GCD(S, 6) = 2</span>, we have <span class="math-inline">&theta;(S) = S / 2 mod S</span>,
-        and this will correspond to 1/2 of full cycle. In this case, turtle closes the path after 2S steps in a two-petal 
-        <strong>line</strong> shape.
+        <span class="pill pill-gold">GCD = 2 &Implies; &theta;(S) = S / 2 mod S</span> 
+        This will correspond to 1/2 of full cycle. In this case, turtle closes the path after 2S steps in a two-petal 
+        <strong>linear</strong> shape.
       </li>
     </ul>
 
     <p>
-     Which divisor of 6 you get depends precisely on gcd(S, 6):
+      Here is a small demo of the number of petals for theb above 3 cases:
     </p>
-    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
-     <li>
-      <span class="pill pill-cyan">
-       gcd = 1
-      </span>
-      &nbsp; &Delta;&theta; = 0&deg;, the block repeats identically &rarr; path drifts forever
-     </li>
-     <li>
-      <span class="pill pill-gold">
-       gcd = 2
-      </span>
-      &nbsp; &Delta;&theta; = 180&deg; &rarr;
-      <strong>
-       2 petals
-      </strong>
-      (each a 180&deg; rotation of the other)
-     </li>
-     <li>
-      <span class="pill pill-green">
-       gcd = 3
-      </span>
-      &nbsp; &Delta;&theta; = 240&deg; &rarr;
-      <strong>
-       3 petals
-      </strong>
-      (each a 120&deg; rotation)
-     </li>
-     <li>
-      <span class="pill pill-cyan">
-       gcd = 6
-      </span>
-      &nbsp; &Delta;&theta; = 60&deg; &rarr;
-      <strong>
-       6 petals
-      </strong>
-      (each a 60&deg; rotation)
-     </li>
-    </ul>
+
     <!-- Demo: Petal explorer by gcd -->
     <div class="demo-wrap">
      <div class="demo-header">
@@ -1993,8 +1973,9 @@
       </div>
      </div>
     </div>
+    
     <p>
-     But wait &mdash; if there are only 1, 2, 3, or 6 rotation petals, why did you observe
+      But wait &mdash; if there are only 2, 3, or 6 rotation petals, why did you observe
      <em>
       12
      </em>
@@ -2002,24 +1983,30 @@
      <em>
       4
      </em>
-     petal-like shapes in some of the images? This is the next surprise.
+     petal-like shapes in some of the images? We'll analyze this, but before that, we need to dive deeper into
+     the symmetric nature of the graphs we see so far. As before, we'll do that analysis algebraically.
     </p>
    </section>
-   <!-- SECTION 6: SYMMETRY -->
+   
+   <!-- SECTION 7: SYMMETRY -->
    <section class="section" id="symmetry">
     <span class="section-number">
-     06 &mdash; The Symmetry
+     07 &mdash; The Symmetry
     </span>
     <h2>
      The Hidden Symmetry
     </h2>
     <p>
-     Look carefully at a single petal. It's not just one blob &mdash; it has a
-     <strong>
-      mirror line
-     </strong>
-     running through its middle. Both halves of the petal are reflections of each other.
+     The descriptions in the previous section explains the rotational symmetries found the graphs for all number of petals,
+     including 1 petal, which has 0 rotational symmetries. But when we look at a single petal carefully, we see that 
+     it's not just one blob &mdash; it has a <strong>mirror line</strong> running through its middle. 
+     Both halves of the petal are reflections of each other. In this section, we'll try to understand where that comes from.
     </p>
+
+    <h3>
+      &Delta;&theta;(n) is palindromic
+    </h3>
+    
     <p>
      This bilateral symmetry comes from one of the most elegant modular-arithmetic identities you'll ever see:
     </p>
@@ -2099,10 +2086,10 @@
      That's the mystery of 12 solved &mdash; but there's an even deeper level to this story.
     </p>
    </section>
-   <!-- SECTION 7: THE 12-PETAL MYSTERY -->
+   <!-- SECTION 8: THE 12-PETAL MYSTERY -->
    <section class="section" id="twelve">
     <span class="section-number">
-     07 &mdash; Going Deeper
+     08 &mdash; Going Deeper
     </span>
     <h2>
      The Mystery of 12 Petals
@@ -2303,10 +2290,10 @@
      <!-- Populated by JS -->
     </div>
    </section>
-   <!-- SECTION 8: DEEPER CONNECTION -->
+   <!-- SECTION 9: DEEPER CONNECTION -->
    <section class="section" id="deeper">
     <span class="section-number">
-     08 &mdash; The Deep End
+     09 &mdash; The Deep End
     </span>
     <h2>
      The Deeper Connection
