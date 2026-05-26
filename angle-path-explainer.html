@@ -660,6 +660,23 @@
      color: var(--accent);
    }
 
+  /* Small centered tables (e.g., n^2 mod 6) */
+  #n2mod6-table {
+    margin: 12px auto;
+    border-collapse: collapse;
+  }
+
+  #n2mod6-table th,
+  #n2mod6-table td {
+    text-align: center;
+    padding: 6px 10px;
+  }
+
+  #n2mod6-table td {
+    border-bottom: 1px solid #0a1218;
+    color: var(--text-dim);
+  }
+
    /* GALLERY */
    .gallery-grid {
      display: grid;
@@ -1997,62 +2014,98 @@
      The Hidden Symmetry
     </h2>
     <p>
-     The descriptions in the previous section explains the rotational symmetries found the graphs for all number of petals,
-     including 1 petal, which has 0 rotational symmetries. But when we look at a single petal carefully, we see that 
-     it's not just one blob &mdash; it has a <strong>mirror line</strong> running through its middle. 
-     Both halves of the petal are reflections of each other. In this section, we'll try to understand where that comes from.
+     The descriptions in the previous section explains the rotational symmetries found the in the graphs we have seen so far. 
+     And this is true for all number of petals, including 1 petal, which has 0 rotational symmetry. 
+     But when we look at a single petal carefully, we see that it's not just one blob &mdash; it has a <strong>mirror line</strong> 
+     running through its middle. Both halves of the petal are reflections of each other. In this section, we'll try to understand 
+     where that comes from.
     </p>
 
     <h3>
       &Delta;&theta;(n) is palindromic
     </h3>
-    
+
     <p>
-     This bilateral symmetry comes from one of the most elegant modular-arithmetic identities you'll ever see:
+      There is a nice property of the orientation change function <span class="math-inline">&Delta;&theta;(n) mod S</span>: 
+      it's palindromic, meaning you get the same sequence of orientation changes if you start from the beginning or end.
+      This also means that these slot change values has reflection symmetry. This is easily proved below:
     </p>
     <div class="math-block">
-     x&sup2; &equiv; (S &minus; x)&sup2; (mod S)
+     &Delta;&theta;(S - n) = (S &minus; n)&sup2; = S&sup2; - 2Sn + n&sup2; &equiv; n&sup2; (mod S) = &Delta;&theta;(n) mod S
     </div>
     <p>
-     Why? Expand the right side:
-     <span class="math-inline">
-      (S&minus;x)&sup2; = S&sup2; &minus; 2Sx + x&sup2;
-     </span>
-     . Both
-     <span class="math-inline">
-      S&sup2;
-     </span>
-     and
-     <span class="math-inline">
-      &minus;2Sx
-     </span>
-     are multiples of S, so they vanish modulo S, leaving
-     <span class="math-inline">
-      x&sup2;
-     </span>
-     . &checkmark;
+     
     </p>
     <p>
-     What does this mean for our turtle? It says that the turn at step
-     <span class="math-inline">
-      n
-     </span>
-     is
-     <em>
-      identical
-     </em>
-     to the turn at step
-     <span class="math-inline">
-      S &minus; n
-     </span>
-     , modulo S. In other words:
-     <strong>
-      the sequence of turns in each S-step block is palindromic
-     </strong>
-     . The first turn equals the last, the second equals the second-to-last, and so on.
+     What does this mean for our turtle geometrically? It says that the turn at step <span class="math-inline">n</span>
+     is <em>identical</em> to the turn at step <span class="math-inline">S &minus; n</span>. In other words:
+     <strong>the sequence of turns in each S-step block is palindromic</strong>. The first turn equals the last, 
+     the second equals the second-to-last, and so on.
     </p>
+
     <p>
-        <!-- TODO: Think aout this, is palindromic realy result in this? Actualll not fully palindromic, need to remove 0s to be palindromic or need to me 1 less if 0s included -->
+      Actually, I lied a bit in the above descriptions. When we consider a full S-step block, it's only palindromic if we omit the 
+      initial step which rotates the turtle 0&sup2; = 0 slots. We need to either remove the initial step, or add an extra step at the 
+      end to make it palindromic. To understand what I mean, look at the table below for S = 6:
+    </p>
+
+    <div id="n2mod6-table-wrap">
+     <table class="dir-table" id="n2mod6-table">
+      <thead>
+       <tr>
+      <th>
+       n
+      </th>
+      <th>
+       n<sup>2</sup>
+      </th>
+      <th>
+       n<sup>2</sup> mod 6
+      </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+      <td class="highlight">0</td>
+      <td>0</td>
+      <td class="highlight">0</td>
+       </tr>
+       <tr>
+      <td class="highlight">1</td>
+      <td>1</td>
+      <td class="highlight">1</td>
+       </tr>
+       <tr>
+      <td class="highlight">2</td>
+      <td>4</td>
+      <td class="highlight">4</td>
+       </tr>
+       <tr>
+      <td class="highlight">3</td>
+      <td>9</td>
+      <td class="highlight">3</td>
+       </tr>
+       <tr>
+      <td class="highlight">4</td>
+      <td>16</td>
+      <td class="highlight">4</td>
+       </tr>
+       <tr>
+      <td class="highlight">5</td>
+      <td>25</td>
+      <td class="highlight">1</td>
+       </tr>
+       <tr>
+      <td class="highlight">6</td>
+      <td>36</td>
+      <td class="highlight">0</td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+
+    <p>
+      <!-- TODO: Think aout this, is palindromic realy result in this? Actualll not fully palindromic, need to remove 0s to be palindromic or need to be 1 more if 0s included -->
      A palindromic sequence of directions means the path traces out and then
      <em>
       retraces
