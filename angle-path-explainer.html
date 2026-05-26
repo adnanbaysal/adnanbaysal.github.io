@@ -1030,6 +1030,11 @@
       </a>
      </li>
      <li>
+      <a href="#algebra">
+       The Algebra &mdash; Why GCD with 6
+      </a>
+     </li>
+     <li>
       <a href="#petals">
        Counting Petals &mdash; Divisors of 6
       </a>
@@ -1567,60 +1572,68 @@
      When gcd(S, 6) = 1
     </h3>
     <p>
-        This case is more complicated. Visually analyzing the behavior for some small S values, I discovered following:
-        <ul>
-            <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 35 = 5x7, S = 77 = 7x11</li>
-            <li>If all even powered prime factors of S belong to a special set of primes, then the graph drifts. 
-                For example S = 11x11 = 121
-            </li>
-            <li>
-                Otherwise, if S has an even powered prime factor that is out of the above set of primes, then the graph closes with a 1 petal shape. 
-                For example S = 7x7 = 49
-            </li>
-        </ul>
-        Experimentally, I found that the following primes belongs to the special set mentioned above: 11,13,23,37,47,59,61,71,73, ...
-        This set is probably infinite, and a search on <a href="www.oeis.org">oeis.org</a> give 4 potential candidates for this sequence. 
-        Honestly, I don't know which one of those sequences' 
-        definition match the best for the underlying reason of this result. That would be a good future work. 
+      This case is more complicated. Visually analyzing the behavior for some small S values, I discovered following:
+      <ul>
+          <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 35 = 5x7, S = 77 = 7x11</li>
+          <li>If all even powered prime factors of S belong to a special set of primes, then the graph drifts. 
+              For example S = 11x11 = 121
+          </li>
+          <li>
+              Otherwise, if S has an even powered prime factor that is out of the above set of primes, then the graph closes with a 1 petal shape. 
+              For example S = 7x7 = 49
+          </li>
+      </ul>
+      Experimentally, I found that the following primes belongs to the special set mentioned above: 11, 13, 23, 37, 47, 59, 61, 71, 73, ...
+      This set is probably infinite, and a search on <a href="www.oeis.org" style="color: #00d2ff;">oeis.org</a> give 4 potential candidates for this sequence. 
+      Honestly, I don't know which one of those sequences' 
+      definition match the best for the underlying reason of this result. That would be a good future work. 
     </p>
-    
-    <h3>Why gcd with 6?</h3>
+   </section>
+
+    <!-- SECTION 5: THE ALGEBRA OF CLOSURE -->
+   <section class="section" id="algebra">
+    <span class="section-number">
+     05 &mdash; The Algebra
+    </span>
+    <h2>
+     Why GCD With 6?
+    </h2>
 
     <p>
-        Let's look back at the sum-of-squares formula:
-        <span class="math-inline">
-        f(n) = n(n+1)(2n+1)/6
-        </span>
-        . That denominator
-        <strong>
-        6
-        </strong>
-        seems to be related to this. To understand this better, let's make a few observations about the formulas for relative slot change and cumulative direction formulas.
-        Before proceeding to deal with the formulas, let's give name to the orientation change, and cumulative orientation formulas.
+      Let's look back at the sum-of-squares formula:
+      <span class="math-inline">
+      f(n) = n(n+1)(2n+1)/6
+      </span>
+      . That denominator
+      <strong>
+      6
+      </strong>
+      seems to be related to this. To understand this better, let's make a few observations about the formulas for relative slot change and cumulative direction formulas.
+      Before proceeding to deal with the formulas, let's give name to the orientation change, and cumulative orientation formulas.
     </p>
 
     <ul>
-        <li>
-            Let <span class="math-inline">&Delta;&theta;(n) = n&sup2;</span> denote the amount of direction slot change at step n of the walk. 
-        </li>
+      <li>
+        Let <span class="math-inline">&Delta;&theta;(n) = n&sup2;</span> denote the amount of direction slot change at step n of the walk. 
+      </li>
 
-        <li>
-            Let <span class="math-inline">&theta;(n) = 1&sup2; + 2&sup2; + ... + n&sup2; = n(n+1)(2n+1) / 6</span> denote the cumulative direction slot at step n of the walk. 
-        </li>
+      <li>
+        Let <span class="math-inline">&theta;(n) = 1&sup2; + 2&sup2; + ... + n&sup2; = n(n+1)(2n+1) / 6</span> denote the cumulative direction slot at step n of the walk. 
+      </li>
     </ul>
 
     <p>
-        As before, each slot corresponds to <span class="math-inline">1/S</span> of a full turn. Therefore, we only need to consider 
-        <span class="math-inline">&Delta;&theta;(n) mod S</span> and <span class="math-inline">&theta;(n) mod S</span> as full turns 
-        correspond to no turn at all. 
+      As before, each slot corresponds to <span class="math-inline">1/S</span> of a full turn. Therefore, we only need to consider 
+      <span class="math-inline">&Delta;&theta;(n) mod S</span> and <span class="math-inline">&theta;(n) mod S</span> as full turns 
+      correspond to no turn at all. 
     </p>
 
     <h3>
      &Delta;&theta;(n) is periodic
     </h3>
     <p>
-        Our first observation is that the amount of relative orientation changes is periodic with a period of <span class="math-inline">S</span> steps. 
-        The following simple observation shows this:
+      Our first observation is that the amount of relative orientation changes is periodic with a period of <span class="math-inline">S</span> steps. 
+      The following simple observation shows this:
     </p>
 
     <div class="math-block">
@@ -1628,17 +1641,17 @@
     </div>
 
     <p>
-        Now let's think what this means geometrically. After <span class="math-inline">S</span> steps of walk, the turtle is positioned 
-        at some location in the plane and has an orientation that is the sum of all changes up to that point. The turtle 
-        has so far already drawn a graph. Thinking of this last position and orientation as the starting state, 
-        it will draw exactly the same shape in a rotated and translated manner in the next <span class="math-inline">S</span> steps.
+      Now let's think what this means geometrically. After <span class="math-inline">S</span> steps of walk, the turtle is positioned 
+      at some location in the plane and has an orientation that is the sum of all changes up to that point. The turtle 
+      has so far already drawn a graph. Thinking of this last position and orientation as the starting state, 
+      it will draw exactly the same shape in a rotated and translated manner in the next <span class="math-inline">S</span> steps.
     </p> 
     <p>
-        So it's clear that this single <span class="math-inline">S</span>-periodicity
-        of <span class="math-inline">&Delta;&theta;(n)</span> is enough to explain the repeating rotated+translated patterns in our graphs. 
-        But there are more than that in what we saw in the graphs. For example, as we saw, the path closes for almost all choices of 
-        <span class="math-inline">S</span>. Besides, each <span class="math-inline">S</span>-step block has reflection symmetry too,
-        which cannot be explained by this periodicity alone. We'll see the reasons in the following sections.
+      So it's clear that this single <span class="math-inline">S</span>-periodicity
+      of <span class="math-inline">&Delta;&theta;(n)</span> is enough to explain the repeating rotated+translated patterns in our graphs. 
+      But there are more than that in what we saw in the graphs. For example, as we saw, the path closes for almost all choices of 
+      <span class="math-inline">S</span>. Besides, each <span class="math-inline">S</span>-step block has reflection symmetry too,
+      which cannot be explained by this periodicity alone. We'll see the reasons in the following sections.
     </p>
     
     <h3>
@@ -1646,10 +1659,10 @@
     </h3>
 
     <p>
-        just like we did for <span class="math-inline">&Delta;&theta;(n + S)</span>, let's check <span class="math-inline">&theta;(n + S)</span>
-        to see if we get <span class="math-inline">S</span>-periodicity.
-        To make working with formulas easier, we'll use the expanded form of the sum of squares formula: 
-        <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. Here we go:
+      just like we did for <span class="math-inline">&Delta;&theta;(n + S)</span>, let's check <span class="math-inline">&theta;(n + S)</span>
+      to see if we get <span class="math-inline">S</span>-periodicity.
+      To make working with formulas easier, we'll use the expanded form of the sum of squares formula: 
+      <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. Here we go:
     </p>
 
     <div class="math-block">
@@ -1698,29 +1711,29 @@
     </div>
 
     <p>
-        The above identities show that after each block of <span class="math-inline">S</span>-step, the turtle's orientation is rotated by 
-        <span class="math-inline">&theta;(S) mod S</span> slots. Since <span class="math-inline">&theta;(S) = <span class="fraction">
-            <span class="fraction-num">2S&sup3; + 3S&sup2; + S</span>
-            <span class="fraction-den">6</span>
-        </span> = <span class="fraction">
-            <span class="fraction-num">S(S+1)(2S+1)</span>
-            <span class="fraction-den">6</span>
-        </span></span>, it's guaranteed that the orientation returns back to the original orientation (facing positive x-axis) after at most <span class="math-inline">6S</span> steps. 
-        In fact, we can do better, and find the exact minimum period for cumulative orientations to repeat.
+      The above identities show that after each block of <span class="math-inline">S</span>-step, the turtle's orientation is rotated by 
+      <span class="math-inline">&theta;(S) mod S</span> slots. Since <span class="math-inline">&theta;(S) = <span class="fraction">
+          <span class="fraction-num">2S&sup3; + 3S&sup2; + S</span>
+          <span class="fraction-den">6</span>
+      </span> = <span class="fraction">
+          <span class="fraction-num">S(S+1)(2S+1)</span>
+          <span class="fraction-den">6</span>
+      </span></span>, it's guaranteed that the orientation returns back to the original orientation (facing positive x-axis) after at most <span class="math-inline">6S</span> steps. 
+      In fact, we can do better, and find the exact minimum period for cumulative orientations to repeat.
     </p>
 
     <p>
-        To understand that, let's analyze <span class="math-inline">&theta;(S) mod S</span> in more detail:
+      To understand that, let's analyze <span class="math-inline">&theta;(S) mod S</span> in more detail:
 
-        We know that <span class="math-inline">&theta;(S)</span> is an integer since its the sum of first <span class="math-inline">S</span> squares.
-        If we seperate the multiplier <span class="math-inline">S</span> in the formula, we get <span class="math-inline">&theta;(S) mod S = S<span class="fraction">
-            <span class="fraction-num">(S+1)(2S+1)</span>
-            <span class="fraction-den">6</span>
-        </span> mod S</span>. If we call <span class="math-inline">k<sub>S</sub> = (S+1)(2S+1)</span>, 
-        we see that we can calculate <span class="math-inline">&theta;(S) mod S</span> by just considering the remainder of 
-        <span class="math-inline">k<sub>S</sub> mod 6</span>, because integer multiples of S will be equivalent to 0 mod <span class="math-inline">S</span>.
-        Whatever that value is, we'll get a fraction of <span class="math-inline">S</span>, which will help to find the minimal period as the number of 
-        <span class="math-inline">S</span>-step blocks. For that, we just need to check possible values of <span class="math-inline">S mod 6</span>:
+      We know that <span class="math-inline">&theta;(S)</span> is an integer since its the sum of first <span class="math-inline">S</span> squares.
+      If we seperate the multiplier <span class="math-inline">S</span> in the formula, we get <span class="math-inline">&theta;(S) mod S = S<span class="fraction">
+          <span class="fraction-num">(S+1)(2S+1)</span>
+          <span class="fraction-den">6</span>
+      </span> mod S</span>. If we call <span class="math-inline">k<sub>S</sub> = (S+1)(2S+1)</span>, 
+      we see that we can calculate <span class="math-inline">&theta;(S) mod S</span> by just considering the remainder of 
+      <span class="math-inline">k<sub>S</sub> mod 6</span>, because integer multiples of S will be equivalent to 0 mod <span class="math-inline">S</span>.
+      Whatever that value is, we'll get a fraction of <span class="math-inline">S</span>, which will help to find the minimal period as the number of 
+      <span class="math-inline">S</span>-step blocks. For that, we just need to check possible values of <span class="math-inline">S mod 6</span>:
     </p>
 
     <!-- <div class="math-block">
@@ -1770,6 +1783,9 @@
         <th>
          Period
         </th>
+        <th>
+         GCD(S, 6)
+        </th>
        </tr>
       </thead>
       <tbody>
@@ -1778,47 +1794,24 @@
     </div>
 
     <p>
-      Note that right hand sides are all integers as expected because the denominator of all fractions cancelled out with <span class="math-inline">S</span>.
+      In the above table, we showed <span class="math-inline">&theta;(S) mod S</span> as a fraction of S to clearly see the period.
+      Periad is simple calculated as the minimum multiple of this fraction to make it an integer multiple of <span class="math-inline">S</span>.
+      The table shows that the period for cumulative orientation is exactly <span class="math-inline">GCD(S,6) &times; 6</span> 
+      as we guessed.
     </p>
 
-    <!--  -->
     <p>
-     Here's the key insight, without heavy algebra. After the walker completes one block of
-     <strong>
-      S steps
-     </strong>
-     , it arrives at some position in the plane. Whether it has returned to the start depends on the vector sum of all S unit steps taken.
+      So, again, what does <span class="math-inline">kS</span>-periodicity (k is one of 1, 2, 3, or 8) mean geometrically
+      for the cumulative orientation slot of the turtle? It means, the turtle will face the exact same orientation after 
+      <span class="math-inline">kS</span>-steps. Since <span class="math-inline">&Delta;&theta;(n)</span> is also 
+      <span class="math-inline">S</span>-periodic, this means the turtle will draw the same shape in the same orientation,
+      i.e. not a rotated version. But there is an important catch here, the turtle does not have to return to the beginning 
+      position. It could have draw the same shape starting from another position in the space, and that position is the sum
+      of all steps as 2D vectors. That would cause the graphs to drift forever in some direction, but we do not see this 
+      except for some specific family of choices of <span class="math-inline">S</span>. So there is certainly more math to analyze.
     </p>
-    <p>
-     Because the squared-turn rule is
-     <em>
-      periodic modulo S
-     </em>
-     in a specific sense, the second block of S steps is identical to the first &mdash; but
-     <strong>
-      rotated by a fixed angle &Delta;&theta;
-     </strong>
-     determined by
-     <span class="math-inline">
-      f(S) mod S
-     </span>
-     . The third block is the same shape, rotated again by &Delta;&theta;, and so on.
-    </p>
-    <p>
-     Think of each S-step block as one "blade" of a fan. The blades are all the same shape, just rotated. 
-     The path closes when the blades complete a full rotation &mdash; i.e., when enough rotations of &Delta;&theta; add up to 360&deg;.
-    </p>
-    <div class="math-block">
-     &Delta;&theta; = 360&deg; &times; f(S) / S (mod 360&deg;)
-    </div>
-    <p>
-     For the path to close, &Delta;&theta; must be a rational fraction of 360&deg;. It turns out that &Delta;&theta; is
-     <em>
-      always
-     </em>
-     a multiple of 60&deg; &mdash; and this is precisely because of the 6 in the denominator of f. More on this next.
-    </p>
-   </section>
+
+  </section>
    <!-- SECTION 5: PETALS -->
    <section class="section" id="petals">
     <span class="section-number">
@@ -1827,60 +1820,57 @@
     <h2>
      Counting Petals &mdash; Divisors of 6
     </h2>
+    
+    As we saw before, number of closure of the graphs and the number of petals are directly related to GCD(S, 6).
+    We'll analyze these two properties in this section. 
+
+    <h3>
+      Closure when GCD(S, 6) > 1
+    </h3>
+
     <p>
-     Look at the table above. The petal counts are 2, 3, and 6 &mdash; and for drifting paths, we could say there's "1 petal" that just repeats endlessly. 
-     Those four numbers &mdash; 1, 2, 3, 6 &mdash; are exactly the
+     This case is easier to understand. Here's the key insight, without heavy algebra. After the walker completes one block of
+     <strong>S-steps</strong>, it arrives at some position in the plane. It may or may not returned to the starting position,
+     which depends on the vector sum of all S unit steps taken. If returned to the initial position, then we are good: 
+     we get a periodically closing graph. So let's assume that turtle does not return to the original position after S-steps. 
+    </p>
+    <p>
+     Because the squared-turn rule is
+     <em>
+      periodic modulo S
+     </em>
+     , the second block of S steps is identical to the first &mdash; but
      <strong>
-      divisors of 6
+      rotated by the fixed angle <span class="math-inline">&theta;(S) mod S</span>
      </strong>
-     .
+     . The turtle is now at a position in plane that is different from the origin. Now, assume we draw a line from the origin to 
+     this new position. If we proceed one more block of S-steps, we get to another position in space. Since the turtle draws exactly 
+     the same shape at each S-step blocks, this new line will have the same length as the first one. Besides, since turtle's orientation 
+     is rotated by <span class="math-inline">&theta;(S) mod S</span> slots, this new line will also be rotated by the same amount. 
+     Hence, each S-steps block will move the turtle on the edges of some equally angled eqaul length lines. Depending on 
+     <span class="math-inline">GCD(S, 6)</span>, the angle of rotation is one of 1/2, 2/3, or 1/6 of full cycle. 
     </p>
-    <p>
-     This is no accident. Here's the reasoning in full.
-    </p>
-    <p>
-     The rotation angle between consecutive blocks is
-     <span class="math-inline">
-      &Delta;&theta; = 360&deg; &times; (f(S) mod S) / S
-     </span>
-     . Let's think about what values this can take.
-    </p>
-    <p>
-     We have
-     <span class="math-inline">
-      f(S) = S(S+1)(2S+1)/6
-     </span>
-     , so
-     <span class="math-inline">
-      f(S)/S = (S+1)(2S+1)/6
-     </span>
-     . The denominator is always 6 (before cancellation with the numerator). So
-     <span class="math-inline">
-      f(S)/S
-     </span>
-     is always a multiple of 1/6, which means &Delta;&theta; is always a multiple of
-     <strong>
-      360&deg;/6 = 60&deg;
-     </strong>
-     .
-    </p>
-    <div class="callout green">
-     <span class="callout-label">
-      The Petal Theorem
-     </span>
-     <p>
-      &Delta;&theta; &isin; {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}. The number of rotation petals is
-      <span class="math-inline">
-       360&deg; / &Delta;&theta;
-      </span>
-      , which is always a divisor of 6: either
-      <strong>
-       1, 2, 3, or 6
-      </strong>
-      .
-      <!-- TODO: Fix the explanation considering 0 degree cannot divide 360! -->
-     </p>
-    </div>
+
+    <ul>
+      <li>
+        When <span class="math-inline">GCD(S, 6) = 6</span>, we have <span class="math-inline">&theta;(S) = S / 6 mod S</span>,
+        so by the definition of &theta;, this is 1/6 of full cycle. In this case, Turtle closes the path after 6S steps in a six-petal
+        <strong>hexagonal</strong> shape.
+      </li>
+      
+      <li>
+        When <span class="math-inline">GCD(S, 6) = 3</span>, we have <span class="math-inline">&theta;(S) = 2S / 3 mod S</span>,
+        so this will correspond to 2/3 of full cycle, whic is infact 1/3 of full cycle in counter clockwise direction. 
+        In this case, Turtle closes the path after 3S steps in a three-petal <strong>equilateral triangle</strong> shape.
+      </li>
+
+      <li>
+        When <span class="math-inline">GCD(S, 6) = 2</span>, we have <span class="math-inline">&theta;(S) = S / 2 mod S</span>,
+        and this will correspond to 1/2 of full cycle. In this case, turtle closes the path after 2S steps in a two-petal 
+        <strong>line</strong> shape.
+      </li>
+    </ul>
+
     <p>
      Which divisor of 6 you get depends precisely on gcd(S, 6):
     </p>
@@ -2811,8 +2801,8 @@
         if (!tbody) return;
         let phase = 0;
         const rows = 6;
-        for (let n = 0; n < rows; n++) {
-            const ks = (n + 1) * (2 * n + 1);
+        for (let s = 0; s < rows; s++) {
+            const ks = (s + 1) * (2 * s + 1);
             const ksMod6 = ks % 6;
             const _gcd = gcd(ksMod6, 6);
             const nom = ksMod6 / _gcd;
@@ -2821,12 +2811,14 @@
             const tr = document.createElement('tr');
             const frac = `<span class="fraction"><span class="fraction-num">${nom}</span><span class="fraction-den">${denom}</span></span>`;
             const thetaModS = ksMod6 === 0 ? "0" : frac;
+            const gcdS6 = gcd(s, 6);
             tr.innerHTML = `
-                <td class="highlight">${n}</td>
+                <td class="highlight">${s}</td>
                 <td class="highlight">${ks}</td>
                 <td class="highlight">${ksMod6}</td>
                 <td class="highlight">${thetaModS} S</td>
                 <td class="highlight">${period} S</td>
+                <td class="highlight">${gcdS6}</td>
             `;
             tbody.appendChild(tr);
         }
