@@ -2045,8 +2045,8 @@
 
     <p>
       Actually, I lied a bit in the above descriptions. When we consider a full S-step block, it's only palindromic if we omit the 
-      initial step which rotates the turtle 0&sup2; = 0 slots. We need to either remove the initial step, or add an extra step at the 
-      end to make it palindromic. To understand what I mean, look at the table below for S = 6:
+      initial step in which the turtle turns 0&sup2; = 0 slots. We need to either remove this 0, or add an extra step with a 0 slot 
+      turn at the end to make the sequence palindromic. To understand what I mean, look at the table below for S = 6:
     </p>
 
     <div id="n2mod6-table-wrap">
@@ -2105,16 +2105,21 @@
     </div>
 
     <p>
-      <!-- TODO: Think aout this, is palindromic realy result in this? Actualll not fully palindromic, need to remove 0s to be palindromic or need to be 1 more if 0s included -->
-     A palindromic sequence of directions means the path traces out and then
-     <em>
-      retraces
-     </em>
-     in a mirrored fashion &mdash; which is exactly what bilateral symmetry means for a curve. This is true for
-     <strong>
-      every single S
-     </strong>
-     , not just special cases.
+     In the above table, we have 7 values but each reflection symmetric petals have 6 lines for S = 6.
+     If you look at the first 6 rows, you'll see that the first row breaks the palindromic property of
+     the turn amount. But we'll see below that this extra 0 actually makes the petal reflection symmetric!
+    </p>
+
+    <p>
+      To see why, first realize that a path with <em>S</em>-lines contains <em>S-1</em> internal joints.
+      Each internal joint has a corresponding turn amount, so there are actually <em>S-1</em> internal
+      turns in a block of <em>S</em>-steps. If this internal turn amounts are palindromic, we claim that
+      the corresponding path will be reflection symmetric. In fact, the leading 0 could be any value, 
+      it would just rotate the path.
+    </p>
+    
+    <p>
+     A palindromic sequence of internal turns means that the ...
     </p>
     <div class="callout">
      <span class="callout-label">
