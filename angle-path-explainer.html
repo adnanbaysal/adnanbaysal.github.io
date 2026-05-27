@@ -929,8 +929,8 @@
     }
 
     .gallery-cell canvas {
-      width: 75%;
-      height: 75%;
+      width: 85%;
+      height: 85%;
       display: block;
       margin: 8% auto 0 auto;
     }
@@ -2950,8 +2950,16 @@
             const w = largeCanvas.parentElement.offsetWidth;
             largeCanvas.width = w;
             largeCanvas.height = w;
+            
         }
-        window.addEventListener('resize', sizeLarge);
+        let _galleryResizeTimer;
+        window.addEventListener('resize', () => {
+          sizeLarge();
+          if (_galleryResizeTimer) clearTimeout(_galleryResizeTimer);
+          _galleryResizeTimer = setTimeout(() => {
+            try { drawLarge(currentN); } catch (e) { /* ignore if not ready */ }
+          }, 120);
+        });
         setTimeout(sizeLarge, 60);
 
         let currentN = LARGE_N_PRESETS[0].N;
@@ -3049,12 +3057,23 @@
     (function initCloseDemo() {
         const canvas = document.getElementById('close-canvas');
         if (!canvas) return;
+        
         const resize = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetWidth;
+          const w = canvas.offsetWidth || 350;
+          if (canvas.width !== w) {
+            canvas.width = w;
+            canvas.height = w;
+          }
         };
-        window.addEventListener('resize', resize);
-        setTimeout(resize, 60);
+        let _closeResizeTimer;
+        window.addEventListener('resize', () => {
+          resize();
+          if (_closeResizeTimer) clearTimeout(_closeResizeTimer);
+          _closeResizeTimer = setTimeout(() => {
+            try { drawN(currentN, false); } catch (e) { }
+          }, 120);
+        });
+        setTimeout(() => { resize(); }, 60);
 
         let currentN = 3;
 
@@ -3131,12 +3150,22 @@
     (function initPetalDemo() {
         const canvas = document.getElementById('petal-canvas');
         if (!canvas) return;
-        const resize = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetWidth;
-        };
-        window.addEventListener('resize', resize);
-        setTimeout(resize, 60);
+      const resize = () => {
+        const w = canvas.offsetWidth || 350;
+        if (canvas.width !== w) {
+          canvas.width = w;
+          canvas.height = w;
+        }
+      };
+      let _petalResizeTimer;
+      window.addEventListener('resize', () => {
+        resize();
+        if (_petalResizeTimer) clearTimeout(_petalResizeTimer);
+        _petalResizeTimer = setTimeout(() => {
+          try { drawPetal(currentN, currentGcd); } catch (e) { }
+        }, 120);
+      });
+      setTimeout(() => { resize(); }, 60);
 
         let currentGcd = 2;
         let currentN = 4;
@@ -3212,12 +3241,23 @@
     (function initAnatDemo() {
         const canvas = document.getElementById('anat-canvas');
         if (!canvas) return;
-        const resize = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetWidth;
-        };
-        window.addEventListener('resize', resize);
-        setTimeout(resize, 60);
+      let currentMode = 'full';
+      const resize = () => {
+        const w = canvas.offsetWidth || 350;
+        if (canvas.width !== w) {
+          canvas.width = w;
+          canvas.height = w;
+        }
+      };
+      let _anatResizeTimer;
+      window.addEventListener('resize', () => {
+        resize();
+        if (_anatResizeTimer) clearTimeout(_anatResizeTimer);
+        _anatResizeTimer = setTimeout(() => {
+          try { drawMode(currentMode); } catch (e) { }
+        }, 120);
+      });
+      setTimeout(() => { resize(); }, 60);
 
         const N = 24;
         const info = getClosureInfo(N); // 144 steps, 6 petals
@@ -3229,11 +3269,12 @@
         }
 
         function drawMode(mode) {
-            const cW = canvas.offsetWidth || 350;
-            if (canvas.width !== cW) {
-                canvas.width = cW;
-                canvas.height = cW;
-            }
+          currentMode = mode;
+          const cW = canvas.offsetWidth || 350;
+          if (canvas.width !== cW) {
+            canvas.width = cW;
+            canvas.height = cW;
+          }
             const { pts } = ensurePath();
             const labelEl = document.getElementById('anat-label');
             const explainEl = document.getElementById('anat-explain');
