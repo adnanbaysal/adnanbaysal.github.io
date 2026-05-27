@@ -990,112 +990,74 @@
     </a>
    </div>
   </nav>
+  
   <!-- HERO -->
   <section class="hero">
    <div class="hero-bg">
    </div>
+   
    <div class="hero-canvas-wrap">
     <canvas id="hero-canvas">
     </canvas>
     <div class="hero-ring">
     </div>
    </div>
+   
    <div class="hero-text">
     <div class="hero-kicker">
      SoME 2026 &middot; Mathematical Art
     </div>
+    
     <h1 class="hero-title">
      Square Turns
     </h1>
+    
     <p class="hero-sub">
      A turtle walks. At every step, it turns &mdash; not by a fixed angle, but by an amount that
-     <em>
-      grows with the square of the step count
-     </em>
-     . What emerges is surprisingly beautiful.
+     <em>grows with the square of the step count</em>. What emerges is surprisingly beautiful.
     </p>
+    
     <a class="hero-cta" href="#turtle">
      Begin the Journey &darr;
     </a>
    </div>
   </section>
+  
   <article>
    <!-- TOC -->
    <div class="toc">
     <div class="toc-title">
      Contents
     </div>
+    
     <ol>
-     <li>
-      <a href="#turtle">
-       The Walking Rule
-      </a>
-     </li>
-     <li>
-      <a href="#square-turns">
-       Turning by Squares
-      </a>
-     </li>
-     <li>
-      <a href="#gallery-first">
-       Beauty First &mdash; Large N
-      </a>
-     </li>
-     <li>
-      <a href="#closing">
-       When Does the Path Close?
-      </a>
-     </li>
-     <li>
-      <a href="#algebra">
-       The Algebra &mdash; Why GCD with 6
-      </a>
-     </li>
-     <li>
-      <a href="#petals">
-       Counting Petals &mdash; Divisors of 6
-      </a>
-     </li>
-     <li>
-      <a href="#symmetry">
-       The Hidden Symmetry
-      </a>
-     </li>
-     <li>
-      <a href="#twelve">
-       The Mystery of 4 and 12 Petals
-      </a>
-     </li>
-     <li>
-      <a href="#future">
-      Future Work
-      </a>
-     </li>
+     <li><a href="#turtle">The Walking Rule</a></li>
+     <li><a href="#square-turns">Turning by Squares</a></li>
+     <li><a href="#gallery-first">Beauty First &mdash; Large N</a></li>
+     <li><a href="#closing">When Does the Path Close?</a></li>
+     <li><a href="#algebra">The Algebra &mdash; Why GCD with 6</a></li>
+     <li><a href="#petals">Counting Petals &mdash; Divisors of 6</a></li>
+     <li><a href="#symmetry">The Hidden Symmetry</a></li>
+     <li><a href="#twelve">The Mystery of 4 and 12 Petals</a></li>
+     <li><a href="#future">Future Work</a></li>
     </ol>
    </div>
+
    <!-- SECTION 1: TURTLE -->
    <section class="section" id="turtle">
-    <span class="section-number">
-     01 &mdash; The Setup
-    </span>
-    <h2>
-     The Walking Rule
-    </h2>
+    <span class="section-number">01 &mdash; The Setup</span>
+    <h2>The Walking Rule</h2>
+    
     <p>
      Imagine a very obedient creature. It lives on a blank plane and follows one instruction:
-     <strong>
-      walk forward one step, then turn by an angle of your wish.
-     </strong>
-     That's all it ever does.
+     <strong>walk forward one step, then turn by an angle of your wish.</strong> That's all it ever does.
     </p>
+    
     <p>
-     The path it traces depends entirely on
-     <em>
-      how much it turns
-     </em>
-     at each step. Turn always by 90&deg;, and you get a perfect square. Turn by 60&deg;, and you get a hexagon. 
-     Turn by some irrational angle, and the path wanders forever without passing on the same step again.
+     The path it traces depends entirely on <em>how much it turns</em> at each step. Turn always by 90&deg;, and you get a perfect square. 
+     Turn by 60&deg;, and you get a hexagon. Turn by some irrational angle, and the path wanders forever without passing on the same step again.
     </p>
+    
     <p>
      In the programming world, this kind of creature is called a
      <strong>
@@ -1129,6 +1091,7 @@
        <div class="demo-canvas-col">
         <canvas class="art-canvas" height="400" id="step-canvas" width="400">
         </canvas>
+
        </div>
        <div class="demo-info-col">
         <div style="margin-bottom:8px">
@@ -1150,51 +1113,7 @@
           </button>
          </div>
         </div>
-        <div class="step-display" id="step-display">
-         <div class="step-num" id="step-num-display">
-          0
-         </div>
-         <div class="step-label">
-          Current Step
-         </div>
-         <div class="step-angle" id="step-angle-display">
-          Heading: 0&deg; (slot 0 of S)
-         </div>
-        </div>
-        <div class="info-card" id="step-info-card">
-         <div class="info-row">
-          <span class="info-key">
-           S (directions)
-          </span>
-          <span class="info-val accent" id="si-S">
-           3
-          </span>
-         </div>
-         <div class="info-row">
-          <span class="info-key">
-           Slot size
-          </span>
-          <span class="info-val" id="si-slot">
-           120&deg;
-          </span>
-         </div>
-         <div class="info-row">
-          <span class="info-key">
-           Turn at step n
-          </span>
-          <span class="info-val gold" id="si-turn">
-           n&sup2; slots
-          </span>
-         </div>
-         <div class="info-row">
-          <span class="info-key">
-           Current slot
-          </span>
-          <span class="info-val accent" id="si-slot-val">
-           0
-          </span>
-         </div>
-        </div>
+        
         <div class="btn-row">
          <button class="btn btn-primary" id="step-fwd-btn">
           Step +1
@@ -1206,11 +1125,25 @@
           Reset
          </button>
         </div>
+        
         <div class="btn-row">
          <button class="btn btn-outline btn-sm" id="step-auto-btn">
           ▶ Auto Play
          </button>
         </div>
+        
+        <div class="step-display" id="step-display">
+         <div class="step-num" id="step-num-display">
+          0
+         </div>
+         <div class="step-label">
+          Current Step
+         </div>
+         <div class="step-angle" id="step-angle-display">
+          Heading: 0&deg; (slot 0 of S)
+         </div>
+        </div>
+
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.5">
          The
          <span style="color:var(--accent)">
@@ -1237,7 +1170,7 @@
      <strong>
       will the turtle ever return to exactly where it started, facing the same way?
      </strong>
-     When these two conditions met, further steps will go over the same graph, that is we'll get a periodic graph.
+     When these two conditions met, we'll get a periodic graph.
     </p>
    </section>
    <!-- SECTION 2: SQUARE TURNS -->
@@ -1249,24 +1182,16 @@
      Turning by Squares
     </h2>
     <p>
-     Here's the specific rule we'll use. At step number
-     <span class="math-inline">
-      n
-     </span>
-     (starting from
-     <span class="math-inline">
-      n=1
-     </span>
-     ), the turtle increases its direction slot by
-     <span class="math-inline">
-      (n-1)&sup2;
-     </span>
-     . Note that we can calculate this slot number modulo S, since whole multiples of S will correspond full cycle,  
+     Here's the specific rule we'll use. At step number <span class="math-inline">n</span> (starting from
+     <span class="math-inline">n=0</span>), the turtle increases its direction slot by <span class="math-inline">n&sup2;</span>. 
+     Note that we can calculate this slot number modulo S, since whole multiples of S will correspond that many full cycles,  
      and only the remainder is necessary to calculate direction slot change.
     </p>
+    
     <div class="math-block">
      direction_slot &larr; (direction_slot + (n&minus;1)&sup2;) mod S
     </div>
+    
     <p>
      Note that using slots instead of degrees or radians makes the formulas cleaner.
      Let's trace through a small example with
@@ -1313,7 +1238,8 @@
       Why squares?
      </span>
      <p>
-      Many functions could drive the turning &mdash; the linear choice gives graphs that resemble the Euler spiral, the random choice gives a drunk walk. Squares sit in a beautiful middle ground:
+      Many functions could drive the turning &mdash; the linear choice gives graphs that resemble the Euler spiral, 
+      the random choice gives a drunk walk. Squares sit in a beautiful middle ground:
       <strong>
        growing fast enough to create variety, but structured enough to create symmetry
       </strong>
@@ -1733,8 +1659,8 @@
       </span> = <span class="fraction">
           <span class="fraction-num">S(S+1)(2S+1)</span>
           <span class="fraction-den">6</span>
-      </span></span>, it's guaranteed that the orientation returns back to the original orientation (facing positive x-axis) after at most <span class="math-inline">6S</span> steps. 
-      In fact, we can do better, and find the exact minimum period for cumulative orientations to repeat.
+      </span></span>, it's guaranteed that the orientation returns back to the original orientation (facing positive x-axis) after at most 
+      <span class="math-inline">6S</span> steps. In fact, we can do better, and find the exact minimum period for cumulative orientations to repeat.
     </p>
 
     <p>
@@ -2988,9 +2914,6 @@
             el('step-num-display').textContent = stepN;
             const deg = Math.round(phaseNum * 360 / N);
             el('step-angle-display').textContent = `Heading: ${deg}° (slot ${phaseNum} of ${N})`;
-            el('si-S').textContent = N;
-            el('si-slot').textContent = (360 / N).toFixed(1) + '°';
-            el('si-slot-val').textContent = phaseNum;
         }
 
         function redraw() {
