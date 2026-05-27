@@ -2510,6 +2510,7 @@
     // =========================================================
     // CORE MATH ENGINE
     // =========================================================
+    const HERO_S = 3858;
 
     function gcd(a, b) {
         a = Math.abs(a);
@@ -2924,11 +2925,10 @@
             const w = canvas.offsetWidth;
             canvas.width = w;
             canvas.height = w;
-            const N = 258;
-            const info = getClosureInfo(N);
+            const info = getClosureInfo(HERO_S);
             if (!info.closes) return;
-            const { pts } = generatePath(info.totalSteps, N);
-            drawPath(canvas, pts, info.totalSteps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
+            const { pts } = generatePath(info.totalSteps, HERO_S);
+            drawPath(canvas, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.6 });
         };
         setTimeout(resize, 50);
         window.addEventListener('resize', resize);
@@ -3522,9 +3522,9 @@
         const w = hc.offsetWidth;
         hc.width = w;
         hc.height = w;
-        const info = getClosureInfo(90);
-        const { pts } = generatePath(info.totalSteps, 90);
-        drawPath(hc, pts, info.totalSteps, 90, { style: 'neon', petalColors: true, totalPetals: 6 });
+        const info = getClosureInfo(HERO_S);
+        const { pts } = generatePath(info.totalSteps, HERO_S);
+        drawPath(hc, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: 6 });
       }
     });
   </script>
