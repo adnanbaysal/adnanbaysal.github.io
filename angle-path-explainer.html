@@ -2161,6 +2161,55 @@
      will exactly do the same: It will have negated turn amounts. Since this is an intrinsic property of this 
      sequence of turns, it means the path will have reflection symmetry! 
     </p>
+
+    <p>
+      If the above explanations doesn't seem reasonable or persuasive, you can use the below demo to see we actually 
+      need a single value prepended to the palindromic sequence for this "AnglePath" algorithm to draw reflection 
+      symmetric graphs.
+    </p>
+
+     <!-- Demo: Palindrome Explorer -->
+    <div class="demo-wrap">
+     <div class="demo-header">
+      <span class="demo-title">
+       Interactive &mdash; Palindromic Angle Path
+      </span>
+      <span style="font-size:11px;color:var(--text-dim);font-family:'Courier New',monospace">
+       Enter angles (radians), then draw or draw a mirrored (palindromic) sequence
+      </span>
+     </div>
+     <div class="demo-body">
+      <div style="margin-bottom:12px">
+       <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+      <input id="pal-input" placeholder="e.g. 0, 1.047, -1.047" style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--muted);background:var(--bg);color:var(--text);font-family:inherit">
+      <div class="s-grid">
+       <button class="s-btn" id="pal-draw-btn">Draw</button>
+       <button class="s-btn" id="pal-pal-btn">Draw Palindrome</button>
+       <button class="s-btn" id="pal-clear-btn">Clear</button>
+      </div>
+       </div>
+       <div style="font-size:12px;color:var(--text-dim);font-family:'Courier New',monospace">Separate numbers with commas or spaces. Palindrome mirrors the sequence (skips duplicate center).</div>
+      </div>
+      <div class="demo-canvas-row">
+       <div class="demo-canvas-col">
+      <canvas class="art-canvas" height="400" id="pal-canvas" width="400">
+      </canvas>
+       </div>
+       <div class="demo-info-col">
+      <div class="info-card">
+       <div class="info-row">
+        <span class="info-key">Steps</span>
+        <span class="info-val accent" id="pal-steps">&mdash;</span>
+       </div>
+       <div class="info-row">
+        <span class="info-key">Sequence</span>
+        <span class="info-val" id="pal-seq">&mdash;</span>
+       </div>
+      </div>
+       </div>
+      </div>
+     </div>
+    </div>
     
     <div class="callout">
      <span class="callout-label">
@@ -3411,20 +3460,118 @@
     })();
 
     // =========================================================
+    // DEMO: PALINDROMIC ANGLE PATH (interactive)
+    // =========================================================
+
+    (function initPalDemo() {
+      const canvas = document.getElementById('pal-canvas');
+      if (!canvas) return;
+      const input = document.getElementById('pal-input');
+      const stepsEl = document.getElementById('pal-steps');
+      const seqEl = document.getElementById('pal-seq');
+      const drawBtn = document.getElementById('pal-draw-btn');
+      const palBtn = document.getElementById('pal-pal-btn');
+      const clearBtn = document.getElementById('pal-clear-btn');
+
+      function parseAngles(str) {
+        if (!str) return [];
+        const tokens = str.trim().split(/[,\s]+/).filter(Boolean);
+        return tokens.map(t => parseFloat(t)).filter(n => !Number.isNaN(n));
+      }
+
+      function makePalindrome(arr, skipLast = true) {
+        if (!arr.length) return arr.slice();
+        const rev = arr.slice().reverse();
+        if (skipLast) rev.shift();
+        return arr.concat(rev);
+      }
+
+      function buildPts(angles) {
+        const steps = angles.length;
+        const pts = new Float64Array((steps + 1) * 2);
+        let x = 0, y = 0, theta = 0;
+        pts[0] = 0; pts[1] = 0;
+        for (let i = 0; i < steps; i++) {
+          theta += angles[i];
+          x += Math.cos(theta);
+          y += Math.sin(theta);
+          pts[(i + 1) * 2] = x;
+          pts[(i + 1) * 2 + 1] = y;
+        }
+        return pts;
+      }
+
+      function drawSequence(angles) {
+        const cW = canvas.offsetWidth || 350;
+        if (canvas.width !== cW || canvas.height !== cW) {
+          canvas.width = cW;
+          canvas.height = cW;
+        }
+        if (!angles || !angles.length) {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          stepsEl.textContent = '—';
+          seqEl.textContent = '—';
+          return;
+        }
+        const pts = buildPts(angles);
+        // reuse drawPath for consistent styling; use angles.length as N so the whole path is one block
+        drawPath(canvas, pts, angles.length, Math.max(1, angles.length), { style: 'neon', petalColors: false, totalPetals: 1 });
+        stepsEl.textContent = angles.length;
+        seqEl.textContent = angles.map(a => a.toFixed(3)).join(', ');
+      }
+
+      drawBtn.onclick = () => {
+        const arr = parseAngles(input.value);
+        drawSequence(arr);
+      };
+
+      // Press Enter in the input to trigger Draw
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          e.preventDefault();
+          drawBtn.click();
+        }
+      });
+
+      palBtn.onclick = () => {
+        const arr = parseAngles(input.value);
+        if (!arr.length) return;
+        // Make the palindrome and prepend a single 0 so the path is symmetric
+        let pal = makePalindrome(arr, true);
+        pal = [0].concat(pal);
+        input.value = pal.map(a => +a.toFixed(6)).join(', ');
+        drawSequence(pal);
+      };
+
+      clearBtn.onclick = () => {
+        input.value = '';
+        stepsEl.textContent = '—';
+        seqEl.textContent = '—';
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      };
+
+      // initial sample
+      input.value = '0, 1.047, 0.5236';
+      drawBtn.click();
+    })();
+
+    // =========================================================
     // RESPONSIVE CANVAS RESIZER
     // =========================================================
 
     window.addEventListener('resize', () => {
-        // Trigger hero redraw
-        const hc = document.getElementById('hero-canvas');
-        if (hc) {
-            const w = hc.offsetWidth;
-            hc.width = w;
-            hc.height = w;
-            const info = getClosureInfo(90);
-            const { pts } = generatePath(info.totalSteps, 90);
-            drawPath(hc, pts, info.totalSteps, 90, { style: 'neon', petalColors: true, totalPetals: 6 });
-        }
+      // Trigger hero redraw
+      const hc = document.getElementById('hero-canvas');
+      if (hc) {
+        const w = hc.offsetWidth;
+        hc.width = w;
+        hc.height = w;
+        const info = getClosureInfo(90);
+        const { pts } = generatePath(info.totalSteps, 90);
+        drawPath(hc, pts, info.totalSteps, 90, { style: 'neon', petalColors: true, totalPetals: 6 });
+      }
     });
   </script>
  </body>
