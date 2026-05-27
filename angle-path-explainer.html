@@ -1457,7 +1457,7 @@
     </h3>
     <p>
      This is the easier case. When 2, or 3, or both divides S, the path always closes in a rosette like shape and repeates periodically after that.
-     In this case, number of petals is either gcd(S, 6) or 2 x gcd(S, 6). In any case, the path closes after exactly S x gcd(S, 6) steps.
+     In this case, number of petals is either gcd(S, 6) or 2 x gcd(S, 6). In any case, the path closes after exactly <span class="math-inline">S &times; gcd(S, 6)</span>  steps.
      For simplicty, I'll call a single consecutive S steps as a "block".  I'll come to why visible number of petals can be double the value of gcd later. 
     </p>
     <div class="math-block">
@@ -1468,15 +1468,15 @@
      When gcd(S, 6) = 1
     </h3>
     <p>
-      This case is more complicated. Visually analyzing the behavior for some small S values, I discovered following:
+      This case is more complicated. Visually analyzing the behavior for some small S values, I discovered the following:
       <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
-        <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 35 = 5x7, S = 77 = 7x11</li>
+        <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 13, S = 35 = 5&times;7, S = 77 = 7&times;11</li>
         <li>If all even powered prime factors of S belong to a special set of primes, then the graph drifts. 
-          For example S = 11x11 = 121
+          For example S = 11&times;11 = 121
         </li>
         <li>
           Otherwise, if S has an even powered prime factor that is out of the above set of primes, then the graph closes with a 1 petal shape. 
-          For example S = 7x7 = 49
+          For example S = 7&times;7 = 49
         </li>
       </ul>
       Experimentally, I found that the following primes belongs to the special set mentioned above: 11, 13, 23, 37, 47, 59, 61, 71, 73, ...
@@ -1533,7 +1533,7 @@
     </p>
 
     <div class="math-block">
-     &Delta;&theta;(n + S) = (n + S)&sup2; = n&sup2; + 2Sn + S&sup2; = n&sup2; mod S = &Delta;&theta;(n)
+     &Delta;&theta;(n + S) = (n + S)&sup2; = n&sup2; + 2Sn + S&sup2; = n&sup2; mod S = &Delta;&theta;(n) mod S
     </div>
 
     <p>
@@ -1632,34 +1632,6 @@
       <span class="math-inline">S</span>-step blocks. For that, we just need to check possible values of <span class="math-inline">S mod 6</span>:
     </p>
 
-    <!-- <div class="math-block">
-     <div style="display:inline-block; text-align:left;">
-        S = 0 mod 6 &Implies; k<sub>S</sub> = (0 + 1)(2&times;0 + 1) = 1 &Implies; &theta;(S) mod S = <span class="fraction">
-            <span class="fraction-num">1</span>
-            <span class="fraction-den">6</span>
-        </span>S mod S<br>
-
-        S = 1 mod 6 &Implies; k<sub>S</sub> = (1 + 1)(2&times;1 + 1) = 6 &Implies; &theta;(S) mod S = 0 mod S<br>
-
-        S = 2 mod 6 &Implies; k<sub>S</sub> = 15 = 3 mod 6 &Implies; &theta;(S) mod S = <span class="fraction">
-            <span class="fraction-num">1</span>
-            <span class="fraction-den">2</span>
-        </span>S mod S<br>
-
-        S = 3 mod 6 &Implies; k<sub>S</sub> = 28 = 4 mod 6 &Implies; &theta;(S) mod S = <span class="fraction">
-            <span class="fraction-num">2</span>
-            <span class="fraction-den">3</span>
-        </span>S mod S<br>
-
-        S = 4 mod 6 &Implies; k<sub>S</sub> = 45 = 3 mod 6 &Implies; &theta;(S) mod S = <span class="fraction">
-            <span class="fraction-num">1</span>
-            <span class="fraction-den">2</span>
-        </span>S mod S<br>
-
-        S = 5 mod 6 &Implies; k<sub>S</sub> = 66 = 0 mod 6 &Implies; &theta;(S) mod S = 0 mod S<br>
-     </div>
-    </div> -->
-
     <div id="smod6-table-wrap">
      <table class="dir-table" id="smod6-table">
       <thead>
@@ -1691,13 +1663,13 @@
 
     <p>
       In the above table, we showed <span class="math-inline">&theta;(S) mod S</span> as a fraction of S to clearly see the period.
-      Periad is simple calculated as the minimum multiple of this fraction to make it an integer multiple of <span class="math-inline">S</span>.
-      The table shows that the period for cumulative orientation is exactly <span class="math-inline">GCD(S,6) &times; 6</span> 
-      as we guessed.
+      This period is simply calculated as the minimum multiple of this fraction to make it an integer multiple of 
+      <span class="math-inline">S</span>. The table shows that the period for cumulative orientation is exactly 
+      <span class="math-inline">GCD(S,6) &times; S</span>-steps as we guessed.
     </p>
 
     <p>
-      So, again, what does <span class="math-inline">kS</span>-periodicity (k is one of 1, 2, 3, or 8) mean geometrically
+      So, again, what does <span class="math-inline">kS</span>-periodicity (k is one of 1, 2, 3, or 6) mean geometrically
       for the cumulative orientation slot of the turtle? It means, the turtle will face the exact same orientation after 
       <span class="math-inline">kS</span>-steps. Since <span class="math-inline">&Delta;&theta;(n)</span> is also 
       <span class="math-inline">S</span>-periodic, this means the turtle will draw the same shape in the same orientation,
@@ -1717,7 +1689,7 @@
      Counting Petals &mdash; Divisors of 6
     </h2>
     
-    As we saw before, number of closure of the graphs and the number of petals are directly related to GCD(S, 6).
+    As we saw before, whether the graph drifts or closes, and the number of petals are directly related to GCD(S, 6).
     We'll analyze these two properties in this section. 
 
     <h3>
@@ -1785,7 +1757,7 @@
     </ul>
 
     <p>
-      Here is a small demo of the number of petals for theb above 3 cases:
+      Here is a small demo of the number of petals for the above 3 cases:
     </p>
 
     <!-- Demo: Petal explorer by gcd -->
@@ -1987,9 +1959,9 @@
     </div>
 
     <p>
-     In the above table, we see that we need to discard the initial 0s to make a block of S = 6 turn amounts palindromic.
-     But in that case we would have S - 1 turns instead of S. But we'll see below that this extra 0 actually makes the petal 
-     has reflection symmetric!
+     In the above table, we see that we need to discard the initial <span class="math-inline">0</span> to make the sequence
+     of turns palindromic. But in that case we would have S - 1 turns instead of S. But we'll see below that this extra 0 
+     actually makes the petal reflection symmetric!
     </p>
 
     <h3>Proof of petal reflection symmetry</h3>
@@ -2006,8 +1978,8 @@
       Assume our turtle has some cumulative orientation at some step in the drawing that is a multiple of S. 
       At the beginning, that cumulative orientation is 0, that is positive x-axis, but it could be an other value.
       Turtle has a command of S turns that start with 0, then a palindromic sequance of S - 1 turns. Now, let the
-      turtle complete that S step. It will first step forward in the current inherited orientation since the first 
-      turn is 0, which means no turn at all. Then it will turn by the first value in the sequence that is part of 
+      turtle complete that S step. It will first step forward in the current inherited orientation. Since the first 
+      turn is 0, this means no turn at all. Then it will turn by the first value in the sequence that is part of 
       palindromic sub sequence and move one step forward. This way, it will go till the end, make the last turn and 
       step forward.
     </p>
@@ -2044,7 +2016,7 @@
     </p>
 
     <p>
-      If the above explanations doesn't seem reasonable or persuasive, you can use the below demo to see we actually 
+      If the above explanations doesn't seem reasonable or persuasive, you can use the below demo to see that we really 
       need a single value prepended to the palindromic sequence for this "AnglePath" algorithm to draw reflection 
       symmetric graphs.
     </p>
@@ -2320,7 +2292,7 @@
     </p>
 
     <p>
-      The closest work to This article that I can find is 
+      The closest work to this article that I could found is 
       <a style="color:var(--accent);"
        href="https://www.unsw.edu.au/science/our-schools/maths/our-school/spotlight-on-our-people/history-school/glimpses-mathematics-and-statistics/exponential-sums"
       >
@@ -2354,7 +2326,12 @@
      <li>
       What are the other geometric properties of the shapes besides rotational and reflectional symmetries?
      </li>
-     <!-- TODO: Add info about R multiplier -->
+     <li>
+      It is possible to use another integer <span class="math-inline">R</span>, where <span class="math-inline"></span>GCD(R,S) = 1</span> 
+      and chose R / S full turns instead of 1 / S turns to multiply with <span class="math-inline">&theta;(n)</span>. 
+      These will give equally beautiful images. In fact, the interactive tool I've shared below is already using both R and S as input.
+      The affect of R to the graphs can be a good future research.
+     </li>
     </ul>
     <div class="callout">
      <span class="callout-label">
@@ -2385,7 +2362,7 @@
     &middot; 2026 &middot; Built with Vanilla JS &amp; Canvas
    </p>
    <p style="margin-top:8px;font-size:10px">
-    All visualizations generated in-browser. No libraries used.
+    All visualizations generated in-browser.
    </p>
   </footer>
   <script>
