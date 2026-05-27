@@ -2066,48 +2066,51 @@
       </thead>
       <tbody>
        <tr>
-      <td class="highlight">0</td>
-      <td>0</td>
-      <td class="highlight">0</td>
+        <td class="highlight">0</td>
+        <td>0</td>
+        <td class="highlight">0</td>
        </tr>
        <tr>
-      <td class="highlight">1</td>
-      <td>1</td>
-      <td class="highlight">1</td>
+        <td class="highlight">1</td>
+        <td>1</td>
+        <td class="highlight">1</td>
        </tr>
        <tr>
-      <td class="highlight">2</td>
-      <td>4</td>
-      <td class="highlight">4</td>
+        <td class="highlight">2</td>
+        <td>4</td>
+        <td class="highlight">4</td>
        </tr>
        <tr>
-      <td class="highlight">3</td>
-      <td>9</td>
-      <td class="highlight">3</td>
+        <td class="highlight">3</td>
+        <td>9</td>
+        <td class="highlight">3</td>
        </tr>
        <tr>
-      <td class="highlight">4</td>
-      <td>16</td>
-      <td class="highlight">4</td>
+        <td class="highlight">4</td>
+        <td>16</td>
+        <td class="highlight">4</td>
        </tr>
        <tr>
-      <td class="highlight">5</td>
-      <td>25</td>
-      <td class="highlight">1</td>
+        <td class="highlight">5</td>
+        <td>25</td>
+        <td class="highlight">1</td>
        </tr>
        <tr>
-      <td class="highlight">6</td>
-      <td>36</td>
-      <td class="highlight">0</td>
+        <td class="highlight">6</td>
+        <td>36</td>
+        <td class="highlight">0</td>
+       </tr>
+       <tr>
+        <td colspan="5" style="text-align:center;color:var(--text-dim)">…</td>
        </tr>
       </tbody>
      </table>
     </div>
 
     <p>
-     In the above table, we have 7 values but each reflection symmetric petals have 6 lines for S = 6.
-     If you look at the first 6 rows, you'll see that the first row breaks the palindromic property of
-     the turn amount. But we'll see below that this extra 0 actually makes the petal reflection symmetric!
+     In the above table, we see that we need to discard the initial 0s to make a block of S = 6 turn amounts palindromic.
+     But in that case we would have S - 1 turns instead of S. But we'll see below that this extra 0 actually makes the petal 
+     has reflection symmetric!
     </p>
 
     <p>
@@ -2115,12 +2118,50 @@
       Each internal joint has a corresponding turn amount, so there are actually <em>S-1</em> internal
       turns in a block of <em>S</em>-steps. If this internal turn amounts are palindromic, we claim that
       the corresponding path will be reflection symmetric. In fact, the leading 0 could be any value, 
-      it would just rotate the path.
+      it would just rotate the remaining path.
+    </p>
+
+    <p>
+      Assume our turtle has some cumulative orientation at some step in the drawing that is a multiple of S. 
+      At the beginning, that cumulative orientation is 0, that is positive x-axis, but it could be an other value.
+      Turtle has a command of S turns that start with 0, then a palindromic sequance of S - 1 turns. Now, let the
+      turtle complete that S step. It will first step forward in the current inherited orientation since the first 
+      turn is 0, which means no turn at all. Then it will turn by the first value in the sequence that is part of 
+      palindromic sub sequence and move one step forward. This way, it will go till the end, make the last turn and 
+      step forward.
+    </p>
+
+    <p>
+      Now, being at the final position, let's make our turtle trace back the path it traversed. As a first step, 
+      we need to revert the final orientation of the turtle, then step forward in that direction without turning.
+      After that, the turtle needs to turn the same amount as the last internal joint, but in the reverse direction.
+      In the algebra of rotations, this is the negative of the last turn. Let 
+      <span class="math-inline">&Delta;&theta;<sub>n</sub></span> denote the n-th internal turn for n=1, 2, … , S - 1. 
+      So we have <span class="math-inline">&Delta;&theta;<sub>n</sub> = &Delta;&theta;<sub>S - n</sub></span> 
+      because the subsequence is palindromic. So the forward and backward internal turn sequences are as follows:
+    </p>
+
+    <div class="math-block">
+     Forward: &Delta;&theta;<sub>1</sub>, &Delta;&theta;<sub>2</sub>, …, &Delta;&theta;<sub>S - 1</sub><br>
+     Backward: -&Delta;&theta;<sub>S-1</sub>, -&Delta;&theta;<sub>S-2</sub>, …, -&Delta;&theta;<sub>1</sub>
+    </div>
+
+    <p>
+      If we substitute palindromic values in the backward sequence, we get the following:
+    </p>
+
+    <div class="math-block">
+     Backward: -&Delta;&theta;<sub>1</sub>, -&Delta;&theta;<sub>2</sub>, …, -&Delta;&theta;<sub>S - 1</sub>
+    </div>
+
+    <p>
+     So, the backward path has exactly the same turn amounts in the same order that are negated. 
+     So if forward turtle turns k slots clockwise at step n, the bacward turtle turns k slots counter clockwise
+     at that same step. If you would put a mirror to the plane and draw an path with the turtle, the mirror image
+     will exactly do the same: It will have negated turn amounts. Since this is an intrinsic property of this 
+     sequence of turns, it means the path will have reflection symmetry! 
     </p>
     
-    <p>
-     A palindromic sequence of internal turns means that the ...
-    </p>
     <div class="callout">
      <span class="callout-label">
       The Exact Identity
