@@ -1920,13 +1920,13 @@
      <div class="demo-body">
       <div style="margin-bottom:12px">
        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-        <button class="btn btn-ghost btn-sm" data-gcd="2" id="gcd2-btn">
+        <button class="btn btn-ghost btn-sm active" data-gcd="2" id="gcd2-btn">
          gcd = 2 &rarr; 2 petals
         </button>
         <button class="btn btn-ghost btn-sm" data-gcd="3" id="gcd3-btn">
          gcd = 3 &rarr; 3 petals
         </button>
-        <button class="btn btn-ghost btn-sm active" data-gcd="6" id="gcd6-btn">
+        <button class="btn btn-ghost btn-sm" data-gcd="6" id="gcd6-btn">
          gcd = 6 &rarr; 6 petals
         </button>
        </div>
@@ -3237,8 +3237,8 @@
         window.addEventListener('resize', resize);
         setTimeout(resize, 60);
 
-        let currentGcd = 6;
-        let currentN = 6;
+        let currentGcd = 2;
+        let currentN = 4;
 
         function buildNRow(g) {
             const row = document.getElementById('petal-n-row');
@@ -3246,7 +3246,7 @@
             GCD_GROUPS[g].forEach((N, i) => {
                 const btn = document.createElement('button');
                 btn.className = 's-btn' + (i === 0 ? ' selected' : '');
-                btn.textContent = 'N=' + N;
+                btn.textContent = 'S=' + N;
                 btn.dataset.n = N;
                 btn.onclick = () => {
                     row.querySelectorAll('.s-btn').forEach(b => b.classList.remove('selected'));
@@ -3300,7 +3300,8 @@
             });
         });
 
-        buildNRow(6);
+        // Defer initial build/draw until layout stabilizes so canvas has size
+        setTimeout(() => buildNRow(2), 120);
     })();
 
     // =========================================================
