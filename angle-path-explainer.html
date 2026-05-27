@@ -1413,10 +1413,8 @@
       </div>
      </div>
     </div>
-    <!-- <div class="pull-quote">
-     "The rule is just three words: turn by squares. The result takes your breath away."
-    </div> -->
    </section>
+
    <!-- SECTION 4: CLOSING -->
    <section class="section" id="closing">
     <span class="section-number">
@@ -2585,8 +2583,9 @@
     // Get closure info for given N
     function getClosureInfo(N) {
         const g = gcd(N, 6);
-        if (g === 1 && (isSquareFree(N) || hasSpecialPrimeSquareFactor(N)))  return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
-        // Use user's formula: sumAngle = 60 * (N+1) * (2N+1), deltaTheta = sumAngle % 360
+        if (g === 1 && (isSquareFree(N) || hasSpecialPrimeSquareFactor(N))) {
+            return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
+        }
         const sumAngle = 60 * (N + 1) * (2 * N + 1);
         let dT = sumAngle % 360;
         if (dT < 0) dT += 360;
@@ -2594,7 +2593,6 @@
         const gd = gcd(360, Math.round(dT));
         const petals = Math.round(360 / gd);
         const total = N * petals;
-        // TODO: fix petal calculation
         return { closes: true, petals, totalSteps: total, delta: dT, mStar: petals };
     }
 
@@ -3058,7 +3056,7 @@
         { N: 722, label: 'S = 722', note: '2 petals' },
         { N: 1272, label: 'S = 1272', note: '12 petals' },
         { N: 2526, label: 'S = 2526', note: '6 petals' },
-        { N: 5041, label: 'S = 5041', note: '1 petal' },  // TODO: Fix empty canvas issue
+        { N: 10201, label: 'S = 10201', note: '1 petal' },
         { N: 15000, label: 'S = 15000', note: '6 petals' },
     ];
 
@@ -3107,7 +3105,7 @@
         });
 
         // Build gallery thumbnails
-        const GALLERY_N = [90, 368, 1272, 5041, 15000];
+        const GALLERY_N = [90, 368, 1272, 10201, 15000];
         GALLERY_N.forEach(N => {
             const cell = document.createElement('div');
             cell.className = 'gallery-cell';
