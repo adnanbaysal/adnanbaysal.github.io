@@ -1002,7 +1002,7 @@
    </div>
    <div class="hero-text">
     <div class="hero-kicker">
-     SoME5 &middot; Mathematical Art
+     SoME 2026 &middot; Mathematical Art
     </div>
     <h1 class="hero-title">
      Square Turns
@@ -1063,12 +1063,12 @@
      </li>
      <li>
       <a href="#twelve">
-       The Mystery of 12 Petals
+       The Mystery of 4 and 12 Petals
       </a>
      </li>
      <li>
-      <a href="#deeper">
-       The Deeper Connection
+      <a href="#future">
+      Future Work
       </a>
      </li>
     </ol>
@@ -1601,7 +1601,7 @@
         </li>
       </ul>
       Experimentally, I found that the following primes belongs to the special set mentioned above: 11, 13, 23, 37, 47, 59, 61, 71, 73, ...
-      This set is probably infinite, and a search on <a href="www.oeis.org" style="color: #00d2ff;">oeis.org</a> give 4 potential candidates for this sequence. 
+      This set is probably infinite, and a search on <a href="www.oeis.org" style="color:var(--accent);">oeis.org</a> give 4 potential candidates for this sequence. 
       Honestly, I don't know which one of those sequences' 
       definition match the best for the underlying reason of this result. That would be a good future work. 
     </p>
@@ -1845,7 +1845,7 @@
       Closure when GCD(S, 6) = 1
     </h3>
     <p>
-      As we saw in the section <a href="#closing" style="color: #00d2ff;">When Does the Path Close?</a>, this case has 
+      As we saw in the section <a href="#closing" style="color:var(--accent);">When Does the Path Close?</a>, this case has 
       intricacies. For some S, the path drifts in the positive x-axis direction. For others, it forms a closed shape and 
       the turtle moves over the same closed graph forever.
     </p>
@@ -2113,6 +2113,8 @@
      has reflection symmetric!
     </p>
 
+    <h3>Proof of petal reflection symmetry</h3>
+
     <p>
       To see why, first realize that a path with <em>S</em>-lines contains <em>S-1</em> internal joints.
       Each internal joint has a corresponding turn amount, so there are actually <em>S-1</em> internal
@@ -2211,28 +2213,6 @@
      </div>
     </div>
     
-    <div class="callout">
-     <span class="callout-label">
-      The Exact Identity
-     </span>
-     <p>
-      There's an even stronger result. Define the cumulative sum
-      <span class="math-inline">
-       f(n) = 1&sup2; + 2&sup2; + &middot;&middot;&middot; + n&sup2;
-      </span>
-      . Then for any S and any step j:
-     </p>
-     <div style="font-family:'Courier New',monospace;color:var(--gold);text-align:center;padding:10px">
-      f(n&minus;1) + f(S&minus;n) &equiv; f(S&minus;1) (mod S)
-     </div>
-     <p>
-      The sum of cumulative phases at symmetric steps is always the same constant. This constant defines the angle of the mirror axis of each petal.
-     </p>
-    </div>
-    <p>
-     So every petal has a bilateral symmetry. Now, 2 petals with bilateral symmetry look like 4 lobes. 6 petals with bilateral symmetry look like 12 lobes. 
-     That's the mystery of 12 solved &mdash; but there's an even deeper level to this story.
-    </p>
    </section>
    <!-- SECTION 8: THE 12-PETAL MYSTERY -->
    <section class="section" id="twelve">
@@ -2421,15 +2401,6 @@
      </strong>
      &mdash; precisely the divisors of 12.
     </p>
-    <div class="callout gold">
-     <span class="callout-label">
-      Why Divisors of 12?
-     </span>
-     <p>
-      The rotation symmetry (from the 6 in the denominator) gives divisors of 6. The reflection symmetry (from x&sup2; &equiv; (N&minus;x)&sup2;) adds a factor of 2, 
-      extending the range to divisors of 12. The denominator 6 = 2 &times; 3, and reflection adds another factor of 2, giving 12 = 2 &times; 6 as the "full symmetry group" size.
-     </p>
-    </div>
     <!-- Side by side: N=6 vs N=12 vs N=24 -->
     <h3>
      Seeing It Side-by-Side
@@ -2438,14 +2409,15 @@
      <!-- Populated by JS -->
     </div>
    </section>
-   <!-- SECTION 9: DEEPER CONNECTION -->
-   <section class="section" id="deeper">
+   <!-- SECTION 9: FUTURE WORK -->
+   <section class="section" id="future">
     <span class="section-number">
-     09 &mdash; The Deep End
+     09 &mdash; Next Steps
     </span>
     <h2>
-     The Deeper Connection
+     Related and Future Work
     </h2>
+
     <p>
      Everything we've discovered &mdash; the closing condition, the petal count, the bilateral symmetry &mdash; can be unified under a single mathematical framework:
      <strong>
@@ -2454,94 +2426,54 @@
      .
     </p>
     <p>
-     If you think of each step's direction as a complex number on the unit circle, the partial sum after M steps is:
+     If you think of each step's direction as a complex number on the unit circle, the partial sum after n steps is:
     </p>
+    
     <div class="math-block">
-     P(M) = &Sigma;
-     <sub>
-      n=0
-     </sub>
-     <sup>
-      M&minus;1
-     </sup>
-     e
-     <sup>
-      2&pi;i&middot;f(n)/S
-     </sup>
+     P(n) = &Sigma;<sub>j=0</sub><sup>M&minus;1</sup>e<sup>2&pi;i&middot;&theta;(n)/S</sup>
     </div>
+    
     <p>
-     This is an
-     <em>
-      exponential sum with cubic polynomial phase
-     </em>
-     &mdash; because f(n) is a cubic polynomial in n. The study of such sums is deep, going back to Gauss and Weil.
+     This is an <em>exponential sum with cubic polynomial phase</em> &mdash; because &theta;(n) is a cubic polynomial in n. 
+     The study of such sums is deep, going back to Gauss and Weil. There are some research articles that related to what we 
+     show here. Even some specific family of cubic polynomials studied in the literature, but afaik, there is no work 
+     with detailed analysis of the reasons why these graph of partial exponential sums give these beautiful shapes.
     </p>
+
     <p>
-     Our key results translate directly:
+      The closest work to This article that I can find is 
+      <a style="color:var(--accent);"
+       href="https://www.unsw.edu.au/science/our-schools/maths/our-school/spotlight-on-our-people/history-school/glimpses-mathematics-and-statistics/exponential-sums"
+      >
+        Exponential sums
+      </a>
+      by <a href="https://research.unsw.edu.au/people/dr-david-angell" style="color:var(--accent);">David Angell</a>. In that work, 
+      he used different cubic polynomials and they seem to create similarly intricate and beautiful graphs. For the ease of anaylsis, 
+      I've based my analysis on a simpler and fixed polynomial which is in fact defined by it's quadratic "change per step" function.
     </p>
-    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:12px">
-     <li>
-      <strong>
-       The block structure
-      </strong>
-      : P(kS) = P
-      <sub>
-       S
-      </sub>
-      &times; (geometric series in &rho;), where &rho; = e^(2&pi;i&middot;f(S)/S).
-     </li>
-     <li>
-      <strong>
-       The closing condition
-      </strong>
-      : The path closes iff the geometric series terminates &mdash; i.e., &rho; is a root of unity of finite order, i.e., gcd(S,6) &gt; 1.
-     </li>
-     <li>
-      <strong>
-       The Weil bound
-      </strong>
-      : For prime S not dividing 6, |P
-      <sub>
-       S
-      </sub>
-      | &le; 2&radic;S. This is why even the drifting paths have bounded "error" per block &mdash; they drift slowly relative to the number of steps.
-     </li>
-    </ul>
-    <div class="callout">
-     <span class="callout-label">
-      Weil's Theorem (1948)
-     </span>
-     <p>
-      For any prime S &gt; 3 and any cubic polynomial with nonzero leading coefficient, the corresponding exponential sum is bounded in absolute value by 2&radic;S. 
-      This bound is essentially tight &mdash; beautiful shapes live right at the edge of this bound.
-     </p>
-    </div>
-    <p>
-     The Weil bound tells us something visually striking: for large prime S (which gives drifting paths), 
-     the walker's displacement after S steps has magnitude at most 2&radic;S. The walker takes S unit steps but only makes net progress of order &radic;S &mdash; it's almost random, yet not quite.
-    </p>
+
     <h3>
      Future Directions
     </h3>
+
     <p>
      Many natural questions remain open for exploration:
     </p>
     <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px;color:var(--text-dim)">
      <li>
-      Can we use exponential sum theory to compute the
-      <em>
-       exact shape
-      </em>
-      of the petals analytically?
+      Can we use exponential sum theory to prove the <em>closure properties</em>, <em>symmetries</em>, and <em>number of petals</em> analytically?
      </li>
      <li>
-      What happens with other polynomial turning functions &mdash; cubics, quartics?
+      Do all cubic polynomials produce similar symmetries?
      </li>
      <li>
-      The closing condition gcd(S,6) &gt; 1 depended on the 6 in the denominator of the sum-of-squares formula. What closing conditions arise from other polynomial sums?
+      What about polynomials with different degrees? Can we prove similar properties for them?
      </li>
      <li>
-      The bilateral petal symmetry came from x&sup2; &equiv; (S&minus;x)&sup2;. Does every even-degree polynomial turning function produce this symmetry?
+      What is the exact reason some 1-petal graphs close and some drift?
+     </li>
+     <li>
+      What are the other geometric properties of the shapes besides rotational and reflectional symmetries?
      </li>
     </ul>
     <div class="callout">
@@ -2550,7 +2482,7 @@
      </span>
      <p>
       The full interactive tool with many more options &mdash; different turning functions, animation, color modes &mdash; is available at
-      <a href="https://adnanbaysal.github.io" style="color:var(--accent)">
+      <a href="https://adnanbaysal.github.io/angle-path.html" style="color:var(--accent)">
        adnanbaysal.github.io
       </a>
       .
@@ -2560,7 +2492,7 @@
      ∎
     </div>
     <p style="color:var(--text-dim);font-size:0.9rem">
-     This article was written for the Summer of Math Exposition (SoME) community. 
+     This article was written for the 2026 - Summer of Math Exposition (SoME). 
      The mathematics draws on classical results in exponential sums and modular arithmetic. The visualizations are generated entirely in-browser using HTML5 Canvas.
     </p>
    </section>
@@ -3433,8 +3365,8 @@
 
         const cases = [
             { N: 6, label: 'S = 6', sub: '4|S? No. No sub-petal split.' },
-            { N: 12, label: 'S = 12', sub: '4|S? Yes. Sub-petals appear.' },
-            { N: 24, label: 'S = 24', sub: '4|S? Yes. Clear sub-structure.' },
+            { N: 16, label: 'S = 16', sub: '4|S? Yes. 4 sub-petals.' },
+            { N: 24, label: 'S = 24', sub: '4|S? Yes. 12 sub-petals.' },
         ];
 
         cases.forEach(({ N, label, sub }) => {
