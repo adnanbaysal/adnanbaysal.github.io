@@ -1012,7 +1012,7 @@
      <em>
       grows with the square of the step count
      </em>
-     . What emerges is surprisingly astonishing.
+     . What emerges is surprisingly beautiful.
     </p>
     <a class="hero-cta" href="#turtle">
      Begin the Journey &darr;
@@ -2602,10 +2602,28 @@
     // CANVAS RENDERING
     // =========================================================
 
+    // Ensure canvas has a high-DPI backing store and set transform so
+    // drawing coordinates use CSS pixels. Returns { cssW, cssH, dpr }.
+    function ensureHiDPICanvas(canvas) {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = canvas.getBoundingClientRect();
+      const cssW = Math.max(1, Math.round(rect.width || canvas.clientWidth || (canvas.width / dpr)));
+      const cssH = Math.max(1, Math.round(rect.height || canvas.clientHeight || (canvas.height / dpr)));
+      const needResize = canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr);
+      if (needResize) {
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        canvas.style.width = cssW + 'px';
+        canvas.style.height = cssH + 'px';
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { cssW, cssH, dpr };
+    }
+
     function drawPath(canvas, pts, totalSteps, N, opts = {}) {
-        const ctx = canvas.getContext('2d');
-        const W = canvas.width;
-        const H = canvas.height;
+      const { cssW: W, cssH: H } = ensureHiDPICanvas(canvas);
+      const ctx = canvas.getContext('2d');
         const style = opts.style || 'neon';
         const petalColors = opts.petalColors || false;
         const highlightPetal = opts.highlightPetal != null ? opts.highlightPetal : -1;
@@ -2638,7 +2656,9 @@
         ctx.fillStyle = '#020608';
         ctx.fillRect(0, 0, W, H);
 
-        const lw = Math.max(0.2, Math.min(3, 120000 / totalSteps / sc * 1.5));
+        const baseLW = Math.max(0.2, Math.min(3, 120000 / totalSteps / sc * 1.5));
+        const displayScale = Math.min(1, W / 400);
+        const lw = Math.max(0.2, baseLW * displayScale);
         ctx.save();
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
@@ -2706,124 +2726,124 @@
 
     // Draw with direction arrow (for step demo)
     function drawStepWalk(canvas, pts, step, N, phaseNum) {
-        const ctx = canvas.getContext('2d');
-        const W = canvas.width;
-        const H = canvas.height;
+      const { cssW: W, cssH: H } = ensureHiDPICanvas(canvas);
+      const ctx = canvas.getContext('2d');
+      const displayScale = Math.min(1, W / 400);
 
-        // Compute bounds from all known points
-        let minX = 0;
-        let maxX = 0;
-        let minY = 0;
-        let maxY = 0;
-        for (let i = 0; i <= step; i++) {
-            const px = pts[i * 2];
-            const py = pts[i * 2 + 1];
-            if (px < minX) minX = px;
-            if (px > maxX) maxX = px;
-            if (py < minY) minY = py;
-            if (py > maxY) maxY = py;
-        }
+      // Compute bounds from all known points
+      let minX = 0;
+      let maxX = 0;
+      let minY = 0;
+      let maxY = 0;
+      for (let i = 0; i <= step; i++) {
+        const px = pts[i * 2];
+        const py = pts[i * 2 + 1];
+        if (px < minX) minX = px;
+        if (px > maxX) maxX = px;
+        if (py < minY) minY = py;
+        if (py > maxY) maxY = py;
+      }
 
-        // Add generous padding for arrow
-        const pad = 48;
-        const dx = Math.max(maxX - minX, 2);
-        const dy = Math.max(maxY - minY, 2);
-        const sc = Math.min((W - 2 * pad) / dx, (H - 2 * pad) / dy, 60);
-        const cx = (maxX + minX) / 2;
-        const cy = (maxY + minY) / 2;
-        const tx = p => W / 2 + (p - cx) * sc;
-        const ty = p => H / 2 - (p - cy) * sc;
+      // Add generous padding for arrow
+      const pad = 48;
+      const dx = Math.max(maxX - minX, 2);
+      const dy = Math.max(maxY - minY, 2);
+      const sc = Math.min((W - 2 * pad) / dx, (H - 2 * pad) / dy, 60);
+      const cx = (maxX + minX) / 2;
+      const cy = (maxY + minY) / 2;
+      const tx = p => W / 2 + (p - cx) * sc;
+      const ty = p => H / 2 - (p - cy) * sc;
 
-        ctx.fillStyle = '#020608';
-        ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#020608';
+      ctx.fillRect(0, 0, W, H);
 
-        if (step === 0) {
-            // Just draw origin
-            ctx.beginPath();
-            ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
-            ctx.fillStyle = '#00d2ff';
-            ctx.fill();
-            // Draw arrow showing direction 0
-            const angle = 0;
-            const ex = tx(0) + Math.cos(angle) * 40;
-            const ey = ty(0) - Math.sin(angle) * 40;
-            drawArrow(ctx, tx(0), ty(0), ex, ey, '#00d2ff');
-            return;
-        }
-
-        // Grid lines lightly
-        ctx.strokeStyle = 'rgba(30,50,70,0.3)';
-        ctx.lineWidth = 0.5;
-        for (let i = -20; i <= 20; i++) {
-            ctx.beginPath();
-            ctx.moveTo(tx(i - 0.5), 0);
-            ctx.lineTo(tx(i - 0.5), H);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0, ty(i - 0.5));
-            ctx.lineTo(W, ty(i - 0.5));
-            ctx.stroke();
-        }
-
-        // Path
+      if (step === 0) {
+        // Just draw origin
         ctx.beginPath();
-        ctx.moveTo(tx(pts[0]), ty(pts[1]));
-        for (let i = 1; i < step; i++) ctx.lineTo(tx(pts[i * 2]), ty(pts[i * 2 + 1]));
-        ctx.strokeStyle = 'rgba(0,150,200,0.4)';
-        ctx.lineWidth = 1.5;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        // Last step (highlighted)
-        ctx.beginPath();
-        ctx.moveTo(tx(pts[(step - 1) * 2]), ty(pts[(step - 1) * 2 + 1]));
-        ctx.lineTo(tx(pts[step * 2]), ty(pts[step * 2 + 1]));
-        ctx.strokeStyle = '#00d2ff';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        // Walker position (gold dot)
-        const wx = tx(pts[step * 2]);
-        const wy = ty(pts[step * 2 + 1]);
-        ctx.beginPath();
-        ctx.arc(wx, wy, 6, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffd700';
+        ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#00d2ff';
         ctx.fill();
+        // Draw arrow showing direction 0
+        const angle = 0;
+        const ex = tx(0) + Math.cos(angle) * 40;
+        const ey = ty(0) - Math.sin(angle) * 40;
+        drawArrow(ctx, tx(0), ty(0), ex, ey, '#00d2ff', displayScale);
+        return;
+      }
 
-        // Direction arrow
-        const angle = phaseNum * 2 * Math.PI / N;
-        const ex = wx + Math.cos(angle) * 36;
-        const ey = wy - Math.sin(angle) * 36;
-        drawArrow(ctx, wx, wy, ex, ey, '#00d2ff');
-
-        // Origin
+      // Grid lines lightly
+      ctx.strokeStyle = 'rgba(30,50,70,0.3)';
+      ctx.lineWidth = Math.max(0.25, 0.5 * displayScale);
+      for (let i = -20; i <= 20; i++) {
         ctx.beginPath();
-        ctx.arc(tx(0), ty(0), 4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,210,255,0.5)';
-        ctx.fill();
+        ctx.moveTo(tx(i - 0.5), 0);
+        ctx.lineTo(tx(i - 0.5), H);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, ty(i - 0.5));
+        ctx.lineTo(W, ty(i - 0.5));
+        ctx.stroke();
+      }
+
+      // Path
+      ctx.beginPath();
+      ctx.moveTo(tx(pts[0]), ty(pts[1]));
+      for (let i = 1; i < step; i++) ctx.lineTo(tx(pts[i * 2]), ty(pts[i * 2 + 1]));
+      ctx.strokeStyle = 'rgba(0,150,200,0.4)';
+      ctx.lineWidth = Math.max(0.6, 1.5 * displayScale);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Last step (highlighted)
+      ctx.beginPath();
+      ctx.moveTo(tx(pts[(step - 1) * 2]), ty(pts[(step - 1) * 2 + 1]));
+      ctx.lineTo(tx(pts[step * 2]), ty(pts[step * 2 + 1]));
+      ctx.strokeStyle = '#00d2ff';
+      ctx.lineWidth = Math.max(0.9, 2.5 * displayScale);
+      ctx.stroke();
+
+      // Walker position (gold dot)
+      const wx = tx(pts[step * 2]);
+      const wy = ty(pts[step * 2 + 1]);
+      ctx.beginPath();
+      ctx.arc(wx, wy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffd700';
+      ctx.fill();
+
+      // Direction arrow
+      const angle = phaseNum * 2 * Math.PI / N;
+      const ex = wx + Math.cos(angle) * 36;
+      const ey = wy - Math.sin(angle) * 36;
+      drawArrow(ctx, wx, wy, ex, ey, '#00d2ff', displayScale);
+
+      // Origin
+      ctx.beginPath();
+      ctx.arc(tx(0), ty(0), 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,210,255,0.5)';
+      ctx.fill();
     }
 
-    function drawArrow(ctx, x1, y1, x2, y2, color) {
-        const angle = Math.atan2(y2 - y1, x2 - x1);
-        const len = Math.hypot(x2 - x1, y2 - y1);
-        ctx.save();
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        const hs = 8;
-        ctx.beginPath();
-        ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - hs * Math.cos(angle - 0.4), y2 - hs * Math.sin(angle - 0.4));
-        ctx.lineTo(x2 - hs * Math.cos(angle + 0.4), y2 - hs * Math.sin(angle + 0.4));
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+    function drawArrow(ctx, x1, y1, x2, y2, color, scale = 1) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const len = Math.hypot(x2 - x1, y2 - y1);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = Math.max(1, 2 * scale);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      const hs = 8 * Math.max(0.6, scale);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - hs * Math.cos(angle - 0.4), y2 - hs * Math.sin(angle - 0.4));
+      ctx.lineTo(x2 - hs * Math.cos(angle + 0.4), y2 - hs * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
     }
 
     // =========================================================
