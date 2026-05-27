@@ -921,6 +921,24 @@
        width: min(320px, 85vw);
        height: min(320px, 85vw);
      }
+
+    /* Mobile: make gallery two columns and smaller canvases */
+    .gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .gallery-cell canvas {
+      width: 75%;
+      height: 75%;
+      display: block;
+      margin: 8% auto 0 auto;
+    }
+
+    .gallery-label {
+      font-size: 10px;
+      padding: 8px 6px 6px;
+    }
    }
 
    /* ANNOTATION ARROW */
@@ -1059,23 +1077,15 @@
     </p>
     
     <p>
-     In the programming world, this kind of creature is called a
-     <strong>
-      turtle
-     </strong>
-     &mdash; it carries its direction with it and updates it at every step. We're going to give our turtle a very specific turning rule, and watch what happens.
+     In the programming world, this kind of creature is called a <strong>turtle</strong> &mdash; it carries its direction with it and updates 
+     it at every step. We're going to give our turtle a very specific turning rule, and watch what happens.
     </p>
     <p>
-     To make the turns well-defined, we'll divide the full circle into
-     <strong>
-      <em>S</em> equal angle slices
-     </strong>
-     , each of size 360&deg;/S, for varying values of S. Our turtle can only face one of these S directions. At step number
-     <span class="math-inline">
-      n
-     </span>
-     , the turtle adds some amount to its current direction index (measured in those 360&deg;/S slices), then steps forward.
+     To make the turns well-defined, we'll divide the full circle into <strong><em>S</em> equal angle slices</strong>, each of size 360&deg;/S, 
+     for varying values of S. Our turtle can only face one of these S directions. At step number <span class="math-inline">n</span>, 
+     the turtle adds some amount to its current direction index (measured in those 360&deg;/S slices), then steps forward.
     </p>
+    
     <!-- DEMO 1: Step by step walker -->
     <div class="demo-wrap" id="demo-step">
      <div class="demo-header">
@@ -1091,96 +1101,57 @@
        <div class="demo-canvas-col">
         <canvas class="art-canvas" height="400" id="step-canvas" width="400">
         </canvas>
-
        </div>
+
        <div class="demo-info-col">
         <div style="margin-bottom:8px">
          <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
           Choose S
          </div>
+
          <div class="s-grid" id="step-s-grid">
-          <button class="s-btn selected" data-n="3">
-           S=3
-          </button>
-          <button class="s-btn" data-n="6">
-           S=6
-          </button>
-          <button class="s-btn" data-n="12">
-           S=12
-          </button>
-          <button class="s-btn" data-n="24">
-           S=24
-          </button>
+          <button class="s-btn selected" data-n="3">S=3</button>
+          <button class="s-btn" data-n="6">S=6</button>
+          <button class="s-btn" data-n="12">S=12</button>
+          <button class="s-btn" data-n="24">S=24</button>
          </div>
         </div>
         
         <div class="btn-row">
-         <button class="btn btn-primary" id="step-fwd-btn">
-          Step +1
-         </button>
-         <button class="btn btn-outline" id="step-block-btn">
-          Step +S
-         </button>
-         <button class="btn btn-ghost" id="step-reset-btn">
-          Reset
-         </button>
-        </div>
-        
-        <div class="btn-row">
-         <button class="btn btn-outline btn-sm" id="step-auto-btn">
-          ▶ Auto Play
-         </button>
+         <button class="btn btn-primary" id="step-fwd-btn">Step +1</button>
+         <button class="btn btn-outline" id="step-block-btn">Step +S</button>
+         <button class="btn btn-ghost" id="step-reset-btn">Reset</button>
+         <button class="btn btn-outline btn-sm" id="step-auto-btn">▶ Auto Play</button>
         </div>
         
         <div class="step-display" id="step-display">
-         <div class="step-num" id="step-num-display">
-          0
-         </div>
-         <div class="step-label">
-          Current Step
-         </div>
-         <div class="step-angle" id="step-angle-display">
-          Heading: 0&deg; (slot 0 of S)
-         </div>
+         <div class="step-num" id="step-num-display">0</div>
+         <div class="step-label">Current Step</div>
+         <div class="step-angle" id="step-angle-display">Heading: 0&deg; (slot 0 of S)</div>
         </div>
 
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.5">
-         The
-         <span style="color:var(--accent)">
-          cyan arrow
-         </span>
-         shows current heading.
-         <br/>
-         The
-         <span style="color:var(--gold)">
-          gold dot
-         </span>
-         is the walker's position.
+         The <span style="color:var(--accent)">cyan arrow</span> shows current heading.<br/>
+         The <span style="color:var(--gold)">gold dot</span> is the walker's position.
         </div>
        </div>
       </div>
      </div>
     </div>
+
     <p>
      Notice how the turtle doesn't move randomly &mdash; there's a clear pattern forming. Each step is the same length (one unit), but the
-     <em>
-      direction
-     </em>
-     changes systematically. The question that will drive our entire exploration is:
-     <strong>
-      will the turtle ever return to exactly where it started, facing the same way?
-     </strong>
+     <em>direction</em> changes systematically. The question that will drive our main exploration is:
+     <strong>will the turtle ever return to exactly where it started, facing the same way?</strong>
      When these two conditions met, we'll get a periodic graph.
     </p>
    </section>
+
    <!-- SECTION 2: SQUARE TURNS -->
    <section class="section" id="square-turns">
-    <span class="section-number">
-     02 &mdash; The Rule
-    </span>
-    <h2>
-     Turning by Squares
-    </h2>
+    <span class="section-number">02 &mdash; The Rule</span>
+    <h2>Turning by Squares</h2>
+
     <p>
      Here's the specific rule we'll use. At step number <span class="math-inline">n</span> (starting from
      <span class="math-inline">n=0</span>), the turtle increases its direction slot by <span class="math-inline">n&sup2;</span>. 
@@ -1189,63 +1160,48 @@
     </p>
     
     <div class="math-block">
-     direction_slot &larr; (direction_slot + (n&minus;1)&sup2;) mod S
+     direction_slot &larr; (direction_slot + n&sup2;) mod S
     </div>
     
     <p>
-     Note that using slots instead of degrees or radians makes the formulas cleaner.
-     Let's trace through a small example with
-     <strong>
-      S = 6
-     </strong>
-     (six equally spaced directions, each 60&deg; apart). At step 1, the turn is 0&sup2; = 0. At step 2, it's 1&sup2; = 1 slot. At step 3, it's 2&sup2; = 4 slots. And so on.
+     Using slots instead of degrees or radians makes the formulas cleaner. Let's trace through a small example with <strong>S = 6</strong>
+     (six equally spaced directions, each 60&deg; apart). At step 1, the turn is 0&sup2; = 0. At step 2, it's 1&sup2; = 1 slot. 
+     At step 3, it's 2&sup2; = 4 slots. And so on.
     </p>
+
     <!-- Direction table for N=6 -->
     <div id="dir-table-wrap">
      <table class="dir-table" id="dir-table-6">
       <thead>
        <tr>
-        <th>
-         Step n
-        </th>
-        <th>
-         Turn (n&minus;1)&sup2;
-        </th>
-        <th>
-         Turn mod 6
-        </th>
-        <th>
-         Cumulative slot
-        </th>
-        <th>
-         Direction
-        </th>
+        <th>Step n</th>
+        <th>Turn (n&minus;1)&sup2;</th>
+        <th>Turn mod 6</th>
+        <th>Cumulative slot</th>
+        <th>Direction</th>
        </tr>
       </thead>
+
       <tbody>
       </tbody>
      </table>
     </div>
+
     <p>
-     The key phrase is
-     <em>
-      modulo S
-     </em>
-     . Once the slot index reaches S, it wraps back to 0. With S=6, the slot is always in {0, 1, 2, 3, 4, 5}, corresponding to directions {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}.
+     The key phrase is <em>modulo S</em>. Once the slot index reaches S, it wraps back to 0. With S=6, the slot is always in 
+     {0, 1, 2, 3, 4, 5}, corresponding to directions {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}.
     </p>
+
     <div class="callout">
-     <span class="callout-label">
-      Why squares?
-     </span>
+     <span class="callout-label">Why squares?</span>
+     
      <p>
-      Many functions could drive the turning &mdash; the linear choice gives graphs that resemble the Euler spiral, 
+      Many functions could drive the turning &mdash; the linear choice (turn by n slots in the step n) gives graphs that resemble the Euler spiral, 
       the random choice gives a drunk walk. Squares sit in a beautiful middle ground:
-      <strong>
-       growing fast enough to create variety, but structured enough to create symmetry
-      </strong>
-      . This is why we're here to explore.
+      <strong>growing fast enough to create variety, but structured enough to create symmetry</strong>. This is why we're here to explore.
      </p>
     </div>
+
     <p>
      There's a classical result lurking here. The cumulative slot of direction after exactly
      <span class="math-inline">
@@ -1267,7 +1223,6 @@
     <p>
      The relation between the cubic cumulative direction formula and quadratic direction change per step formula 
      is the key to the chaotic symmetries we'll explore in the rest of this article. 
-     The "6" in the denominator is not a coincidence &mdash; it will come back to haunt us in the most beautiful way.
     </p>
    </section>
    <!-- SECTION 3: BEAUTY FIRST -->
@@ -1280,7 +1235,7 @@
     </h2>
     <p>
      Before we dig into the mathematics, let me show you what this rule produces for large N. These aren't hand-crafted images &mdash; 
-     they emerge purely from the square-turn rule applied over tens of thousands of steps.
+     they emerge purely from the square-turn rule applied up to over tens of thousands of steps.
     </p>
     <p>
      Click any thumbnail to explore it. Notice the rosette-like shapes with varying number of "petal"s and the striking symmetry &mdash; 
@@ -2399,6 +2354,7 @@
      <li>
       What are the other geometric properties of the shapes besides rotational and reflectional symmetries?
      </li>
+     <!-- TODO: Add info about R multiplier -->
     </ul>
     <div class="callout">
      <span class="callout-label">
@@ -2518,7 +2474,8 @@
         if (dT < 0) dT += 360;
         if (dT === 0) dT = 360;
         const gd = gcd(360, Math.round(dT));
-        const petals = Math.round(360 / gd);
+        let petals = Math.round(360 / gd);
+        if (N % 4 == 0) petals *= 2;
         const total = N * petals;
         return { closes: true, petals, totalSteps: total, delta: dT, mStar: petals };
     }
@@ -2973,14 +2930,14 @@
     // =========================================================
 
     const LARGE_N_PRESETS = [
-        { N: 90, label: 'S = 90', note: '6 petals' },
         { N: 183, label: 'S = 183', note: '3 petals' },
         { N: 368, label: 'S = 368', note: '4 petals' },
         { N: 722, label: 'S = 722', note: '2 petals' },
-        { N: 1272, label: 'S = 1272', note: '12 petals' },
+        { N: 933, label: 'S = 933', note: '3 petals' },
+        { N: 1216, label: 'S = 1216', note: '4 petals' },
         { N: 2526, label: 'S = 2526', note: '6 petals' },
         { N: 10201, label: 'S = 10201', note: '1 petal' },
-        { N: 15000, label: 'S = 15000', note: '6 petals' },
+        { N: 15000, label: 'S = 15000', note: '12 petals' },
     ];
 
     (function initGallery() {
@@ -3028,36 +2985,57 @@
         });
 
         // Build gallery thumbnails
-        const GALLERY_N = [90, 368, 1272, 10201, 15000];
+        const GALLERY_N = [933, 1216, 10201, 15000];
+        const _thumbnails = [];
+        function drawThumbnail(canvas, N) {
+          // ensure layout settled
+          const rect = canvas.getBoundingClientRect();
+          const cssW = Math.max(1, Math.round(rect.width || canvas.clientWidth || canvas.width || 200));
+          const info = getClosureInfo(N);
+          if (!info.closes) return;
+          const steps = Math.min(info.totalSteps, 90000);
+          // scale down line thickness on small canvases
+          const lineScale = Math.min(1, cssW / 180);
+          const { pts } = generatePath(steps, N);
+          drawPath(canvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale });
+        }
+
         GALLERY_N.forEach(N => {
-            const cell = document.createElement('div');
-            cell.className = 'gallery-cell';
-            const c = document.createElement('canvas');
-            c.width = 200;
-            c.height = 200;
-            const lbl = document.createElement('div');
-            lbl.className = 'gallery-label';
-            lbl.textContent = 'S = ' + N.toLocaleString();
-            cell.appendChild(c);
-            cell.appendChild(lbl);
-            grid.appendChild(cell);
+          const cell = document.createElement('div');
+          cell.className = 'gallery-cell';
+          const c = document.createElement('canvas');
+          c.width = 200;
+          c.height = 200;
+          c.dataset.n = N;
+          const lbl = document.createElement('div');
+          lbl.className = 'gallery-label';
+          lbl.textContent = 'S = ' + N.toLocaleString();
+          cell.appendChild(c);
+          cell.appendChild(lbl);
+          grid.appendChild(cell);
+          _thumbnails.push({ canvas: c, N });
 
-            // Draw thumbnail
+          // Initial draw after layout
+          setTimeout(() => drawThumbnail(c, N), 120);
+
+          cell.onclick = () => {
+            document.querySelectorAll('#large-s-grid .s-btn').forEach(b => {
+              b.classList.toggle('selected', b.textContent.replace(/,/g, '').includes(String(N)));
+            });
+            drawLarge(N);
+            document.getElementById('large-canvas').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          };
+        });
+
+        // Redraw thumbnails on resize so small canvases get thinner lines
+        window.addEventListener('resize', () => {
+          _thumbnails.forEach(t => {
+            // small delay to allow layout to settle
             setTimeout(() => {
-                const info = getClosureInfo(N);
-                if (!info.closes) return;
-                const steps = Math.min(info.totalSteps, 90000);
-                const { pts } = generatePath(steps, N);
-                drawPath(c, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
-            }, 100);
-
-            cell.onclick = () => {
-                document.querySelectorAll('#large-s-grid .s-btn').forEach(b => {
-                    b.classList.toggle('selected', b.textContent.replace(/,/g, '').includes(String(N)));
-                });
-                drawLarge(N);
-                document.getElementById('large-canvas').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            };
+              if (!t.canvas.isConnected) return;
+              drawThumbnail(t.canvas, t.N);
+            }, 60);
+          });
         });
 
         // Initial draw
