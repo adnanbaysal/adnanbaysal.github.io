@@ -1031,8 +1031,8 @@
     </h1>
     
     <p class="hero-sub">
-     A turtle walks. At every step, it turns &mdash; not by a fixed angle, but by an amount that
-     <em>grows with the square of the step count</em>. What emerges is surprisingly beautiful.
+     A turtle walks. At every step it turns &mdash; not by a fixed angle, but by an amount that
+     <em>grows with the square of the step number</em>. From this one simple rule emerges something unexpectedly beautiful.
     </p>
     
     <a class="hero-cta" href="#turtle">
@@ -1067,23 +1067,23 @@
     <h2>The Walking Rule</h2>
     
     <p>
-     Imagine a very obedient creature. It lives on a blank plane and follows one instruction:
-     <strong>walk forward one step, then turn by an angle of your wish.</strong> That's all it ever does.
+     Imagine a perfectly obedient creature. It lives on a blank plane and follows exactly one instruction:
+     <strong>walk forward one step, then turn by some chosen angle.</strong> That's all it ever does, forever.
     </p>
     
     <p>
-     The path it traces depends entirely on <em>how much it turns</em> at each step. Turn always by 90&deg;, and you get a perfect square. 
-     Turn by 60&deg;, and you get a hexagon. Turn by some irrational angle, and the path wanders forever without passing on the same step again.
+     The path it traces depends entirely on <em>how much it turns</em> at each step. Turn always by 90&deg; and you get a square. 
+     Turn by 60&deg; and you get a hexagon. Turn by some irrational angle and the path wanders forever, never repeating the same step.
     </p>
     
     <p>
-     In the programming world, this kind of creature is called a <strong>turtle</strong> &mdash; it carries its direction with it and updates 
-     it at every step. We're going to give our turtle a very specific turning rule, and watch what happens.
+     In the world of programming, this kind of creature is called a <strong>turtle</strong> &mdash; it carries its heading with it and updates 
+     it at every step. We're going to give our turtle a very specific turning rule and watch what happens.
     </p>
     <p>
-     To make the turns well-defined, we'll divide the full circle into <strong><em>S</em> equal angle slices</strong>, each of size 360&deg;/S, 
+     To keep the turns well-defined, we divide the full circle into <strong><em>S</em> equal angular slices</strong>, each of size 360&deg;/S, 
      for varying values of S. Our turtle can only face one of these S directions. At step number <span class="math-inline">n</span>, 
-     the turtle adds some amount to its current direction index (measured in those 360&deg;/S slices), then steps forward.
+     it advances its direction index by some amount (measured in those 360&deg;/S slices), then steps forward.
     </p>
     
     <!-- DEMO 1: Step by step walker -->
@@ -1140,10 +1140,10 @@
     </div>
 
     <p>
-     Notice how the turtle doesn't move randomly &mdash; there's a clear pattern forming. Each step is the same length (one unit), but the
-     <em>direction</em> changes systematically. The question that will drive our main exploration is:
+     Notice how the turtle never moves randomly &mdash; a clear pattern is already forming. Each step is the same length (one unit), but the
+     <em>direction</em> changes systematically. The question that will drive our whole exploration is:
      <strong>will the turtle ever return to exactly where it started, facing the same way?</strong>
-     When these two conditions met, we'll get a periodic graph.
+     When both conditions are met, we get a periodic, repeating graph.
     </p>
    </section>
 
@@ -1155,8 +1155,8 @@
     <p>
      Here's the specific rule we'll use. At step number <span class="math-inline">n</span> (starting from
      <span class="math-inline">n=0</span>), the turtle increases its direction slot by <span class="math-inline">n&sup2;</span>. 
-     Note that we can calculate this slot number modulo S, since whole multiples of S will correspond that many full cycles,  
-     and only the remainder is necessary to calculate direction slot change.
+     We can always compute this slot number modulo S, since whole multiples of S correspond to full rotations &mdash; 
+     only the remainder determines the actual heading.
     </p>
     
     <div class="math-block">
@@ -1164,7 +1164,7 @@
     </div>
     
     <p>
-     Using slots instead of degrees or radians makes the formulas cleaner. Let's trace through a small example with <strong>S = 6</strong>
+     Using slots instead of degrees or radians keeps the formulas clean. Let's trace through a small example with <strong>S = 6</strong>
      (six equally spaced directions, each 60&deg; apart). At step 1, the turn is 0&sup2; = 0. At step 2, it's 1&sup2; = 1 slot. 
      At step 3, it's 2&sup2; = 4 slots. And so on.
     </p>
@@ -1196,51 +1196,44 @@
      <span class="callout-label">Why squares?</span>
      
      <p>
-      Many functions could drive the turning &mdash; the linear choice (turn by n slots in the step n) gives graphs that resemble the Euler spiral, 
-      the random choice gives a drunk walk. Squares sit in a beautiful middle ground:
-      <strong>growing fast enough to create variety, but structured enough to create symmetry</strong>. This is why we're here to explore.
+      Many functions could drive the turning &mdash; a linear rule (turn by <em>n</em> slots at step <em>n</em>) gives curves reminiscent of the Euler spiral; 
+      a random rule gives a drunk's stumbling walk. Squares sit in a fascinating middle ground:
+      <strong>growing fast enough to create variety, but structured enough to produce symmetry</strong>. That tension is exactly what we're here to explore.
      </p>
     </div>
 
     <p>
-     There's a classical result lurking here. The cumulative slot of direction after exactly
-     <span class="math-inline">
-      n
-     </span>
-     steps is
-     <span class="math-inline">
-      0&sup2; + 1&sup2; + 2&sup2; + ... + (n&minus;1)&sup2;
-     </span>
-     , which equals the famous
-     <strong>
-      sum-of-squares formula
-     </strong>
-     :
+     There's a classical result lurking here. The cumulative direction slot after exactly <span class="math-inline">n</span> steps is 
+     <span class="math-inline">0&sup2; + 1&sup2; + 2&sup2; + ... + (n&minus;1)&sup2;</span>, which equals the celebrated <strong>sum-of-squares formula</strong>:
     </p>
+
     <div class="math-block">
      f(n) = n(n&minus;1)(2n&minus;1) / 6
     </div>
+
     <p>
-     The relation between the cubic cumulative direction formula and quadratic direction change per step formula 
-     is the key to the chaotic symmetries we'll explore in the rest of this article. 
+     The relationship between this cubic cumulative direction formula and the quadratic per-step change formula 
+     is the key to the surprising symmetries we'll uncover in the rest of this article. 
     </p>
    </section>
+
    <!-- SECTION 3: BEAUTY FIRST -->
    <section class="section" id="gallery-first">
-    <span class="section-number">
-     03 &mdash; The Reveal
-    </span>
+    <span class="section-number">03 &mdash; The Reveal</span>
     <h2>
      Beauty Before Proof
     </h2>
+
     <p>
-     Before we dig into the mathematics, let me show you what this rule produces for large N. These aren't hand-crafted images &mdash; 
-     they emerge purely from the square-turn rule applied up to over tens of thousands of steps.
+     Before we dig into the mathematics, let me show you what this rule actually produces for large values of S. These aren't hand-crafted images &mdash; 
+     they emerge purely from the square-turn rule, traced over tens of thousands of steps.
     </p>
+
     <p>
-     Click any thumbnail to explore it. Notice the rosette-like shapes with varying number of "petal"s and the striking symmetry &mdash; 
-     we'll spend the rest of the article explaining where these come from.
+     Click any thumbnail to explore it in detail. Notice the rosette-like shapes with varying numbers of "petals" and their striking symmetry &mdash; 
+     we'll spend the rest of the article explaining exactly where all of this comes from.
     </p>
+
     <!-- Gallery -->
     <div class="gallery-grid" id="gallery-grid">
      <!-- Populated by JS -->
@@ -1305,20 +1298,17 @@
      When Does the Path Close?
     </h2>
     <p>
-     For most of the values of S, the graph of the path perfectly closes in a circular way after some number of steps. 
-     That's why we call the resulting shape a rosette. The possible number of petals of the rosette are 1, 2, 3, 4, 6, and 12. 
-     These are exactly the positive divisors of 12.
+     For most values of S, the turtle's path closes perfectly into a circular rosette after a finite number of steps.
+     The possible petal counts are 1, 2, 3, 4, 6, and 12 &mdash; exactly the positive divisors of 12.
      
-     On the other hand, some S result in a path that
-     <em>
-      drifts endlessly
-     </em>
-     that never returning to the start, but instead proceeds in either the positive or the negative x-axis direction forever. 
-     Try below demo to see the difference between closing and drifting graphs. 
+     For a handful of special values of S, however, the path <em>drifts endlessly</em>, never returning to its starting point 
+     and instead marching off to infinity along the positive or negative x-axis. Use the demo below to see the contrast firsthand.
     </p>
+
     <p>
      What separates the closing cases from the drifting ones?
     </p>
+
     <!-- Demo: Closer vs Drifter -->
     <div class="demo-wrap">
      <div class="demo-header">
@@ -1456,10 +1446,11 @@
      When gcd(S, 6) > 1
     </h3>
     <p>
-     This is the easier case. When 2, or 3, or both divides S, the path always closes in a rosette like shape and repeates periodically after that.
-     In this case, number of petals is either gcd(S, 6) or 2 x gcd(S, 6). In any case, the path closes after exactly <span class="math-inline">S &times; gcd(S, 6)</span>  steps.
-     For simplicty, I'll call a single consecutive S steps as a "block".  I'll come to why visible number of petals can be double the value of gcd later. 
+     This is the simpler case. When 2, 3, or both divide S, the path always closes into a rosette and repeats periodically. The number of petals is either gcd(S, 6) or 
+     2&times;gcd(S, 6), and the path closes after exactly <span class="math-inline">S &times; gcd(S, 6)</span> steps. For convenience, I'll refer to a single 
+     consecutive run of S steps as a <em>block</em>. I'll return later to explain why the visible petal count can be double the value of gcd.
     </p>
+    
     <div class="math-block">
      gcd(S, 6) &gt; 1  &rArr; path closes in a rosette shape
     </div>
@@ -1468,21 +1459,20 @@
      When gcd(S, 6) = 1
     </h3>
     <p>
-      This case is more complicated. Visually analyzing the behavior for some small S values, I discovered the following:
+      This case is more subtle. By visual inspection of several small values of S, I found the following patterns:
       <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
-        <li>If S is square-free (all prime factors has power 1), the graph drifts. For example: S = 13, S = 35 = 5&times;7, S = 77 = 7&times;11</li>
-        <li>If all even powered prime factors of S belong to a special set of primes, then the graph drifts. 
-          For example S = 11&times;11 = 121
+        <li>If S is square-free (all prime factors appear with exponent 1), the path drifts. Examples: S = 13, S = 35 = 5&times;7, S = 77 = 7&times;11.</li>
+        <li>If all squared prime factors of S belong to a particular "special" set of primes, the path also drifts.
+          Example: S = 11&times;11 = 121 (11 is one of those special primes).
         </li>
         <li>
-          Otherwise, if S has an even powered prime factor that is out of the above set of primes, then the graph closes with a 1 petal shape. 
-          For example S = 7&times;7 = 49
+          Otherwise &mdash; if S has a squared prime factor that lies <em>outside</em> that special set &mdash; the path closes with a 1-petal shape.
+          Example: S = 7&times;7 = 49.
         </li>
       </ul>
-      Experimentally, I found that the following primes belongs to the special set mentioned above: 11, 13, 23, 37, 47, 59, 61, 71, 73, ...
-      This set is probably infinite, and a search on <a href="www.oeis.org" style="color:var(--accent);">oeis.org</a> give 4 potential candidates for this sequence. 
-      Honestly, I don't know which one of those sequences' 
-      definition match the best for the underlying reason of this result. That would be a good future work. 
+      Experimentally, the special primes that cause drift are: 11, 13, 23, 37, 47, 59, 61, 71, 73&hellip;
+      This set is probably infinite, and searching <a href="www.oeis.org" style="color:var(--accent);">oeis.org</a> turns up four candidate sequences.
+      Which sequence definition best captures the underlying arithmetic reason is an open question &mdash; and a promising direction for future work.
     </p>
    </section>
 
@@ -1496,16 +1486,8 @@
     </h2>
 
     <p>
-      Let's look back at the sum-of-squares formula:
-      <span class="math-inline">
-      f(n) = n(n+1)(2n+1)/6
-      </span>
-      . That denominator
-      <strong>
-      6
-      </strong>
-      seems to be related to this. To understand this better, let's make a few observations about the formulas for relative slot change and cumulative direction formulas.
-      Before proceeding to deal with the formulas, let's give name to the orientation change, and cumulative orientation formulas.
+      Let's return to the sum-of-squares formula: <span class="math-inline">f(n) = n(n+1)(2n+1)/6</span>. That denominator,
+      <strong>6</strong>, appears to be more than a coincidence. To understand its role, let's name the two key quantities and examine their formulas carefully.
     </p>
 
     <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
@@ -1537,17 +1519,17 @@
     </div>
 
     <p>
-      Now let's think what this means geometrically. After <span class="math-inline">S</span> steps of walk, the turtle is positioned 
-      at some location in the plane and has an orientation that is the sum of all changes up to that point. The turtle 
-      has so far already drawn a graph. Thinking of this last position and orientation as the starting state, 
-      it will draw exactly the same shape in a rotated and translated manner in the next <span class="math-inline">S</span> steps.
+      After <span class="math-inline">S</span> steps, the turtle sits somewhere in the plane with a heading equal to the sum of all changes so far. 
+      Think of that position and heading as a new starting state: from there, the turtle will trace 
+      <em>exactly the same shape</em> &mdash; just rotated and translated &mdash; during the next <span class="math-inline">S</span> steps.
     </p> 
+
     <p>
-      So it's clear that this single <span class="math-inline">S</span>-periodicity
-      of <span class="math-inline">&Delta;&theta;(n)</span> is enough to explain the repeating rotated+translated patterns in our graphs. 
-      But there are more than that in what we saw in the graphs. For example, as we saw, the path closes for almost all choices of 
-      <span class="math-inline">S</span>. Besides, each <span class="math-inline">S</span>-step block has reflection symmetry too,
-      which cannot be explained by this periodicity alone. We'll see the reasons in the following sections.
+      So this single <span class="math-inline">S</span>-periodicity of <span class="math-inline">&Delta;&theta;(n)</span> 
+      already explains the repeating rotated-and-translated patterns visible in our graphs. 
+      But there is more going on. As we observed, the path closes for nearly all choices of 
+      <span class="math-inline">S</span>, and each <span class="math-inline">S</span>-step block also has its own reflection symmetry &mdash;  
+      neither of which follows from this periodicity alone. We'll see why in the sections ahead.
     </p>
     
     <h3>
@@ -1555,10 +1537,9 @@
     </h3>
 
     <p>
-      just like we did for <span class="math-inline">&Delta;&theta;(n + S)</span>, let's check <span class="math-inline">&theta;(n + S)</span>
-      to see if we get <span class="math-inline">S</span>-periodicity.
-      To make working with formulas easier, we'll use the expanded form of the sum of squares formula: 
-      <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. Here we go:
+      Just as we did for <span class="math-inline">&Delta;&theta;(n + S)</span>, let's check <span class="math-inline">&theta;(n + S)</span>
+      for <span class="math-inline">S</span>-periodicity. We'll use the expanded form of the sum-of-squares formula: 
+      <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. Let's compute:
     </p>
 
     <div class="math-block">
@@ -1662,21 +1643,18 @@
     </div>
 
     <p>
-      In the above table, we showed <span class="math-inline">&theta;(S) mod S</span> as a fraction of S to clearly see the period.
-      This period is simply calculated as the minimum multiple of this fraction to make it an integer multiple of 
-      <span class="math-inline">S</span>. The table shows that the period for cumulative orientation is exactly 
-      <span class="math-inline">GCD(S,6) &times; S</span>-steps as we guessed.
+      The table shows that the orientation period is exactly <span class="math-inline">GCD(S,6) &times; S</span> steps &mdash; confirming our earlier guess.
     </p>
 
     <p>
-      So, again, what does <span class="math-inline">kS</span>-periodicity (k is one of 1, 2, 3, or 6) mean geometrically
-      for the cumulative orientation slot of the turtle? It means, the turtle will face the exact same orientation after 
-      <span class="math-inline">kS</span>-steps. Since <span class="math-inline">&Delta;&theta;(n)</span> is also 
-      <span class="math-inline">S</span>-periodic, this means the turtle will draw the same shape in the same orientation,
-      i.e. not a rotated version. But there is an important catch here, the turtle does not have to return to the beginning 
-      position. It could have draw the same shape starting from another position in the space, and that position is the sum
-      of all steps as 2D vectors. That would cause the graphs to drift forever in some direction, but we do not see this 
-      except for some specific family of choices of <span class="math-inline">S</span>. So there is certainly more math to analyze.
+      What does this <span class="math-inline">kS</span>-periodicity (where <em>k</em> is one of 1, 2, 3, or 6) mean geometrically
+      for the turtle's heading? It means the turtle faces exactly the same direction again after 
+      <span class="math-inline">kS</span> steps. Since <span class="math-inline">&Delta;&theta;(n)</span> is also 
+      <span class="math-inline">S</span>-periodic, the turtle will draw the very same shape in the very same orientation &mdash; 
+      not a rotated copy. There is an important caveat, though: the turtle does not necessarily return to its 
+      <em>starting position</em>. It might have drawn the same shape from a different point in the plane, displaced 
+      by the vector sum of all its steps. That displacement is what causes certain paths to drift forever in one direction.
+      But we only see this behaviour for a special family of S values, so there is clearly more mathematics to unravel.
     </p>
 
   </section>
