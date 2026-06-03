@@ -877,7 +877,7 @@
      bottom: 0;
      left: 0;
      right: 0;
-     background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+     background: transparent;
      padding: 12px 8px 8px;
      font-family: 'Courier New', monospace;
      font-size: 11px;
@@ -1303,7 +1303,7 @@
         </div>
 
         <div class="section-caption mt-6">
-         The <span class="text-accent">cyan arrow</span> shows current heading.<br/>
+         The <span class="text-accent">blue arrow</span> shows current heading.<br/>
          The <span class="text-gold">gold dot</span> is the walker's position.
         </div>
        </div>
@@ -2545,6 +2545,8 @@
     function setTheme(theme) {
       localStorage.setItem(THEME_STORAGE_KEY, theme);
       applyTheme(theme);
+      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new CustomEvent('themechange'));
     }
 
     function getCanvasBackground() {
@@ -2752,20 +2754,25 @@
                 if (style === 'neon') {
                     if (petalColors) {
                         const hue = (petalIdx / numPetals) * 360;
-                        ctx.strokeStyle = `hsla(${hue},90%,60%,0.7)`;
+                        ctx.strokeStyle = `hsla(${hue},95%,55%,0.85)`;
                     } else {
-                        ctx.strokeStyle = 'rgba(0,210,255,0.55)';
+                        ctx.strokeStyle = 'rgba(0,160,255,0.85)';
                     }
                     ctx.stroke();
                     ctx.lineWidth = lw * 0.35;
-                    ctx.strokeStyle = 'rgba(200,240,255,0.6)';
+                    if (petalColors) {
+                        const hue = (petalIdx / numPetals) * 360;
+                        ctx.strokeStyle = `hsla(${hue},90%,55%,0.55)`;
+                    } else {
+                        ctx.strokeStyle = 'rgba(0,120,190,0.65)';
+                    }
                     ctx.stroke();
                 } else if (style === 'rainbow') {
                     const hue = (petalIdx / numPetals) * 360;
-                    ctx.strokeStyle = `hsl(${hue},85%,60%)`;
+                    ctx.strokeStyle = `hsl(${hue},90%,50%)`;
                     ctx.stroke();
                 } else {
-                    ctx.strokeStyle = 'rgba(200,220,240,0.8)';
+                    ctx.strokeStyle = 'rgba(80,120,160,0.9)';
                     ctx.stroke();
                 }
                 i = segEnd;
@@ -3574,7 +3581,10 @@
         return pts;
       }
 
+      let currentAngles = [];
+
       function drawSequence(angles) {
+        currentAngles = Array.isArray(angles) ? angles.slice() : [];
         const cW = canvas.offsetWidth || 350;
         if (canvas.width !== cW || canvas.height !== cW) {
           canvas.width = cW;
@@ -3598,6 +3608,10 @@
         const arr = parseAngles(input.value);
         drawSequence(arr);
       };
+
+      window.addEventListener('themechange', () => {
+        if (currentAngles.length) drawSequence(currentAngles);
+      });
 
       // Press Enter in the input to trigger Draw
       input.addEventListener('keydown', function(e) {
