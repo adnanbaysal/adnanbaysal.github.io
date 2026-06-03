@@ -17,6 +17,7 @@
      --border: #1a2530;
      --text: #d8e0e8;
      --text-dim: #6a7a8a;
+     --muted: rgba(255, 255, 255, 0.12);
      --green: #00e5a0;
      --purple: #b388ff;
    }
@@ -521,6 +522,131 @@
 
    .info-row + .info-row {
      border-top: 1px solid #0e1a24;
+   }
+
+   .section-caption {
+     font-family: 'Courier New', monospace;
+     font-size: 11px;
+     color: var(--text-dim);
+     line-height: 1.5;
+   }
+
+   .section-label {
+     font-family: 'Courier New', monospace;
+     font-size: 10px;
+     color: var(--text-dim);
+     letter-spacing: 1px;
+     text-transform: uppercase;
+     margin-bottom: 6px;
+   }
+
+   .text-accent {
+     color: var(--accent);
+   }
+
+   .text-accent2 {
+     color: var(--accent2);
+   }
+
+   .text-green {
+     color: var(--green);
+   }
+
+   .text-foreground {
+     color: #fff;
+   }
+
+   .text-gold {
+     color: var(--gold);
+   }
+
+   .accent-link {
+     color: var(--accent);
+   }
+
+   .panel-note {
+     font-size: 11px;
+     color: var(--text-dim);
+     margin-top: 8px;
+     line-height: 1.6;
+     padding: 10px;
+     background: var(--panel);
+     border-radius: 6px;
+     border: 1px solid var(--border);
+   }
+
+   .section-list {
+     margin: 16px 0 16px 24px;
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
+   }
+
+   .text-center-muted {
+     text-align: center;
+     color: var(--text-dim);
+   }
+
+   .flex-row-gap-12 {
+     display: flex;
+     gap: 12px;
+     align-items: center;
+   }
+
+   .footer-note {
+     color: var(--text-dim);
+     font-size: 0.9rem;
+   }
+
+   .footer-small {
+     font-size: 10px;
+   }
+
+   .math-inline-block {
+     display: inline-block;
+     text-align: left;
+   }
+
+   .mb-6 {
+     margin-bottom: 6px;
+   }
+
+   .mb-8 {
+     margin-bottom: 8px;
+   }
+
+   .mb-12 {
+     margin-bottom: 12px;
+   }
+
+   .mt-6 {
+     margin-top: 6px;
+   }
+
+   .mt-8 {
+     margin-top: 8px;
+   }
+
+   .input-wide {
+     flex: 1;
+     padding: 8px;
+     border-radius: 6px;
+     border: 1px solid var(--muted);
+     background: var(--bg);
+     color: var(--text);
+     font-family: inherit;
+   }
+
+   .text-small-description {
+     font-size: 12px;
+     color: var(--text-dim);
+     font-family: 'Courier New', monospace;
+   }
+
+   .flex-wrap-gap-8 {
+     display: flex;
+     flex-wrap: wrap;
+     gap: 8px;
    }
 
    .info-key {
@@ -1095,7 +1221,7 @@
       <span class="demo-title">
        Interactive &mdash; Step-by-Step Walker
       </span>
-      <span style="font-size:11px;color:var(--text-dim);font-family:'Courier New',monospace">
+      <span class="section-caption">
        Choose S, then step through
       </span>
      </div>
@@ -1107,8 +1233,8 @@
        </div>
 
        <div class="demo-info-col">
-        <div style="margin-bottom:8px">
-         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
+        <div class="mb-8">
+         <div class="section-label">
           Choose S
          </div>
 
@@ -1133,9 +1259,9 @@
          <div class="step-angle" id="step-angle-display">Heading: 0&deg; (slot 0 of S)</div>
         </div>
 
-        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.5">
-         The <span style="color:var(--accent)">cyan arrow</span> shows current heading.<br/>
-         The <span style="color:var(--gold)">gold dot</span> is the walker's position.
+        <div class="section-caption mt-6">
+         The <span class="text-accent">cyan arrow</span> shows current heading.<br/>
+         The <span class="text-gold">gold dot</span> is the walker's position.
         </div>
        </div>
       </div>
@@ -1256,13 +1382,13 @@
       </canvas>
      </div>
      <div class="large-demo-controls">
-      <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">
+      <div class="section-label mb-8">
        Select S
       </div>
       <div class="large-s-grid" id="large-s-grid">
        <!-- Populated by JS -->
       </div>
-      <div class="info-card" style="margin-top:12px">
+      <div class="info-card mb-12">
        <div class="info-row">
         <span class="info-key">
          S (directions)
@@ -1335,8 +1461,8 @@
         </canvas>
        </div>
        <div class="demo-info-col">
-        <div style="margin-bottom:8px">
-         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
+        <div class="mb-8">
+         <div class="section-label">
           Closing &checkmark;
          </div>
          <div class="s-grid" id="close-s-grid">
@@ -1371,7 +1497,7 @@
            49
           </button>
          </div>
-         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;margin-top:8px">
+         <div class="section-label mt-8">
           Drifting &cross;
          </div>
          <div class="s-grid" id="drift-s-grid">
@@ -1446,7 +1572,7 @@
           </span>
          </div>
         </div>
-        <div id="cl-note" style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:8px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
+        <div id="cl-note" class="panel-note">
          This path closes. Each color represents a single "petal" &mdash; a self-contained block of S steps. 
          After all petals are drawn, the walker is exactly back where it started.
         </div>
@@ -1477,7 +1603,7 @@
       three distinct behaviors emerge:
     </p>
       
-    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
+    <ul class="section-list">
       <li>
         If S is "square-free" (meaning all of its prime factors appear with an exponent of exactly 1), the path fails to close and 
         drifts endlessly. Examples: S = 13, S = 35 (5&times;7), S = 77 (7&times;11).
@@ -1495,7 +1621,7 @@
     <p>
       Experimental brute-forcing reveals this set of "special" drifting primes to be: 11, 13, 23, 37, 47, 59, 61, 71, 73&hellip;
       This sequence is highly likely to be infinite. Cross-referencing it with the On-Line Encyclopedia of Integer Sequences 
-      (<a href="http://oeis.org" style="color:var(--accent);">OEIS</a>) yields a few promising candidate sequences. 
+      (<a href="http://oeis.org" class="accent-link">OEIS</a>) yields a few promising candidate sequences. 
       Pinning down exactly which sequence definition fully explains the underlying arithmetic mechanics remains an exciting open 
       question &mdash; and a prime candidate for future research.
     </p>
@@ -1516,7 +1642,7 @@
       define our two core variables and unpack their formulas.
     </p>
 
-    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
+    <ul class="section-list">
       <li>
         Let <span class="math-inline">&Delta;&theta;(n) = n&sup2;</span> represent the isolated <em>relative</em> shift in 
         direction slot at step n. 
@@ -1569,7 +1695,7 @@
     </p>
 
     <div class="math-block">
-     <div style="display:inline-block; text-align:left;">
+     <div class="math-inline-block">
       &theta;(n + S) = <span class="fraction">
         <span class="fraction-num">2(n + S)&sup3; + 3(n + S)&sup2; + (n + S)</span>
         <span class="fraction-den">6</span>
@@ -1708,7 +1834,7 @@
       Closure when GCD(S, 6) = 1
     </h3>
     <p>
-      As previewed in the section <a href="#closing" style="color:var(--accent);">When Does the Path Close?</a>, 
+      As previewed in the section <a href="#closing" class="accent-link">When Does the Path Close?</a>, 
       this scenario is a mathematical edge case. For certain values of S, the path refuses to loop, drifting indefinitely along the 
       positive x-axis. For others, it perfectly seals into a closed orbit, and the turtle retraces the exact same path for eternity.
     </p>
@@ -1748,7 +1874,7 @@
      <span class="math-inline">GCD(S, 6)</span>, this rotational angle snaps to exactly 1/2, 2/3, or 1/6 of a full circle. 
     </p>
 
-    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
+    <ul class="section-list">
       <li>
         <span class="pill pill-cyan">GCD = 6 &Implies; &theta;(S) = S / 6 mod S</span>
         This equates to 1/6 of a full rotation. The turtle will perfectly close its path after 6S steps, yielding a classic six-petal
@@ -1778,13 +1904,13 @@
       <span class="demo-title">
        Interactive &mdash; Petal Explorer
       </span>
-      <span style="font-size:11px;color:var(--text-dim);font-family:'Courier New',monospace">
+      <span class="section-caption">
        Click a group to see examples
       </span>
      </div>
      <div class="demo-body">
-      <div style="margin-bottom:12px">
-       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div class="mb-12">
+       <div class="flex-wrap-gap-8 mb-12">
         <button class="btn btn-ghost btn-sm active" data-gcd="2" id="gcd2-btn">
          gcd = 2 &rarr; 2 petals
         </button>
@@ -1846,7 +1972,7 @@
           </span>
          </div>
         </div>
-        <div id="pt-explain" style="font-size:12px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:10px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
+        <div id="pt-explain" class="panel-note">
          Each vibrant color in the drawing represents one self-contained "block" of S steps. The blocks act like the rigid blades of a 
          fan &mdash; mathematically identical shapes, systematically rotated.
         </div>
@@ -1959,7 +2085,7 @@
         <td class="highlight">0</td>
        </tr>
        <tr>
-        <td colspan="5" style="text-align:center;color:var(--text-dim)">…</td>
+        <td colspan="5" class="text-center-muted">…</td>
        </tr>
       </tbody>
      </table>
@@ -2027,21 +2153,21 @@
       <span class="demo-title">
        Interactive &mdash; Palindromic Angle Path
       </span>
-      <span style="font-size:11px;color:var(--text-dim);font-family:'Courier New',monospace">
+      <span class="section-caption">
        Enter angles (radians), then draw or draw a mirrored (palindromic) sequence
       </span>
      </div>
      <div class="demo-body">
-      <div style="margin-bottom:12px">
-       <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-      <input id="pal-input" placeholder="e.g. 0, 1.047, -1.047" style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--muted);background:var(--bg);color:var(--text);font-family:inherit">
+      <div class="mb-12">
+       <div class="flex-row-gap-12 mb-12">
+      <input id="pal-input" placeholder="e.g. 0, 1.047, -1.047" class="input-wide">
       <div class="s-grid">
        <button class="s-btn" id="pal-draw-btn">Draw</button>
        <button class="s-btn" id="pal-pal-btn">Draw Palindrome</button>
        <button class="s-btn" id="pal-clear-btn">Clear</button>
       </div>
        </div>
-       <div style="font-size:12px;color:var(--text-dim);font-family:'Courier New',monospace">Separate numbers with commas or spaces. Palindrome mirrors the sequence (skips duplicate center).</div>
+       <div class="text-small-description">Separate numbers with commas or spaces. Palindrome mirrors the sequence (skips duplicate center).</div>
       </div>
       <div class="demo-canvas-row">
        <div class="demo-canvas-col">
@@ -2094,8 +2220,8 @@
         </canvas>
        </div>
        <div class="demo-info-col">
-        <div style="margin-bottom:8px">
-         <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">
+        <div class="mb-8">
+         <div class="section-label">
           What to show
          </div>
          <div class="s-grid">
@@ -2152,7 +2278,7 @@
           </span>
          </div>
         </div>
-        <div id="anat-explain" style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.6;padding:10px;background:#060a0f;border-radius:6px;border:1px solid var(--border)">
+        <div id="anat-explain" class="panel-note">
          The full rosette has 6 petals of 24 steps each. Click "One petal" to isolate one, and "One sub-petal" to see how each petal splits into two symmetric halves.
         </div>
        </div>
@@ -2165,7 +2291,7 @@
     </h3>
     <p>
      The palindrome property (<span class="math-inline">x&sup2; &equiv; (S&minus;x)&sup2;</span>) is responsible for the petal's 
-     outer mirror symmetry. But there is a <em>second</em>modular identity lurking in the arithmetic, responsible for the sub-petal cloning:
+     outer mirror symmetry. But there is a <em>second</em> modular identity lurking in the arithmetic, responsible for the sub-petal cloning:
     </p>
     
     <div class="math-block">
@@ -2200,12 +2326,12 @@
       <span class="math-inline">x&sup2; &equiv; (S&minus;x)&sup2;</span>.
      </p>
      
-     <p style="margin-top:8px">
+     <p class="mt-8">
       <strong>Sub-petal splitting</strong> (The congruent cellular division): Exclusively requires 4 | S. 
       Derived from the shift identity <span class="math-inline">(x+S/2)&sup2; &equiv; x&sup2;</span>.
      </p>
      
-     <p style="margin-top:8px">
+     <p class="mt-8">
       <strong>Visual count &asymp; 2 &times; rotational count</strong> This visual doubling occurs whenever profound 
       bilateral symmetry effectively splits the appearance of {2, 6} petals into {4, 12} lobes.
      </p>
@@ -2257,12 +2383,12 @@
 
     <p>
       The closest parallel exploration I have found is a piece on 
-      <a style="color:var(--accent);"
+      <a class="accent-link"
        href="https://www.unsw.edu.au/science/our-schools/maths/our-school/spotlight-on-our-people/history-school/glimpses-mathematics-and-statistics/exponential-sums"
       >
         Exponential Sums
       </a>
-      by <a href="https://research.unsw.edu.au/people/dr-david-angell" style="color:var(--accent);">David Angell</a>. 
+      by <a href="https://research.unsw.edu.au/people/dr-david-angell" class="accent-link">David Angell</a>. 
       He utilizes alternate cubic polynomials to generate similarly mesmerizing visual graphs. To keep this analysis accessible, 
       I anchored my exploration to a highly specific, simplified polynomial driven entirely by its quadratic "change per step" rule.
     </p>
@@ -2274,7 +2400,7 @@
     <p>
      This geometric playground is ripe with open questions:
     </p>
-    <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px;color:var(--text-dim)">
+    <ul class="section-list text-dim">
      <li>
       Can formal exponential sum theory be deployed to analytically lock down the <em>closure properties</em>, <em>symmetries</em>, 
       and <em>petal generation</em> with absolute certainty?
@@ -2322,7 +2448,7 @@
      </span>
      <p>
       A fully expanded, interactive tool featuring variable turning functions, animation settings, and custom color modes is available at
-      <a href="https://adnanbaysal.github.io/angle-path.html" style="color:var(--accent)">
+      <a href="https://adnanbaysal.github.io/angle-path.html" class="accent-link">
        https://adnanbaysal.github.io/angle-path.html
       </a>
       .
@@ -2331,7 +2457,7 @@
     <div class="divider">
      ∎
     </div>
-    <p style="color:var(--text-dim);font-size:0.9rem">
+    <p class="footer-note">
      This article was authored for the 2026 - Summer of Math Exposition (SoME). 
      The underlying mathematics draws heavily on classical exponential sums and modular arithmetic theory. 
      All visual demonstrations are generated dynamically in-browser utilizing the HTML5 Canvas API.
@@ -2345,7 +2471,7 @@
     </a>
     &middot; 2026 &middot; Built with Vanilla JS &amp; Canvas
    </p>
-   <p style="margin-top:8px;font-size:10px">
+   <p class="footer-small mt-8">
     All visualizations generated in-browser.
    </p>
   </footer>
@@ -2722,7 +2848,7 @@
         }
         // Add ellipsis
         const ellipsis = document.createElement('tr');
-        ellipsis.innerHTML = '<td colspan="5" style="text-align:center;color:var(--text-dim)">…</td>';
+        ellipsis.innerHTML = '<td colspan="5" class="text-center-muted">…</td>';
         tbody.appendChild(ellipsis);
     })();
 
@@ -3073,10 +3199,10 @@
             const note = document.getElementById('cl-note');
             if (info.closes) {
                 note.style.borderColor = 'var(--green)';
-                note.innerHTML = `<span style="color:var(--green)">Closes at step ${info.totalSteps}.</span> Each color is one block of ${N} steps. After ${info.blocks} block${info.petals === 1 ? '' : 's'}, the walker returns to the origin.`;
+                note.innerHTML = `<span class="text-green">Closes at step ${info.totalSteps}.</span> Each color is one block of ${N} steps. After ${info.blocks} block${info.petals === 1 ? '' : 's'}, the walker returns to the origin.`;
             } else {
                 note.style.borderColor = 'var(--accent2)';
-                note.innerHTML = `<span style="color:var(--accent2)">Never closes at a multiple of S.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
+                note.innerHTML = `<span class="text-accent2">Never closes at a multiple of S.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
             }
         }
 
@@ -3305,7 +3431,7 @@
             const lbl = document.createElement('div');
             lbl.className = 'gallery-label';
             lbl.style.fontSize = '10px';
-            lbl.innerHTML = `<span style="color:#fff">${label}</span> <br>${sub}`;
+            lbl.innerHTML = `<span class="text-foreground">${label}</span> <br>${sub}`;
             cell.appendChild(c);
             cell.appendChild(lbl);
             grid.appendChild(cell);
