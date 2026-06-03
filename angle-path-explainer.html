@@ -107,19 +107,34 @@
    .nav-links {
      display: flex;
      gap: 20px;
+     align-items: center;
    }
 
-   .nav-links a {
+   .nav-links a,
+   .nav-theme-toggle {
      color: var(--text-dim);
      text-decoration: none;
      font-family: 'Courier New', monospace;
      font-size: 11px;
      letter-spacing: 1px;
-     transition: color .2s;
+     transition: color .2s, background .2s;
    }
 
+   .nav-theme-toggle {
+     background: transparent;
+     border: 1px solid var(--border);
+     border-radius: 999px;
+     padding: 8px 12px;
+     cursor: pointer;
+   }
+
+   .nav-theme-toggle:hover,
    .nav-links a:hover {
      color: var(--accent);
+   }
+
+   .nav-links a {
+     text-decoration: none;
    }
 
    /* HERO */
@@ -196,7 +211,7 @@
      font-weight: bold;
      line-height: 1.15;
      margin-bottom: 16px;
-     background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+     background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
      -webkit-background-clip: text;
      -webkit-text-fill-color: transparent;
      background-clip: text;
@@ -336,7 +351,7 @@
 
    /* MATH DISPLAY */
    .math-block {
-     background: #060b10;
+     background: var(--surface);
      border: 1px solid var(--border);
      border-radius: 8px;
      padding: 20px 24px;
@@ -1157,6 +1172,9 @@
     <a href="https://adnanbaysal.github.io/about-me.html">
      About
     </a>
+    <button id="theme-toggle" class="nav-theme-toggle" type="button" aria-label="Toggle theme">
+     Theme
+    </button>
    </div>
   </nav>
   
@@ -2505,6 +2523,41 @@
     // CORE MATH ENGINE
     // =========================================================
     const HERO_S = 3858;
+    const THEME_STORAGE_KEY = 'anglePathExplainerTheme';
+
+    function getPreferredTheme() {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored === 'light' || stored === 'dark') {
+        return stored;
+      }
+      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+
+    function applyTheme(theme) {
+      document.body.classList.toggle('light-theme', theme === 'light');
+      const toggleButton = document.getElementById('theme-toggle');
+      if (toggleButton) {
+        toggleButton.textContent = theme === 'light' ? 'Dark mode' : 'Light mode';
+        toggleButton.setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+      }
+    }
+
+    function setTheme(theme) {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      applyTheme(theme);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const initialTheme = getPreferredTheme();
+      applyTheme(initialTheme);
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const nextTheme = document.body.classList.contains('light-theme') ? 'dark' : 'light';
+          setTheme(nextTheme);
+        });
+      }
+    });
 
     function gcd(a, b) {
         a = Math.abs(a);
