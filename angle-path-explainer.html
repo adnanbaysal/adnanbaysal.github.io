@@ -1142,10 +1142,14 @@
     <p>
      Notice how the turtle avoids sheer randomness &mdash; a distinct, symmetric pattern is already taking shape. 
      Every forward movement is exactly one unit long, but the <em>orientation</em> shifts systematically. 
-     The fundamental question driving this entire exploration is simple:
-     <strong>will the turtle ever return to its exact starting point, facing its exact original direction?</strong>
-     When both conditions are met, the trajectory locks into a perfectly closed, repeating loop.
+     We have two fundamental questions driving this entire exploration:
     </p>
+
+    <ol>
+      <li>Will the turtle draw a closed loop-like shape, or will it wander on the plane indefinitely?</li>
+      <li>What is the reason behind beautiful symmetries we'll about to see?</li>
+    </ol>
+    
    </section>
 
    <!-- SECTION 2: SQUARE TURNS -->
@@ -1211,7 +1215,7 @@
     </p>
 
     <div class="math-block">
-     f(n) = n(n&minus;1)(2n&minus;1) / 6
+     f(n&minus;1) = n(n&minus;1)(2n&minus;1) / 6
     </div>
 
     <p>
@@ -1723,15 +1727,20 @@
      it is now displaced. 
     </p>
     <p>
-     Because the squared-turn rule is rigidly <em>periodic modulo S</em>, the second block of S steps will trace a trajectory identical 
+     Since the squared-turn rule is rigidly <em>periodic modulo S</em>, the second block of S steps will trace a trajectory identical 
      to the first &mdash; except it will be 
      <strong>rotated by the constant offset angle <span class="math-inline">&theta;(S) mod S</span></strong>. Now, picture a straight 
      line drawn from the origin to the turtle's current displaced position. If we let the turtle run for another block of S steps, 
-     it will land at a new coordinate. Because the drawn path is an identical (but rotated) clone of the first block, the imaginary line 
-     connecting the origin to this new coordinate will be the exact same length as the first line. Furthermore, because the turtle's 
-     starting heading was rotated by <span class="math-inline">&theta;(S) mod S</span>, this new connecting line will be rotated by that 
-     exact same angle. Ultimately, each S-step block pushes the turtle along the invisible vertices of a perfectly regular polygon. Depending 
-     entirely on <span class="math-inline">GCD(S, 6)</span>, this rotational angle snaps to exactly 1/2, 2/3, or 1/6 of a full circle. 
+     it will land at a new coordinate. 
+    </p>
+
+    <p>
+     Because the second S-step path is an identical (but rotated) clone of the first block, the imaginary line 
+     connecting the starting points of the first and the second S-step blocks will have the exact same length as the 
+     first imaginary line. Furthermore, since the turtle's starting heading was rotated by <span class="math-inline">&theta;(S) mod S</span>, 
+     this new connecting line will be rotated by that exact same angle when compared to the previous imaginar line. Ultimately, 
+     each S-step block pushes the turtle along the invisible vertices of a perfectly regular polygon. Depending entirely on 
+     <span class="math-inline">GCD(S, 6)</span>, this rotational angle snaps to exactly 1/2, 2/3, or 1/6 of a full circle. 
     </p>
 
     <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
@@ -2405,8 +2414,8 @@
         if (dT === 0) dT = 360;
         const gd = gcd(360, Math.round(dT));
         let petals = Math.round(360 / gd);
-        if (N % 4 == 0) petals *= 2;
         const total = N * petals;
+        if (N % 4 == 0) petals *= 2;
         return { closes: true, petals, totalSteps: total, delta: dT, mStar: petals };
     }
 
