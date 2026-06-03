@@ -2721,7 +2721,10 @@
         ctx.save();
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
-        if (style === 'neon') ctx.globalCompositeOperation = 'lighter';
+        // Use 'lighter' only in dark mode; light mode uses 'source-over' to avoid washing out dark lines
+        if (style === 'neon' && !document.body.classList.contains('light-theme')) {
+            ctx.globalCompositeOperation = 'lighter';
+        }
 
         // Draw segments
         const numPetals = opts.totalPetals || 1;
@@ -2999,6 +3002,7 @@
         };
         setTimeout(resize, 50);
         window.addEventListener('resize', resize);
+        window.addEventListener('themechange', resize);
     })();
 
     // =========================================================
@@ -3227,6 +3231,14 @@
               if (!t.canvas.isConnected) return;
               drawThumbnail(t.canvas, t.N);
             }, 60);
+          });
+        });
+
+        // Redraw on theme change
+        window.addEventListener('themechange', () => {
+          drawLarge(currentN);
+          _thumbnails.forEach(t => {
+            if (t.canvas.isConnected) drawThumbnail(t.canvas, t.N);
           });
         });
 
