@@ -14,10 +14,15 @@
      --bg: #050505;
      --bg2: #090d12;
      --panel: #0d1218;
+     --surface: #060a0f;
+     --surface-alt: #020608;
+     --nav-bg: rgba(5, 5, 5, 0.92);
      --border: #1a2530;
      --text: #d8e0e8;
      --text-dim: #6a7a8a;
      --muted: rgba(255, 255, 255, 0.12);
+     --scrollbar-track: #050505;
+     --scrollbar-thumb: #1a2530;
      --green: #00e5a0;
      --purple: #b388ff;
    }
@@ -40,16 +45,36 @@
      overflow-x: hidden;
    }
 
+   body.light-theme {
+     --bg: #f6f7f8;
+     --bg2: #e9edf2;
+     --panel: #ffffff;
+     --surface: #f8f9fb;
+     --surface-alt: #eef1f6;
+     --nav-bg: rgba(255, 255, 255, 0.92);
+     --border: #d6dfe9;
+     --text: #111827;
+     --text-dim: #5f6b7c;
+     --muted: rgba(17, 24, 39, 0.08);
+     --scrollbar-track: #eef1f6;
+     --scrollbar-thumb: #c1cad6;
+     --accent: #0077ff;
+     --accent2: #e85454;
+     --gold: #b27f00;
+     --green: #007a58;
+     --purple: #6a45cc;
+   }
+
    ::-webkit-scrollbar {
      width: 6px;
    }
 
    ::-webkit-scrollbar-track {
-     background: #050505;
+     background: var(--scrollbar-track);
    }
 
    ::-webkit-scrollbar-thumb {
-     background: #1a2530;
+     background: var(--scrollbar-thumb);
      border-radius: 3px;
    }
 
@@ -59,7 +84,7 @@
      top: 0;
      left: 0;
      right: 0;
-     background: rgba(5, 5, 5, 0.92);
+     background: var(--nav-bg);
      backdrop-filter: blur(12px);
      border-bottom: 1px solid var(--border);
      z-index: 100;
@@ -128,7 +153,7 @@
      height: 100%;
      border-radius: 50%;
      border: 1px solid var(--border);
-     background: #050505;
+     background: var(--surface-alt);
    }
 
    .hero-ring {
@@ -203,7 +228,7 @@
 
    .hero-cta:hover {
      background: var(--accent);
-     color: #000;
+     color: var(--text);
    }
 
    /* ARTICLE LAYOUT */
@@ -237,7 +262,7 @@
      font-weight: bold;
      line-height: 1.2;
      margin-bottom: 24px;
-     color: #fff;
+     color: var(--text);
    }
 
    h3 {
@@ -257,7 +282,7 @@
    }
 
    strong {
-     color: #fff;
+     color: var(--text);
    }
 
    em {
