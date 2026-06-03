@@ -680,7 +680,7 @@
    /* GALLERY */
    .gallery-grid {
      display: grid;
-     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+     grid-template-columns: repeat(2, minmax(180px, 1fr));
      gap: 12px;
      margin: 24px 0;
    }
@@ -1067,22 +1067,25 @@
     <h2>The Walking Rule</h2>
     
     <p>
-     Imagine a simple automaton living on a blank, infinite plane. It is perfectly obedient and follows exactly one instruction:
+     Imagine a simple creature living on a blank, infinite plane. It is perfectly obedient and follows exactly one instruction:
      <strong>step forward exactly one unit, then turn by a chosen angle.</strong> It loops this behavior endlessly.
     </p>
     
     <p>
-     The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn by 90&deg;, and it walks in a perfect square. 
-     Tell it to turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by an irrational angle, and the path will wander chaotically forever, never fully repeating a step.
+     The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn always by 90&deg;, 
+     and it walks in a perfect square. Tell it to alwas turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by a 
+     constant irrational angle, and the path will wander chaotically over a circular orbit forever, never fully repeating a step.
     </p>
     
     <p>
-     In computer science, this kind of agent is known as a <strong>turtle</strong> &mdash; an entity that maintains its own internal coordinate heading and updates 
-     it iteratively. We are going to feed our turtle a highly specific turning rule and watch how chaos crystallizes into order.
+     In computer science, this kind of agent is known as a <strong>turtle</strong> &mdash; an entity that maintains its own internal 
+     coordinate heading and updates it iteratively. The origin of "turtle graphics" dates back to 1960s, and depending on the variant,
+     more commands can be possible. But for this article, we'll stick to the very restricted command set described here. 
     </p>
     <p>
-     To keep the turns mathematically well-behaved, we divide a full circle into <strong><em>S</em> equal angular slices</strong>, each measuring 360&deg;/S. 
-     Our turtle can only face one of these discrete <em>S</em> directions. At step <span class="math-inline">n</span>, 
+     We are going to feed our turtle a highly specific turning rule and watch how chaos crystallizes into order. To keep the turns 
+     mathematically well-behaved, we divide a full circle into <strong><em>S</em> equal angular slices</strong>, each measuring 
+     360&deg;/S. Our turtle can only face one of these discrete <em>S</em> directions. At step <span class="math-inline">n</span>, 
      it advances its direction index by a certain amount (measured in these 360&deg;/S slices) before stepping forward.
     </p>
     
@@ -1310,7 +1313,7 @@
      It perfectly reconnects its endpoints to form a closed, circular rosette. Fascinatingly, the possible number of 
      "petals" on these rosettes is strictly confined to 1, 2, 3, 4, 6, and 12 &mdash; which happen to be the exact 
      positive divisors of 12. However, for a rare handful of specific S values, the path <em>drifts relentlessly</em>. 
-     It refuses to return to its origin, instead spiraling outward toward infinity along a primary axis. 
+     It refuses to return to its origin, instead spiraling outward toward infinity along the x-axis. 
      Use the interactive sandbox below to witness the behavioral split between closing and drifting.
     </p>
 
@@ -1480,12 +1483,12 @@
         drifts endlessly. Examples: S = 13, S = 35 (5&times;7), S = 77 (7&times;11).
       </li>
       <li>
-        If all the <em>squared</em> prime factors of S happen to belong to a specific, "special" set of primes, the path also drifts.
-        Example: S = 11&times;11 = 121 (where 11 is one of those special primes).
+        If all the <em>positive even powered</em> prime factors of S happen to belong to a specific, "special" set of primes, 
+        the path also drifts. Example: S = 11&times;11 = 121 (where 11 is one of those special primes).
       </li>
       <li>
-        Conversely, if S contains a squared prime factor that falls <em>outside</em> that special set, the path surprisingly snaps shut, 
-        forming a 1-petal closed shape. Example: S = 7&times;7 = 49.
+        Conversely, if S contains an even powered prime factor that falls <em>outside</em> that special set, the path surprisingly 
+        snaps shut, forming a 1-petal closed shape. Example: S = 7&times;7 = 49.
       </li>
     </ul>
     
@@ -1515,7 +1518,8 @@
 
     <ul style="margin:16px 0 16px 24px;display:flex;flex-direction:column;gap:8px">
       <li>
-        Let <span class="math-inline">&Delta;&theta;(n) = n&sup2;</span> represent the isolated shift in direction slot at step n. 
+        Let <span class="math-inline">&Delta;&theta;(n) = n&sup2;</span> represent the isolated <em>relative</em> shift in 
+        direction slot at step n. 
       </li>
 
       <li>
@@ -1618,8 +1622,9 @@
       </span> = <span class="fraction">
           <span class="fraction-num">S(S+1)(2S+1)</span>
           <span class="fraction-den">6</span>
-      </span></span>, we can guarantee that the orientation will eventually snap back to its exact starting angle (facing the positive x-axis) 
-      in no more than <span class="math-inline">6S</span> steps. In reality, we can calculate the precise minimum cycle required.
+      </span></span>, we can guarantee that the orientation will eventually snap back to its exact starting angle (facing the 
+      positive x-axis) and repeat the same sequence of cumulative turns in no more than <span class="math-inline">6S</span> steps. 
+      In reality, we can calculate the precise minimum cycle required.
     </p>
 
     <p>
@@ -1677,11 +1682,11 @@
     <p>
       What does this mathematically enforced periodicity mean for the turtle physically? It ensures that the turtle will 
       resume its exact initial heading after precisely <span class="math-inline">kS</span> steps (where <em>k</em> is 1, 2, 3, or 6). 
-      Combined with the knowledge that <span class="math-inline">&Delta;&theta;(n)</span> is structurally 
-      <span class="math-inline">S</span>-periodic, the turtle is fated to draw the exact same shape, perfectly aligned without rotation, 
-      over and over. However, the caveat from before still haunts us: perfect orientation does not guarantee a return to the 
-      <em>starting spatial coordinates</em>. The turtle might be drawing the same shape perfectly upright, but displaced away from the origin 
-      by the accumulated vector thrust of its steps. That uncorrected displacement is what causes the "drifter" paths.
+      After that point, it will periodicaly repeat the same sequence of <span class="math-inline">kS</span> steps.
+      So the turtle is fated to draw the exact same shape, perfectly aligned without rotation, over and over. However, the caveat from 
+      before still haunts us: perfect orientation does not guarantee a return to the <em>starting spatial coordinates</em>. 
+      The turtle might be drawing the same shape perfectly upright, but displaced away from the origin by the accumulated vector thrust 
+      of its steps. That uncorrected displacement is what causes the "drifter" paths.
     </p>
 
   </section>
@@ -1897,7 +1902,7 @@
 
     <p>
       To be perfectly precise, there is a slight caveat to the block's palindromic nature. When analyzing a complete S-step block, 
-      it only forms a perfect palindrome if we omit the very first step, where the turtle turns by 0&sup2; = 0 slots. 
+      it only forms a perfect palindrome if we omit the very first rotation step, where the turtle turns by 0&sup2; = 0 slots. 
       To maintain symmetry, we must either drop this initial zero, or append an extra zero-slot turn to the tail end of the sequence. 
       Observe the symmetry in the table below for S = 6:
     </p>
@@ -1975,7 +1980,7 @@
     </p>
 
     <p>
-      Imagine our turtle resting at a coordinate after a sequence of loops, aligned to some cumulative heading. 
+      Imagine our turtle resting at a coordinate after a sequence of steps, aligned to some cumulative heading.
       It begins a new S-step sequence with a zero. It steps forward, effectively changing nothing about its heading. 
       Then, it hits the core palindromic sequence of S - 1 turns, rotating and stepping forward for each, until the sequence completes.
     </p>
@@ -2006,7 +2011,7 @@
      The revelation here is staggering: the turtle retracing its steps mathematically executes the <em>exact same</em> 
      sequence of turn magnitudes, in the exact same order, just with negative signs. If the forward-moving turtle turns k slots 
      clockwise at a joint, the backward-moving turtle turns k slots counter-clockwise at that corresponding joint. 
-     This is the mathematical definition of a mirror image! Because the path is inherently identical to its own mirror image, 
+     This is the mathematical definition of a mirror image! Since the path is inherently identical to its own mirror image, 
      the shape itself must possess bilateral symmetry.
     </p>
 
@@ -2209,7 +2214,7 @@
      This fully resolves the mystery of the petal counts. You would assume the counts map strictly to the divisors of 6: {2, 3, 6}. 
      However, intense bilateral cloning visually doubles the {2, 6} geometries into {4, 12}. The 3-petal geometries retain 
      their count (the symmetry exists, but visually presents as a single, broad leaf). Therefore, the observable set of visual petals 
-     is firmly locked to <strong><{1, 2, 3, 4, 6, 12}</strong> &mdash; the precise divisors of 12.
+     is firmly locked to <strong>{1, 2, 3, 4, 6, 12}</strong> &mdash; the precise divisors of 12.
     </p>
     <!-- Side by side: N=6 vs N=12 vs N=24 -->
     <h3>
@@ -2276,7 +2281,7 @@
      </li>
      <li>
       Do all cubic polynomials intrinsically generate equivalent symmetries, or is this rule special? 
-      Does the number of petals depend on the coefficients of these polynomials?
+      How does the number of petals depend on the coefficients of these polynomial used?
      </li>
      <li>
       What happens when we escalate the math? Can similar geometric guarantees be proven for polynomials of higher degrees?
@@ -2287,13 +2292,30 @@
      <li>
       Beyond rotational and reflectional symmetry, what other hidden geometric properties define these shapes?
      </li>
-     <li>
-      It is entirely possible to introduce an auxiliary integer <span class="math-inline">R</span> (where 
-      <span class="math-inline">GCD(R,S) = 1</span>) and process R / S full turns instead of 1 / S turns as base slots.
-      This yields equally spectacular visuals. In fact, the interactive sandbox linked below natively supports both R and S inputs. 
-      Analyzing the structural impact of R remains a fantastic frontier for future research.
-     </li>
+      <li>
+        It is entirely possible to introduce an auxiliary integer <span class="math-inline">R</span> (where 
+        <span class="math-inline">GCD(R,S) = 1</span>) and process 
+        <span class="math-inline">
+          <span class="fraction">
+            <span class="fraction-num">R</span>
+            <span class="fraction-den">S</span>
+          </span>
+        </span> 
+        full turns instead of 
+        <span class="math-inline">
+          <span class="fraction">
+            <span class="fraction-num">1</span>
+            <span class="fraction-den">S</span>
+          </span>
+        </span> 
+        turns as base slots. The set of possible turns will be the same, but the visuals generated will be 
+        significantly different. In fact, the interactive sandbox linked below natively supports both R and S inputs. 
+        Analyzing the structural impact of R remains another frontier for future research.
+      </li>
     </ul>
+
+    
+
     <div class="callout">
      <span class="callout-label">
       Try It Yourself
@@ -2406,7 +2428,7 @@
     function getClosureInfo(N) {
         const g = gcd(N, 6);
         if (g === 1 && (isSquareFree(N) || hasSpecialPrimeSquareFactor(N))) {
-            return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0 };
+            return { closes: false, petals: 0, totalSteps: null, delta: 0, mStar: 0, blocks: 0 };
         }
         const sumAngle = 60 * (N + 1) * (2 * N + 1);
         let dT = sumAngle % 360;
@@ -2415,8 +2437,9 @@
         const gd = gcd(360, Math.round(dT));
         let petals = Math.round(360 / gd);
         const total = N * petals;
+        const blocks = petals;
         if (N % 4 == 0) petals *= 2;
-        return { closes: true, petals, totalSteps: total, delta: dT, mStar: petals };
+        return { closes: true, petals, totalSteps: total, delta: dT, mStar: petals, blocks };
     }
 
     // =========================================================
@@ -2749,6 +2772,7 @@
             canvas.height = w;
             const info = getClosureInfo(HERO_S);
             if (!info.closes) return;
+            console.log(info);
             const { pts } = generatePath(info.totalSteps, HERO_S);
             drawPath(canvas, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.6 });
         };
@@ -3049,7 +3073,7 @@
             const note = document.getElementById('cl-note');
             if (info.closes) {
                 note.style.borderColor = 'var(--green)';
-                note.innerHTML = `<span style="color:var(--green)">Closes at step ${info.totalSteps}.</span> Each color is one block of ${N} steps. After ${info.petals} block${info.petals === 1 ? '' : 's'}, the walker returns to the origin.`;
+                note.innerHTML = `<span style="color:var(--green)">Closes at step ${info.totalSteps}.</span> Each color is one block of ${N} steps. After ${info.blocks} block${info.petals === 1 ? '' : 's'}, the walker returns to the origin.`;
             } else {
                 note.style.borderColor = 'var(--accent2)';
                 note.innerHTML = `<span style="color:var(--accent2)">Never closes at a multiple of S.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
@@ -3226,13 +3250,13 @@
                 // Draw one petal (first 24 steps) against dim background
                 const { pts: pts2 } = generatePath(info.totalSteps, N);
                 drawPath(canvas, pts2, info.totalSteps, N, { style: 'rainbow', petalColors: true, totalPetals: info.petals, highlightPetal: 0 });
-                labelEl.textContent = 'First petal only (steps 1–24)';
+                labelEl.textContent = 'First petal (steps 1–24)';
                 explainEl.textContent = 'Isolating one petal of 24 steps (highlighted). This single petal has bilateral symmetry — it\'s mirror-symmetric around a central axis. This comes from x² ≡ (N−x)² mod N.';
             } else if (mode === 'half') {
                 // Draw first half of first petal (steps 1-12)
                 const { pts: pts3 } = generatePath(12, N);
                 drawPath(canvas, pts3, 12, N, { style: 'neon', petalColors: false, totalPetals: 1 });
-                labelEl.textContent = 'First sub-petal only (steps 1–12)';
+                labelEl.textContent = 'First sub-petal (steps 1–12)';
                 explainEl.textContent = 'The first half of the first petal (12 steps). This sub-petal is ALSO bilaterally symmetric. Because 4 divides N=24, (x+12)² ≡ x² mod 24, making the second 12 steps a rotation copy of the first.';
             }
         }
