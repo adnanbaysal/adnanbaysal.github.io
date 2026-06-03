@@ -54,15 +54,15 @@
      --nav-bg: rgba(255, 255, 255, 0.92);
      --border: #d6dfe9;
      --text: #111827;
-     --text-dim: #5f6b7c;
+     --text-dim: #546276;
      --muted: rgba(17, 24, 39, 0.08);
      --scrollbar-track: #eef1f6;
      --scrollbar-thumb: #c1cad6;
-     --accent: #0077ff;
-     --accent2: #e85454;
-     --gold: #b27f00;
-     --green: #007a58;
-     --purple: #6a45cc;
+     --accent: #0868c5;
+     --accent2: #c53f41;
+     --gold: #9c7600;
+     --green: #00674e;
+     --purple: #5538a5;
    }
 
    ::-webkit-scrollbar {
@@ -457,7 +457,7 @@
 
    /* CANVAS */
    .art-canvas {
-     background: #020608;
+     background: var(--surface-alt);
      border-radius: 8px;
      border: 1px solid var(--border);
      display: block;
@@ -545,7 +545,7 @@
 
    /* INFO CARD */
    .info-card {
-     background: #060a0f;
+     background: var(--surface);
      border: 1px solid var(--border);
      border-radius: 8px;
      padding: 14px 16px;
@@ -561,7 +561,7 @@
    }
 
    .info-row + .info-row {
-     border-top: 1px solid #0e1a24;
+     border-top: 1px solid var(--border);
    }
 
    .section-caption {
@@ -694,7 +694,7 @@
    }
 
    .info-val {
-     color: #fff;
+     color: var(--text);
      font-weight: bold;
    }
 
@@ -729,7 +729,7 @@
      font-size: 12px;
      cursor: pointer;
      transition: all .15s;
-     background: #060a0f;
+     background: var(--surface);
      border: 1px solid var(--border);
      color: var(--text-dim);
    }
@@ -759,7 +759,7 @@
 
    /* STEP INDICATORS */
    .step-display {
-     background: #060a0f;
+     background: var(--surface);
      border: 1px solid var(--border);
      border-radius: 8px;
      padding: 12px 14px;
@@ -808,18 +808,18 @@
 
    .dir-table td {
      padding: 6px 10px;
-     border-bottom: 1px solid #0a1218;
+     border-bottom: 1px solid var(--border);
      color: var(--text-dim);
    }
 
    .dir-table td.highlight {
-     color: #fff;
+     color: var(--accent);
      font-weight: bold;
    }
 
    .dir-table tr.active-row td {
-     background: rgba(0,210,255,0.05);
-     color: #fff;
+     background: rgba(0,119,255,0.08);
+     color: var(--text);
    }
 
    .dir-table tr.active-row td.highlight {
@@ -853,7 +853,7 @@
 
    .gallery-cell {
      aspect-ratio: 1;
-     background: #020608;
+     background: var(--surface);
      border: 1px solid var(--border);
      border-radius: 8px;
      position: relative;
@@ -898,7 +898,7 @@
      position: relative;
      width: 100%;
      aspect-ratio: 1;
-     background: #020608;
+     background: var(--surface-alt);
    }
 
    #large-canvas {
@@ -921,7 +921,7 @@
 
    /* INPUT */
    input[type=number], input[type=range] {
-     background: #060a0f;
+     background: var(--surface);
      border: 1px solid var(--border);
      color: var(--text);
      border-radius: 4px;
@@ -2547,6 +2547,14 @@
       applyTheme(theme);
     }
 
+    function getCanvasBackground() {
+      return getComputedStyle(document.body).getPropertyValue('--surface-alt').trim() || '#020608';
+    }
+
+    function getCanvasAccent(colorVar, fallback) {
+      return getComputedStyle(document.body).getPropertyValue(colorVar).trim() || fallback;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const initialTheme = getPreferredTheme();
       applyTheme(initialTheme);
@@ -2701,7 +2709,7 @@
         const ty = p => H / 2 - (p - cy) * sc;
 
         // Background
-        ctx.fillStyle = '#020608';
+        ctx.fillStyle = getCanvasBackground();
         ctx.fillRect(0, 0, W, H);
 
         const baseLW = Math.max(0.2, Math.min(3, 120000 / totalSteps / sc * 1.5));
@@ -2777,6 +2785,8 @@
     function drawStepWalk(canvas, pts, step, N, phaseNum, opts = {}) {
       const { cssW: W, cssH: H } = ensureHiDPICanvas(canvas);
       const ctx = canvas.getContext('2d');
+      const accent = getCanvasAccent('--accent', '#00d2ff');
+      const gold = getCanvasAccent('--gold', '#ffd700');
       const displayScale = Math.min(1, W / 400);
       const userScale = opts.lineScale !== undefined ? opts.lineScale : 1;
       const scale = displayScale * userScale;
@@ -2805,20 +2815,20 @@
       const tx = p => W / 2 + (p - cx) * sc;
       const ty = p => H / 2 - (p - cy) * sc;
 
-      ctx.fillStyle = '#020608';
+      ctx.fillStyle = getCanvasBackground();
       ctx.fillRect(0, 0, W, H);
 
       if (step === 0) {
         // Just draw origin
         ctx.beginPath();
         ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
-        ctx.fillStyle = '#00d2ff';
+        ctx.fillStyle = accent;
         ctx.fill();
         // Draw arrow showing direction 0
         const angle = 0;
         const ex = tx(0) + Math.cos(angle) * 40;
         const ey = ty(0) - Math.sin(angle) * 40;
-        drawArrow(ctx, tx(0), ty(0), ex, ey, '#00d2ff', scale);
+        drawArrow(ctx, tx(0), ty(0), ex, ey, accent, scale);
         return;
       }
 
@@ -2850,7 +2860,7 @@
       ctx.beginPath();
       ctx.moveTo(tx(pts[(step - 1) * 2]), ty(pts[(step - 1) * 2 + 1]));
       ctx.lineTo(tx(pts[step * 2]), ty(pts[step * 2 + 1]));
-      ctx.strokeStyle = '#00d2ff';
+      ctx.strokeStyle = accent;
       ctx.lineWidth = Math.max(0.9, 2.5 * scale);
       ctx.stroke();
 
@@ -2859,14 +2869,14 @@
       const wy = ty(pts[step * 2 + 1]);
       ctx.beginPath();
       ctx.arc(wx, wy, 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffd700';
+      ctx.fillStyle = gold;
       ctx.fill();
 
       // Direction arrow
       const angle = phaseNum * 2 * Math.PI / N;
       const ex = wx + Math.cos(angle) * 36;
       const ey = wy - Math.sin(angle) * 36;
-      drawArrow(ctx, wx, wy, ex, ey, '#00d2ff', scale);
+      drawArrow(ctx, wx, wy, ex, ey, accent, scale);
 
       // Origin
       ctx.beginPath();
