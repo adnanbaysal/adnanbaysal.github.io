@@ -112,6 +112,7 @@
                 if (!response.ok) throw new Error("Manifest not found");
                 const pages = await response.json();
                 grid.innerHTML = '';
+                pages.sort((a, b) => new Date(b.date) - new Date(a.date));
                 pages.forEach(proj => {
                     const card = document.createElement('a');
                     card.className = 'card';
