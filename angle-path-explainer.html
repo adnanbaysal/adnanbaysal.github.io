@@ -2754,25 +2754,25 @@
                 if (style === 'neon') {
                     if (petalColors) {
                         const hue = (petalIdx / numPetals) * 360;
-                        ctx.strokeStyle = `hsla(${hue},95%,55%,0.85)`;
+                        ctx.strokeStyle = `hsla(${hue},100%,30%,0.95)`;
                     } else {
-                        ctx.strokeStyle = 'rgba(0,160,255,0.85)';
+                        ctx.strokeStyle = 'rgba(5,30,60,0.95)';
                     }
                     ctx.stroke();
-                    ctx.lineWidth = lw * 0.35;
+                    ctx.lineWidth = lw * 0.25;
                     if (petalColors) {
                         const hue = (petalIdx / numPetals) * 360;
-                        ctx.strokeStyle = `hsla(${hue},90%,55%,0.55)`;
+                        ctx.strokeStyle = `hsla(${hue},85%,25%,0.8)`;
                     } else {
-                        ctx.strokeStyle = 'rgba(0,120,190,0.65)';
+                        ctx.strokeStyle = 'rgba(2,15,30,0.8)';
                     }
                     ctx.stroke();
                 } else if (style === 'rainbow') {
                     const hue = (petalIdx / numPetals) * 360;
-                    ctx.strokeStyle = `hsl(${hue},90%,50%)`;
+                    ctx.strokeStyle = `hsl(${hue},100%,30%)`;
                     ctx.stroke();
                 } else {
-                    ctx.strokeStyle = 'rgba(80,120,160,0.9)';
+                    ctx.strokeStyle = 'rgba(10,40,80,0.95)';
                     ctx.stroke();
                 }
                 i = segEnd;
@@ -2783,7 +2783,7 @@
         ctx.globalCompositeOperation = 'source-over';
         ctx.beginPath();
         ctx.arc(tx(0), ty(0), 4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,210,255,0.8)';
+        ctx.fillStyle = getCanvasAccent('--accent', '#00d2ff');
         ctx.fill();
         ctx.restore();
     }
@@ -2888,7 +2888,7 @@
       // Origin
       ctx.beginPath();
       ctx.arc(tx(0), ty(0), 4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,210,255,0.5)';
+      ctx.fillStyle = accent;
       ctx.fill();
     }
 
@@ -2995,7 +2995,7 @@
             if (!info.closes) return;
             console.log(info);
             const { pts } = generatePath(info.totalSteps, HERO_S);
-            drawPath(canvas, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.6 });
+            drawPath(canvas, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.35 });
         };
         setTimeout(resize, 50);
         window.addEventListener('resize', resize);
@@ -3155,7 +3155,7 @@
             if (!info.closes) return;
             const steps = Math.min(info.totalSteps, 100000);
             const { pts } = generatePath(steps, N);
-            drawPath(largeCanvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
+            drawPath(largeCanvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.5 });
             document.getElementById('lg-S').textContent = N.toLocaleString();
             document.getElementById('lg-steps').textContent = info.totalSteps.toLocaleString();
             document.getElementById('lg-petals').textContent = info.petals;
@@ -3187,7 +3187,7 @@
           if (!info.closes) return;
           const steps = Math.min(info.totalSteps, 90000);
           // scale down line thickness on small canvases
-          const lineScale = Math.min(1, cssW / 180);
+          const lineScale = Math.min(0.8, cssW / 220);
           const { pts } = generatePath(steps, N);
           drawPath(canvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale });
         }
@@ -3279,7 +3279,7 @@
                 style = 'rainbow';
             }
             const { pts } = generatePath(steps, N);
-            drawPath(canvas, pts, steps, N, { style, petalColors: true, totalPetals: info.closes ? info.petals : 4, lineScale: 0.75 });
+            drawPath(canvas, pts, steps, N, { style, petalColors: true, totalPetals: info.closes ? info.petals : 4, lineScale: 0.5 });
 
             // Update info
             const g = gcd(N, 6);
@@ -3500,6 +3500,10 @@
             drawMode('half');
         };
 
+        window.addEventListener('themechange', () => {
+            drawMode(currentMode);
+        });
+
         setTimeout(() => drawMode('full'), 100);
     })();
 
@@ -3517,6 +3521,19 @@
             { N: 24, label: 'S = 24', sub: '4|S? Yes. 12 sub-petals.' },
         ];
 
+        const canvases = [];
+
+        function redrawAll() {
+            cases.forEach((c, idx) => {
+                if (idx < canvases.length) {
+                    const canvas = canvases[idx];
+                    const info = getClosureInfo(c.N);
+                    const { pts } = generatePath(info.totalSteps, c.N);
+                    drawPath(canvas, pts, info.totalSteps, c.N, { style: 'neon', petalColors: true, totalPetals: info.petals });
+                }
+            });
+        }
+
         cases.forEach(({ N, label, sub }) => {
             const cell = document.createElement('div');
             cell.className = 'gallery-cell';
@@ -3530,6 +3547,7 @@
             cell.appendChild(c);
             cell.appendChild(lbl);
             grid.appendChild(cell);
+            canvases.push(c);
 
             setTimeout(() => {
                 const info = getClosureInfo(N);
@@ -3537,6 +3555,8 @@
                 drawPath(c, pts, info.totalSteps, N, { style: 'neon', petalColors: true, totalPetals: info.petals });
             }, 200);
         });
+
+        window.addEventListener('themechange', redrawAll);
     })();
 
     // =========================================================
