@@ -2831,20 +2831,6 @@
       ctx.fillStyle = getCanvasBackground();
       ctx.fillRect(0, 0, W, H);
 
-      if (step === 0) {
-        // Just draw origin
-        ctx.beginPath();
-        ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
-        ctx.fillStyle = accent;
-        ctx.fill();
-        // Draw arrow showing direction 0
-        const angle = 0;
-        const ex = tx(0) + Math.cos(angle) * 40;
-        const ey = ty(0) - Math.sin(angle) * 40;
-        drawArrow(ctx, tx(0), ty(0), ex, ey, accent, scale);
-        return;
-      }
-
       // Grid lines lightly
       ctx.strokeStyle = 'rgba(30,50,70,0.3)';
       ctx.lineWidth = Math.max(0.25, 0.5 * scale);
@@ -2857,6 +2843,20 @@
         ctx.moveTo(0, ty(i - 0.5));
         ctx.lineTo(W, ty(i - 0.5));
         ctx.stroke();
+      }
+
+      if (step === 0) {
+        // Just draw origin
+        ctx.beginPath();
+        ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
+        ctx.fillStyle = accent;
+        ctx.fill();
+        // Draw arrow showing direction 0
+        const angle = 0;
+        const ex = tx(0) + Math.cos(angle) * 40;
+        const ey = ty(0) - Math.sin(angle) * 40;
+        drawArrow(ctx, tx(0), ty(0), ex, ey, accent, scale);
+        return;
       }
 
       // Path
