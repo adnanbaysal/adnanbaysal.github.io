@@ -3687,12 +3687,11 @@
       // Trigger hero redraw
       const hc = document.getElementById('hero-canvas');
       if (hc) {
-        const w = hc.offsetWidth;
-        hc.width = w;
-        hc.height = w;
+        const { cssW: W, cssH: H } = ensureHiDPICanvas(hc);
         const info = getClosureInfo(HERO_S);
+        if (!info.closes) return;
         const { pts } = generatePath(info.totalSteps, HERO_S);
-        drawPath(hc, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: 6 });
+        drawPath(hc, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.35 });
       }
     });
   </script>
