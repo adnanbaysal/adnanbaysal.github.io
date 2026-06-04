@@ -1243,7 +1243,7 @@
     
     <p>
      The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn always by 90&deg;, 
-     and it walks in a perfect square. Tell it to alwas turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by a 
+     and it walks in a perfect square. Tell it to always turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by a 
      constant irrational angle, and the path will wander chaotically over a circular orbit forever, never fully repeating a step.
     </p>
     
@@ -1254,9 +1254,11 @@
     </p>
     <p>
      We are going to feed our turtle a highly specific turning rule and watch how chaos crystallizes into order. To keep the turns 
-     mathematically well-behaved, we divide a full circle into <strong><em>S</em> equal angular slices</strong>, each measuring 
-     360&deg;/S. Our turtle can only face one of these discrete <em>S</em> directions. At step <span class="math-inline">n</span>, 
-     it advances its direction index by a certain amount (measured in these 360&deg;/S slices) before stepping forward.
+     mathematically well-behaved, we'll choose a positive integer <em>S</em>, and  divide a full circle into 
+     <strong><em>S</em> equal angular slices</strong>, each measuring 360&deg;/S. Our turtle can only face one of these discrete 
+     <em>S</em> directions. At step <span class="math-inline">n</span>, it advances its direction index by a certain amount 
+     (measured in these 360&deg;/S slices) before stepping forward. Then, we'll try different values of <em>S</em> to see what kind
+     of paths we can draw.
     </p>
     
     <!-- DEMO 1: Step by step walker -->
