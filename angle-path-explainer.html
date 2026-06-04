@@ -2993,8 +2993,10 @@
         // Size to CSS
         const resize = () => {
             const w = canvas.offsetWidth;
-            canvas.width = w;
-            canvas.height = w;
+            canvas.style.width = w + 'px';
+            canvas.style.height = w + 'px';
+            // Use ensureHiDPICanvas to properly handle DPI scaling
+            ensureHiDPICanvas(canvas);
             const info = getClosureInfo(HERO_S);
             if (!info.closes) return;
             console.log(info);
