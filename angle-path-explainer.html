@@ -593,7 +593,7 @@
    }
 
    .text-foreground {
-     color: #fff;
+     color: var(--text);
    }
 
    .text-gold {
@@ -867,9 +867,10 @@
    }
 
    .gallery-cell canvas {
-     width: 90%;
-     height: 90%;
+     width: 100%;
+     height: 100%;
      display: block;
+     background: var(--surface-alt);
    }
 
    .gallery-label {
@@ -1095,10 +1096,10 @@
     }
 
     .gallery-cell canvas {
-      width: 85%;
-      height: 85%;
+      width: 100%;
+      height: 100%;
       display: block;
-      margin: 8% auto 0 auto;
+      background: var(--surface-alt);
     }
 
     .gallery-label {
@@ -1192,7 +1193,7 @@
    
    <div class="hero-text">
     <div class="hero-kicker">
-     SoME 2026 &middot; Mathematical Art
+     <a href="https://some.3b1b.co/">SoME 2026</a> &middot; Mathematical Art
     </div>
     
     <h1 class="hero-title">
@@ -1242,20 +1243,22 @@
     
     <p>
      The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn always by 90&deg;, 
-     and it walks in a perfect square. Tell it to alwas turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by a 
+     and it walks in a perfect square. Tell it to always turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by a 
      constant irrational angle, and the path will wander chaotically over a circular orbit forever, never fully repeating a step.
     </p>
     
     <p>
      In computer science, this kind of agent is known as a <strong>turtle</strong> &mdash; an entity that maintains its own internal 
-     coordinate heading and updates it iteratively. The origin of "turtle graphics" dates back to 1960s, and depending on the variant,
-     more commands can be possible. But for this article, we'll stick to the very restricted command set described here. 
+     coordinate heading and updates it iteratively. The origin of "turtle graphics" dates back to the 1960s, and depending on the variant,
+     more commands may be available. For this article, we'll stick to the very restricted command set described here. 
     </p>
     <p>
      We are going to feed our turtle a highly specific turning rule and watch how chaos crystallizes into order. To keep the turns 
-     mathematically well-behaved, we divide a full circle into <strong><em>S</em> equal angular slices</strong>, each measuring 
-     360&deg;/S. Our turtle can only face one of these discrete <em>S</em> directions. At step <span class="math-inline">n</span>, 
-     it advances its direction index by a certain amount (measured in these 360&deg;/S slices) before stepping forward.
+     mathematically well-behaved, we'll choose a positive integer <em>S</em>, and divide a full circle into 
+     <strong><em>S</em> equal angular slices</strong>, each measuring 360&deg;/S. Our turtle can only face one of these discrete 
+     <em>S</em> directions. At step <span class="math-inline">n</span>, it advances its direction index by a certain amount 
+     (measured in these 360&deg;/S slices) before stepping forward. Then, we'll try different values of <em>S</em> to see what kind
+     of paths we can draw.
     </p>
     
     <!-- DEMO 1: Step by step walker -->
@@ -1317,7 +1320,7 @@
      We have two fundamental questions driving this entire exploration:
     </p>
 
-    <ol>
+    <ol class="section-list">
       <li>Will the turtle draw a closed loop-like shape, or will it wander on the plane indefinitely?</li>
       <li>What is the reason behind beautiful symmetries we'll about to see?</li>
     </ol>
@@ -1851,7 +1854,7 @@
     <p>
       What does this mathematically enforced periodicity mean for the turtle physically? It ensures that the turtle will 
       resume its exact initial heading after precisely <span class="math-inline">kS</span> steps (where <em>k</em> is 1, 2, 3, or 6). 
-      After that point, it will periodicaly repeat the same sequence of <span class="math-inline">kS</span> steps.
+      After that point, it will periodically repeat the same sequence of <span class="math-inline">kS</span> steps.
       So the turtle is fated to draw the exact same shape, perfectly aligned without rotation, over and over. However, the caveat from 
       before still haunts us: perfect orientation does not guarantee a return to the <em>starting spatial coordinates</em>. 
       The turtle might be drawing the same shape perfectly upright, but displaced away from the origin by the accumulated vector thrust 
@@ -2185,7 +2188,7 @@
     </p>
 
     <p>
-      If the above theoretical explanations feels too abstract, the interactive sandbox below provides immediate, visual proof. 
+      If the above theoretical explanations feel too abstract, the interactive sandbox below provides immediate, visual proof. 
       It demonstrates how "AnglePath" algorithms require a single anchor value prepended to a palindromic sequence to lock in 
       reflectional symmetry.
     </p>
@@ -2501,7 +2504,7 @@
      ∎
     </div>
     <p class="footer-note">
-     This article was authored for the 2026 - Summer of Math Exposition (SoME). 
+     This article was authored for the <a href="https://some.3b1b.co/">2026 - Summer of Math Exposition (SoME 5)</a>. 
      The underlying mathematics draws heavily on classical exponential sums and modular arithmetic theory. 
      All visual demonstrations are generated dynamically in-browser utilizing the HTML5 Canvas API.
     </p>
@@ -2530,7 +2533,7 @@
       if (stored === 'light' || stored === 'dark') {
         return stored;
       }
-      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      return 'light';
     }
 
     function applyTheme(theme) {
@@ -2625,7 +2628,7 @@
     }
 
     // NOTE: The following "special" primes cause drift if they occur as a square in the factorization of n
-    // NOTE: OEIS seach results in 3 potential candidate with similar subsequence
+    // NOTE: OEIS search results in 3 potential candidates with a similar subsequence
     function hasSpecialPrimeSquareFactor(n) {
         const specialPrimes = [
             11, 13, 23, 37, 47, 59, 61, 71, 73, 83, 97, 107, 109, 131, 157, 167, 179, 
@@ -2828,20 +2831,6 @@
       ctx.fillStyle = getCanvasBackground();
       ctx.fillRect(0, 0, W, H);
 
-      if (step === 0) {
-        // Just draw origin
-        ctx.beginPath();
-        ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
-        ctx.fillStyle = accent;
-        ctx.fill();
-        // Draw arrow showing direction 0
-        const angle = 0;
-        const ex = tx(0) + Math.cos(angle) * 40;
-        const ey = ty(0) - Math.sin(angle) * 40;
-        drawArrow(ctx, tx(0), ty(0), ex, ey, accent, scale);
-        return;
-      }
-
       // Grid lines lightly
       ctx.strokeStyle = 'rgba(30,50,70,0.3)';
       ctx.lineWidth = Math.max(0.25, 0.5 * scale);
@@ -2854,6 +2843,20 @@
         ctx.moveTo(0, ty(i - 0.5));
         ctx.lineTo(W, ty(i - 0.5));
         ctx.stroke();
+      }
+
+      if (step === 0) {
+        // Just draw origin
+        ctx.beginPath();
+        ctx.arc(tx(0), ty(0), 6, 0, Math.PI * 2);
+        ctx.fillStyle = accent;
+        ctx.fill();
+        // Draw arrow showing direction 0
+        const angle = 0;
+        const ex = tx(0) + Math.cos(angle) * 40;
+        const ey = ty(0) - Math.sin(angle) * 40;
+        drawArrow(ctx, tx(0), ty(0), ex, ey, accent, scale);
+        return;
       }
 
       // Path
@@ -2991,9 +2994,11 @@
         if (!canvas) return;
         // Size to CSS
         const resize = () => {
-            const w = canvas.offsetWidth;
-            canvas.width = w;
-            canvas.height = w;
+          // Use ensureHiDPICanvas to properly handle DPI scaling
+            const { cssW: W, cssH: H } = ensureHiDPICanvas(canvas);
+            canvas.style.width = W + 'px';
+            canvas.style.height = W + 'px';
+            
             const info = getClosureInfo(HERO_S);
             if (!info.closes) return;
             console.log(info);
@@ -3684,12 +3689,11 @@
       // Trigger hero redraw
       const hc = document.getElementById('hero-canvas');
       if (hc) {
-        const w = hc.offsetWidth;
-        hc.width = w;
-        hc.height = w;
+        const { cssW: W, cssH: H } = ensureHiDPICanvas(hc);
         const info = getClosureInfo(HERO_S);
+        if (!info.closes) return;
         const { pts } = generatePath(info.totalSteps, HERO_S);
-        drawPath(hc, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: 6 });
+        drawPath(hc, pts, info.totalSteps, HERO_S, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.35 });
       }
     });
   </script>
