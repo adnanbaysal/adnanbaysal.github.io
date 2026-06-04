@@ -1249,12 +1249,12 @@
     
     <p>
      In computer science, this kind of agent is known as a <strong>turtle</strong> &mdash; an entity that maintains its own internal 
-     coordinate heading and updates it iteratively. The origin of "turtle graphics" dates back to 1960s, and depending on the variant,
-     more commands can be possible. But for this article, we'll stick to the very restricted command set described here. 
+     coordinate heading and updates it iteratively. The origin of "turtle graphics" dates back to the 1960s, and depending on the variant,
+     more commands may be available. For this article, we'll stick to the very restricted command set described here. 
     </p>
     <p>
      We are going to feed our turtle a highly specific turning rule and watch how chaos crystallizes into order. To keep the turns 
-     mathematically well-behaved, we'll choose a positive integer <em>S</em>, and  divide a full circle into 
+     mathematically well-behaved, we'll choose a positive integer <em>S</em>, and divide a full circle into 
      <strong><em>S</em> equal angular slices</strong>, each measuring 360&deg;/S. Our turtle can only face one of these discrete 
      <em>S</em> directions. At step <span class="math-inline">n</span>, it advances its direction index by a certain amount 
      (measured in these 360&deg;/S slices) before stepping forward. Then, we'll try different values of <em>S</em> to see what kind
@@ -1854,7 +1854,7 @@
     <p>
       What does this mathematically enforced periodicity mean for the turtle physically? It ensures that the turtle will 
       resume its exact initial heading after precisely <span class="math-inline">kS</span> steps (where <em>k</em> is 1, 2, 3, or 6). 
-      After that point, it will periodicaly repeat the same sequence of <span class="math-inline">kS</span> steps.
+      After that point, it will periodically repeat the same sequence of <span class="math-inline">kS</span> steps.
       So the turtle is fated to draw the exact same shape, perfectly aligned without rotation, over and over. However, the caveat from 
       before still haunts us: perfect orientation does not guarantee a return to the <em>starting spatial coordinates</em>. 
       The turtle might be drawing the same shape perfectly upright, but displaced away from the origin by the accumulated vector thrust 
@@ -2188,7 +2188,7 @@
     </p>
 
     <p>
-      If the above theoretical explanations feels too abstract, the interactive sandbox below provides immediate, visual proof. 
+      If the above theoretical explanations feel too abstract, the interactive sandbox below provides immediate, visual proof. 
       It demonstrates how "AnglePath" algorithms require a single anchor value prepended to a palindromic sequence to lock in 
       reflectional symmetry.
     </p>
@@ -2628,7 +2628,7 @@
     }
 
     // NOTE: The following "special" primes cause drift if they occur as a square in the factorization of n
-    // NOTE: OEIS seach results in 3 potential candidate with similar subsequence
+    // NOTE: OEIS search results in 3 potential candidates with a similar subsequence
     function hasSpecialPrimeSquareFactor(n) {
         const specialPrimes = [
             11, 13, 23, 37, 47, 59, 61, 71, 73, 83, 97, 107, 109, 131, 157, 167, 179, 
