@@ -88,7 +88,7 @@
     {
         "id": "square-turns",
         "title": "Square Turns",
-        "description": "A turtle walks. At every step, it turns — not by a fixed angle, but by an amount that grows with the square of the step count. What emerges is surprisingly beautiful.",
+        "description": "A turtle wanders an infinite plane. At every step, it turns - not by a fixed angle, but by an amount that grows with the square of its step number. From this single, deterministic rule emerges a universe of unexpected, crystalline beauty.",
         "url": "./square-turns.html",
         "image": "media/square-turns.png",
         "tags": [
