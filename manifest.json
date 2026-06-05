@@ -86,11 +86,11 @@
         "update": null
     },
     {
-        "id": "angle-path-explainer",
+        "id": "square-turns",
         "title": "Square Turns",
         "description": "A turtle walks. At every step, it turns — not by a fixed angle, but by an amount that grows with the square of the step count. What emerges is surprisingly beautiful.",
-        "url": "./angle-path-explainer.html",
-        "image": "media/angle-path-explainer.png",
+        "url": "./square-turns.html",
+        "image": "media/square-turns.png",
         "tags": [
             "Exponential Sums",
             "Turtle Graphics",
