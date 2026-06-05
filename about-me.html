@@ -4,47 +4,271 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Me - Adnan Baysal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #050505; --card-bg: #111; --text: #eee; --accent: #00d4ff; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg); color: var(--text); margin: 0; padding: 0;
-            min-height: 100vh; display: flex; flex-direction: column;
+        :root {
+            --bg: #050505;
+            --card-bg: #0e0e0e;
+            --card-border: #1c1c1c;
+            --text: #eee;
+            --text-muted: #888;
+            --text-dim: #444;
+            --accent: #00d4ff;
+            --accent-dim: rgba(0, 212, 255, 0.12);
+            --accent-glow: rgba(0, 212, 255, 0.25);
         }
-        header { padding: 40px 20px 20px 20px; text-align: center; border-bottom: 1px solid #222; }
-        h1 { margin: 0; font-weight: 300; letter-spacing: 2px; }
-        nav { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
-        nav a { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; }
-        nav a:hover { text-decoration: underline; }
 
-        main { max-width: 700px; margin: 40px auto; padding: 0 20px; line-height: 1.7; }
-        .bio-section { background: var(--card-bg); border: 1px solid #222; border-radius: 8px; padding: 30px; }
-        h2 { color: var(--accent); font-weight: 400; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        p { color: #aaa; margin-bottom: 20px; }
-        
-        .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
-        .skill-cat h3 { font-size: 0.9rem; text-transform: uppercase; color: #666; margin-bottom: 10px; }
-        .skill-cat ul { list-style: none; padding: 0; margin: 0; color: var(--accent); font-family: monospace; }
+        *, *::before, *::after { box-sizing: border-box; }
 
-        footer { margin-top: auto; padding: 20px; text-align: center; font-size: 0.8rem; color: #444; border-top: 1px solid #111; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* subtle noise texture for depth */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        }
+
+        /* ── HEADER ─────────────────────────────── */
+        header {
+            padding: 48px 20px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -60px; left: 50%;
+            transform: translateX(-50%);
+            width: 320px; height: 120px;
+            background: radial-gradient(ellipse, rgba(0,212,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        h1 {
+            margin: 0;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            letter-spacing: 6px;
+            color: var(--text);
+        }
+
+        .header-sub {
+            margin-top: 6px;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-family: 'Space Mono', monospace;
+        }
+
+        nav {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        nav a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Space Mono', monospace;
+            transition: opacity 0.2s;
+        }
+
+        nav a:hover { opacity: 0.7; }
+
+        /* ── MAIN ───────────────────────────────── */
+        main {
+            max-width: 720px;
+            margin: 48px auto;
+            padding: 0 20px;
+            line-height: 1.75;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            /* fade-in on load */
+            animation: fadeUp 0.6s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── CARDS ──────────────────────────────── */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 32px;
+            transition: border-color 0.3s;
+        }
+
+        .card:hover { border-color: #2a2a2a; }
+
+        h2 {
+            font-family: 'Space Mono', monospace;
+            color: var(--accent);
+            font-weight: 400;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 1px solid #1e1e1e;
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 22px;
+        }
+
+        p { color: var(--text-muted); margin-bottom: 0; font-size: 0.97rem; }
+        p + p { margin-top: 14px; }
+
+        /* ── SKILLS GRID ────────────────────────── */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 28px;
+        }
+
+        .skill-cat h3 {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin: 0 0 12px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .skill-cat ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .skill-cat ul li {
+            color: var(--accent);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.82rem;
+            padding: 5px 10px;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        /* ── CONTACT SECTION ────────────────────── */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: #0a0a0a;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            transition: border-color 0.25s, color 0.25s, background 0.25s, transform 0.2s;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .contact-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            transform: translateY(-2px);
+        }
+
+        .contact-link .icon {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: #161616;
+            font-size: 16px;
+        }
+
+        .contact-link .label { display: flex; flex-direction: column; gap: 1px; }
+        .contact-link .platform { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+        .contact-link .handle { font-size: 0.85rem; }
+
+        .contact-note {
+            margin-top: 18px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── FOOTER ─────────────────────────────── */
+        footer {
+            margin-top: auto;
+            padding: 24px 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            border-top: 1px solid var(--card-border);
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* ── RESPONSIVE ─────────────────────────── */
+        @media (max-width: 500px) {
+            .skills-grid { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: 1fr 1fr; }
+            .card { padding: 22px; }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>ABOUT ME</h1>
+        <p class="header-sub">Software Engineer &amp; Math Explorer</p>
+        <h1>ADNAN BAYSAL</h1>
         <nav>
-            <a href="index.html">Portfolio</a>
-            <a href="about-me.html">About Me</a>
+            <a href="index.html">← Portfolio</a>
         </nav>
     </header>
 
     <main>
-        <section class="bio-section">
+
+        <!-- BIO -->
+        <section class="card">
             <h2>The Person Behind the Code</h2>
             <p>
-                Hello! I'm Adnan. I've spent years exploring the intersections of mathematics and software engineering. 
-                Many of the projects you see here are independent "reinventions of the wheel"—algorithms and concepts but some maybe original.
+                Hello! I'm Adnan from Türkiye. I've spent years exploring the intersections of mathematics and software engineering.
+                Many of the projects you see here are independent "reinventions of the wheel" — algorithms and concepts rebuilt from first principles, 
+                and sometimes something genuinely original.
+            </p>
+            <p>
+                I believe the best way to understand a system is to build it yourself, break it, then build it again.
             </p>
 
             <div class="skills-grid">
@@ -55,7 +279,7 @@
                         <li>Fractals</li>
                         <li>Computational Physics</li>
                         <li>Algorithm Design</li>
-                        <li>Philosophy of science</li>
+                        <li>Philosophy of Science</li>
                     </ul>
                 </div>
                 <div class="skill-cat">
@@ -68,10 +292,66 @@
                 </div>
             </div>
         </section>
+
+        <!-- CONTACT -->
+        <section class="card">
+            <h2>Find Me Online</h2>
+            <div class="contact-grid">
+
+                <a class="contact-link" href="https://www.linkedin.com/in/adnan-baysal-b72646134/" target="_blank" rel="noopener">
+                    <span class="icon">in</span>
+                    <span class="label">
+                        <span class="platform">LinkedIn</span>
+                        <span class="handle">adnan-baysal-b72646134/</span>
+                    </span>
+                </a>
+
+                <a class="contact-link" href="https://github.com/adnanbaysal" target="_blank" rel="noopener">
+                    <span class="icon">&lt;/&gt;</span>
+                    <span class="label">
+                        <span class="platform">GitHub</span>
+                        <span class="handle">adnanbaysal</span>
+                    </span>
+                </a>
+
+                <a class="contact-link" href="https://www.instagram.com/mathelangelo" target="_blank" rel="noopener">
+                    <span class="icon">📸</span>
+                    <span class="label">
+                        <span class="platform">Instagram</span>
+                        <span class="handle">@mathelangelo</span>
+                    </span>
+                </a>
+
+                <a class="contact-link" href="https://www.instagram.com/abaysalphotography" target="_blank" rel="noopener">
+                    <span class="icon">📸</span>
+                    <span class="label">
+                        <span class="platform">Instagram</span>
+                        <span class="handle">@abaysalphotography</span>
+                    </span>
+                </a>
+
+                <a class="contact-link" href="https://discord.com/users/adnanbaysal" target="_blank" rel="noopener">
+                    <span class="icon">#</span>
+                    <span class="label">
+                        <span class="platform">Discord</span>
+                        <span class="handle">adnanbaysal</span>
+                    </span>
+                </a>
+                
+                <a class="contact-link" href="https://x.com/adnanbaysal" target="_blank" rel="noopener">
+                    <span class="icon">𝕏</span>
+                    <span class="label">
+                        <span class="platform">Twitter / X</span>
+                        <span class="handle">@adnanbaysal</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
     </main>
 
     <footer>
-        <p>Built with Vanilla JS & Canvas</p>
+        <p>Built with Vanilla JS &amp; Canvas &nbsp;·&nbsp; Adnan Baysal &nbsp;·&nbsp; Türkiye</p>
     </footer>
 
 </body>
