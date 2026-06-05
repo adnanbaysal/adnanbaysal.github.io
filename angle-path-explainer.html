@@ -1175,17 +1175,24 @@
  <body>
   <nav>
    <a class="nav-brand" href="https://adnanbaysal.github.io/index.html">
-    ADNAN BAYSAL
+    Portfolio
    </a>
    <div class="nav-links">
-    <a href="https://adnanbaysal.github.io/index.html">
-     Portfolio
-    </a>
     <a href="https://adnanbaysal.github.io/about-me.html">
-     About
+     About Me
     </a>
     <button id="theme-toggle" class="nav-theme-toggle" type="button" aria-label="Toggle theme">
-     Theme
+      <!-- Sun icon (shown in dark mode) -->
+      <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+        <line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/>
+        <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/>
+      </svg>
+      <!-- Moon icon (shown in light mode) -->
+      <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
     </button>
    </div>
   </nav>
@@ -1204,6 +1211,11 @@
    
    <div class="hero-text">
     <div class="hero-kicker">
+     <p>
+      <a href="https://adnanbaysal.github.io/about-me.html">
+       ADNAN BAYSAL
+      </a>
+    </p>
      <a href="https://some.3b1b.co/" class="accent-link">SoME 2026</a> &middot; Mathematical Art
     </div>
     
@@ -1262,7 +1274,7 @@
      In computer science, this kind of agent is known as a <strong>turtle</strong> &mdash; an entity that maintains its own internal 
      coordinate heading and updates it iteratively. This kind of drawing is called 
      <a href="https://en.wikipedia.org/wiki/Turtle_graphics" class="accent-link">turtle graphics</a> whose origin dates back to the 1960s. 
-     Depending on the variant,more commands may be available. For this article, we'll stick to the very restricted command set described here.
+     Depending on the variant, more commands may be available. For this article, we'll stick to the very restricted command set described here.
      Mathematica has a built-in function called <em>AnglePath</em> that is basically the same algorithm. 
     </p>
 
@@ -1271,15 +1283,15 @@
      mathematically well-behaved, we'll choose a positive integer <em>S</em>, and divide a full circle into 
      <strong><em>S</em> equal angular slices</strong>, each measuring 360&deg;/S. Our turtle can only face one of these discrete 
      <em>S</em> directions. At step <span class="math-inline">n</span>, it advances its direction index by a certain amount 
-     (measured in these 360&deg;/S slices) before stepping forward. Then, we'll try different values of <em>S</em> to see what kind
-     of paths we can draw.
+     (measured in these 360&deg;/S slices) before stepping forward. We'll try different values of <em>S</em> to see what kind
+     of paths we can draw with this simple algorithm.
     </p>
 
     <p>
       Here is a small demo that you can play with to get a grisp of what will we drawing with our turtle. 
       Just select <em>S</em> to define the number of available directions. Then you can move the turtle step-by-step, in S-step blocks,
       or you can even make it walk automatically. For all S values, the same turning rule that we'll explain in the next chapter is used, 
-      but graphs are completel different.
+      but graphs are completely different.
     </p>
     
     <!-- DEMO 1: Step by step walker -->
@@ -1506,7 +1518,7 @@
      When Does the Path Close?
     </h2>
     <p>
-     For the vast majority of S values, the turtle's journey doesn't wander indefinitely; it seals itself shut. 
+     For the vast majority of values of S, the turtle's journey doesn't wander indefinitely; it seals itself shut. 
      It perfectly reconnects its endpoints to form a closed, circular rosette. Fascinatingly, the possible number of 
      "petals" on these rosettes is strictly confined to 1, 2, 3, 4, 6, and 12 &mdash; which happen to be the exact 
      positive divisors of 12. However, for a rare handful of specific S values, the path <em>drifts relentlessly</em>. 
@@ -1822,27 +1834,27 @@
     <p>
       This derivation reveals a profound geometric truth: after every block of <span class="math-inline">S</span> steps, 
       the turtle's absolute orientation is simply shifted by a constant offset of 
-      <span class="math-inline">&theta;(S) mod S</span> slots. Because <span class="math-inline">&theta;(S) = <span class="fraction">
+      <span class="math-inline">&theta;(S)</span> slots. Because <span class="math-inline">&theta;(S) = <span class="fraction">
           <span class="fraction-num">2S&sup3; + 3S&sup2; + S</span>
           <span class="fraction-den">6</span>
       </span> = <span class="fraction">
           <span class="fraction-num">S(S+1)(2S+1)</span>
           <span class="fraction-den">6</span>
-      </span></span>, we can guarantee that the orientation will eventually snap back to its exact starting angle (facing the 
+      </span> mod S</span>, we can guarantee that the orientation will eventually snap back to its exact starting angle (facing the 
       positive x-axis) and repeat the same sequence of cumulative turns in no more than <span class="math-inline">6S</span> steps. 
       In reality, we can calculate the precise minimum cycle required.
     </p>
 
     <p>
-      To find that minimum cycle, let's dissect <span class="math-inline">&theta;(S) mod S</span> a bit further.
+      To find that minimum cycle, let's dissect <span class="math-inline">&theta;(S)</span> a bit further.
       If we factor out the multiplier <span class="math-inline">S</span>, we arrive at 
       <span class="math-inline">
-        &theta;(S) mod S = S
+        &theta;(S) = S
         <span class="fraction">
           <span class="fraction-num">(S+1)(2S+1)</span>
           <span class="fraction-den">6</span>
         </span> mod S
-      </span>. Let's designate the numerator as <span class="math-inline">k<sub>S</sub> = (S+1)(2S+1)</span>. 
+      </span>. Let's designate the numerator of the fractional part as <span class="math-inline">k<sub>S</sub> = (S+1)(2S+1)</span>. 
       It becomes clear that we only need to evaluate the remainder of <span class="math-inline">k<sub>S</sub> mod 6</span>. 
       Any whole integer multiples of S essentially evaporate in modulo <span class="math-inline">S</span> arithmetic. 
       Whatever fraction remains dictates the exact minimum period (counted in <span class="math-inline">S</span>-step blocks). 
@@ -1918,7 +1930,7 @@
     </p>
 
     <p>
-      In this state, we know <span class="math-inline">&theta;(S) = 0 mod S</span>. This guarantees that the heading after S steps is 
+      In this state, we know <span class="math-inline">&theta;(S) = 0</span>. This guarantees that the heading after S steps is 
       identical to the starting heading. If the physical <em>position</em> of the turtle after S steps also happens to perfectly match 
       the origin, we achieve a closed, <strong>1-petal</strong> shape. If the position is offset, the graph drifts. 
       For the sake of taxonomy, I will classify both behaviors under the "1-petal" umbrella, aligning the petal count directly with the GCD. 
@@ -1938,15 +1950,15 @@
     <p>
      Since the squared-turn rule is rigidly <em>periodic modulo S</em>, the second block of S steps will trace a trajectory identical 
      to the first &mdash; except it will be 
-     <strong>rotated by the constant offset angle <span class="math-inline">&theta;(S) mod S</span></strong>. Now, picture a straight 
+     <strong>rotated by the constant offset angle <span class="math-inline">&theta;(S)</span></strong>. Now, picture a straight 
      line drawn from the origin to the turtle's current displaced position. If we let the turtle run for another block of S steps, 
      it will land at a new coordinate. 
     </p>
 
     <p>
      Because the second S-step path is an identical (but rotated) clone of the first block, the imaginary line 
-     connecting the starting points of the first and the second S-step blocks will have the exact same length as the 
-     first imaginary line. Furthermore, since the turtle's starting heading was rotated by <span class="math-inline">&theta;(S) mod S</span>, 
+     connecting the ending points of the first and the second S-step blocks will have the exact same length as the 
+     first imaginary line. Furthermore, since the turtle's starting heading was rotated by <span class="math-inline">&theta;(S)</span>, 
      this new connecting line will be rotated by that exact same angle when compared to the previous imaginary line. Ultimately, 
      each S-step block pushes the turtle along the invisible vertices of a perfectly regular polygon. Depending entirely on 
      <span class="math-inline">GCD(S, 6)</span>, this rotational angle snaps to exactly 1/2, 2/3, or 1/6 of a full circle. 
@@ -2060,7 +2072,7 @@
     </div>
     
     <p>
-      You might be wondering: if the math strictly dictates only 2, 3, or 6 rotational petals, why did earlier images clearly feature
+      You might be wondering: if the math strictly dictates only 1, 2, 3, or 6 rotational petals, why did earlier images clearly feature
       <em>12</em> or even <em>4</em> petal-like protrusions? To answer that, we have to look closer at the internal architecture 
       of the petals themselves.
     </p>
@@ -2087,13 +2099,13 @@
     </h3>
 
     <p>
-      The orientation shift function, <span class="math-inline">&Delta;&theta;(n) mod S</span>, holds a beautiful secret: 
+      The orientation shift function, <span class="math-inline">&Delta;&theta;(n)</span>, holds a beautiful secret: 
       it is perfectly palindromic inside every S-step block. Reading the sequence of turns forward yields the exact same 
       list as reading it backward. The proof requires only a single line of algebra:
     </p>
 
     <div class="math-block">
-     &Delta;&theta;(S - n) = (S &minus; n)&sup2; = S&sup2; - 2Sn + n&sup2; &equiv; n&sup2; (mod S) = &Delta;&theta;(n) mod S
+     &Delta;&theta;(S - n) = (S &minus; n)&sup2; = S&sup2; - 2Sn + n&sup2; &equiv; n&sup2; (mod S) = &Delta;&theta;(n)
     </div>
     
     <p>
@@ -2106,8 +2118,8 @@
     <p>
       To be perfectly precise, there is a slight caveat to the block's palindromic nature. When analyzing a complete S-step block, 
       it only forms a perfect palindrome if we omit the very first rotation step, where the turtle turns by 0&sup2; = 0 slots. 
-      To maintain symmetry, we must either drop this initial zero, or append an extra zero-slot turn to the tail end of the sequence. 
-      Observe the symmetry in the table below for S = 6:
+      To maintain the symmetry of this sequence of numbers, we must either drop this initial zero, or append an extra zero-slot 
+      turn to the tail end of the sequence. Observe the symmetry in the table below for S = 6:
     </p>
 
     <div id="n2mod6-table-wrap">
@@ -2462,7 +2474,7 @@
     </p>
 
     <p>
-      The closest parallel exploration I have found is a piece on 
+      The closest parallel exploration I have found is a piece called 
       <a class="accent-link"
        href="https://www.unsw.edu.au/science/our-schools/maths/our-school/spotlight-on-our-people/history-school/glimpses-mathematics-and-statistics/exponential-sums"
       >
@@ -2586,7 +2598,12 @@
       document.body.classList.toggle('light-theme', theme === 'light');
       const toggleButton = document.getElementById('theme-toggle');
       if (toggleButton) {
-        toggleButton.textContent = theme === 'light' ? 'Dark mode' : 'Light mode';
+        const sun  = document.getElementById('theme-icon-sun');
+        const moon = document.getElementById('theme-icon-moon');
+        if (sun && moon) {
+          sun.style.display  = theme === 'light' ? 'none'  : 'block';
+          moon.style.display = theme === 'light' ? 'block' : 'none';
+        }
         toggleButton.setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
       }
     }
