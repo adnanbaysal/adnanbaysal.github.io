@@ -10,7 +10,8 @@
             "Recursion",
             "Fractal"
         ],
-        "date": "2026-01-25"
+        "date": "2026-01-25",
+        "update": "2026-02-25"
     },
     {
         "id": "mirror-sim",
@@ -23,7 +24,8 @@
             "Phsical Simulation",
             "Mirror"
         ],
-        "date": "2026-01-28"
+        "date": "2026-01-28",
+        "update": "2026-05-03"
     },
     {
         "id": "truchet-tiling",
@@ -36,7 +38,8 @@
             "Truchet tiling",
             "Fractal"
         ],
-        "date": "2026-02-01"
+        "date": "2026-02-01",
+        "update": "2026-02-25"
     },
     {
         "id": "hex-truchet-tiling",
@@ -49,7 +52,8 @@
             "Truchet tiling",
             "Fractal"
         ],
-        "date": "2026-02-02"
+        "date": "2026-02-02",
+        "update": "2026-02-25"
     },
     {
         "id": "angle-path",
@@ -63,7 +67,8 @@
             "Symmetry",
             "Chaos"
         ],
-        "date": "2026-02-20"
+        "date": "2026-02-20",
+        "update": "2026-05-14"
     },
     {
         "id": "limits-of-knowledge",
@@ -77,7 +82,8 @@
             "Science",
             "Proof"
         ],
-        "date": "2026-03-19"
+        "date": "2026-05-03",
+        "update": null
     },
     {
         "id": "angle-path-explainer",
@@ -92,6 +98,7 @@
             "Chaos",
             "SoME5"
         ],
-        "date": "2026-05-27"
+        "date": "2026-05-27",
+        "update": "2026-06-05"
     }
 ]
