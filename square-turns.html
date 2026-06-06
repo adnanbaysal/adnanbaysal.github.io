@@ -1225,7 +1225,8 @@
     
     <p class="hero-sub">
      A turtle wanders an infinite plane. At every step, it turns &mdash; not by a fixed angle, but by an amount that
-     <em>grows with the square of its step number</em>. From this single, deterministic rule emerges a universe of unexpected, crystalline beauty.
+     <em>grows with the square of its step number</em>. From this single, deterministic rule beautiful paths emerge that
+     combine chaos and symmetry.
     </p>
     
     <a class="hero-cta" href="#turtle">
@@ -1261,7 +1262,7 @@
     
     <p>
      Imagine a simple creature living on a blank, infinite plane. It follows this one simple instruction:
-     <strong>step forward exactly one unit, then turn by a chosen angle.</strong> It loops this behavior over and over.
+     <strong>step forward exactly one unit, then turn by a chosen angle.</strong> It loops this behavior until we say it to stop.
     </p>
     
     <p>
@@ -1271,11 +1272,11 @@
     </p>
     
     <p>
-     In computer science, this kind of agent is known as a <strong>turtle</strong> &mdash; an entity that maintains its own internal 
-     coordinate heading and updates it iteratively. This kind of drawing is called 
-     <a href="https://en.wikipedia.org/wiki/Turtle_graphics" class="accent-link">turtle graphics</a> whose origin dates back to the 1960s. 
+     In computer science, this kind of agent is known as a <strong>turtle</strong>, which is studied under the
+     <a href="https://en.wikipedia.org/wiki/Turtle_graphics" class="accent-link">turtle graphics</a> umbrella. It's origin dates back to the 1960s. 
      Depending on the variant, more commands may be available. For this article, we'll stick to the very restricted command set described here.
-     Mathematica has a built-in function called <em>AnglePath</em> that is basically the same algorithm. 
+     Note that Mathematica's built-in <a href="https://reference.wolfram.com/language/ref/AnglePath.html" class="accent-link">AnglePath</a> 
+     function is similar to our restricted algorithm. 
     </p>
 
     <p>
@@ -1348,14 +1349,15 @@
     </div>
 
     <p>
-     Notice taht the turtle moves very systematically, and symmetric patterns are taking shape. 
+     Notice that the turtle moves very systematically, and symmetric patterns are taking shape. 
      Every forward movement is exactly one unit long, but the <em>orientation</em> changes are following some 
-     underlying pattern. We have two fundamental questions driving this entire article:
+     underlying pattern. In later sections of this article, we'll see how chaos and symmetry merges into beautiful
+     rosette-like shapes when our method is pushed to large values of S. We'll try to answer two fundamental questions:
     </p>
 
     <ol class="section-list">
       <li>Will the turtle draw a closed loop-like shape, or will it wander on the plane indefinitely?</li>
-      <li>What is the reason behind beautiful symmetries we'll about to see?</li>
+      <li>What are the mathematical reasons behind beautiful symmetries we'll about to see?</li>
     </ol>
     
    </section>
@@ -1452,7 +1454,7 @@
 
     <p>
      Select any thumbnail to inspect it closely in the large viewer. Observe the distinct rosette structures and their varying "petal" counts. 
-     You will notice the intricate details and fractal-like symmetries for an value of S. We will spend the remainder of the article investigating 
+     You will notice the intricate details and fractal-like symmetries for any value of S. We will spend the remainder of the article investigating 
      why these shapes exist.
     </p>
 
@@ -1574,10 +1576,10 @@
           <button class="s-btn" data-n="24">
            24
           </button>
-          <button class="s-btn drift-btn" data-n="25">
+          <button class="s-btn" data-n="25">
            25
           </button>
-          <button class="s-btn drift-btn" data-n="49">
+          <button class="s-btn" data-n="49">
            49
           </button>
          </div>
@@ -1706,7 +1708,7 @@
       Experimental brute-forcing reveals this set of "special" drifting primes to be: 11, 13, 23, 37, 47, 59, 61, 71, 73&hellip;
       This sequence is highly likely to be infinite. Cross-referencing it with the On-Line Encyclopedia of Integer Sequences 
       (<a href="http://oeis.org" class="accent-link">OEIS</a>) yields a few promising candidate sequences. Pinning down exactly 
-      which sequence definition fully explains the underlying arithmetic mechanics remains an open question &mdash;.
+      which sequence definition fully explains the underlying arithmetic remains an open question.
     </p>
    </section>
 
@@ -2375,7 +2377,7 @@
     </h3>
     <p>
      The palindrome property (<span class="math-inline">x&sup2; &equiv; (S&minus;x)&sup2;</span>) is responsible for the petal's 
-     outer mirror symmetry. Butfor some S, there is a <em>second</em> modular identity in the arithmetic, responsible for the sub-petal cloning:
+     outer mirror symmetry. But, for some S there is a <em>second</em> modular identity in the arithmetic, responsible for the sub-petal cloning:
     </p>
     
     <div class="math-block">
@@ -2405,7 +2407,7 @@
       Summary: The Architecture of a Petal
      </span>
      <p>
-      <strong>Outer symmetry</strong>(The primary mirror line): Universally true. Derived from the palindrome identity
+      <strong>Outer symmetry</strong> (The primary mirror line): Universally true. Derived from the palindrome identity
       <span class="math-inline">x&sup2; &equiv; (S&minus;x)&sup2;</span>.
      </p>
      
@@ -2479,6 +2481,19 @@
       I anchored my exploration to a highly specific, simplified polynomial driven entirely by its quadratic "change per step" rule.
     </p>
 
+    <div class="callout">
+     <span class="callout-label">
+      Try It Yourself
+     </span>
+     <p>
+      A fully expanded, interactive tool featuring variable turning functions, animation settings, and custom color modes is available at
+      <a href="https://adnanbaysal.github.io/angle-path.html" class="accent-link">
+       https://adnanbaysal.github.io/angle-path.html
+      </a>
+      .
+     </p>
+    </div>
+    
     <h3>
      Future Directions
     </h3>
@@ -2526,7 +2541,7 @@
           </span>
         </span> 
         turns as base slots. The set of all possible turns will be the same, but the visuals generated will be 
-        significantly different. In fact, the interactive sandbox linked below natively supports both R and S inputs. 
+        significantly different. In fact, the interactive sandbox linked above natively supports both R and S inputs. 
         Analyzing the structural impact of R remains another frontier for future research.
       </li>
       <li>
@@ -2536,22 +2551,12 @@
         This analysis would help identify what other graphical properties squared turn rule has, when compared to 
         similar random walks.
       </li>
+      <li>
+        Can we link the theory of <a href="https://en.wikipedia.org/wiki/Dihedral_group" class="accent-link">Dihedral groups</a>
+        to our algorithm to understand the shapes we see here better?
+      </li>
     </ul>
 
-    
-
-    <div class="callout">
-     <span class="callout-label">
-      Try It Yourself
-     </span>
-     <p>
-      A fully expanded, interactive tool featuring variable turning functions, animation settings, and custom color modes is available at
-      <a href="https://adnanbaysal.github.io/angle-path.html" class="accent-link">
-       https://adnanbaysal.github.io/angle-path.html
-      </a>
-      .
-     </p>
-    </div>
     <div class="divider">
      ∎
     </div>
