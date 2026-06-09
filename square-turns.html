@@ -1352,10 +1352,9 @@
     <h2>2 &mdash; The Turning Rule</h2>
 
     <p>
-     Let's formalize the mechanism. At step number <span class="math-inline">n</span> (starting from an initial
-     <span class="math-inline">n=0</span>), the turtle shifts its direction by precisely <span class="math-inline">n&sup2;</span> slots. 
-     We process this slot number modulo <em>S</em>, because any full rotation (a multiple of <em>S</em>) effectively resets the heading. 
-     The remainder is all that dictates the actual direction change.
+     Let's say we fixed some positive integer <em>S</em>. At step number <span class="math-inline">n &in; {0, 1, 2, ...}</span>, the turtle turns 
+     clockwise by <span class="math-inline">n&sup2;</span> slots. We can process this slot number modulo <em>S</em>, because whole multiples of S 
+     correspond to no turn at all. The remainder mod S dictates the actual change in direction.
     </p>
     
     <div class="math-block">
@@ -1386,17 +1385,11 @@
      </table>
     </div>
 
-    <p>
-     The critical operation here is the <em>modulo S</em>. As soon as the accumulated slot index hits S, it wraps smoothly back to 0. 
-     With S=6, the active slot is confined strictly to {0, 1, 2, 3, 4, 5}, mapping directly to the headings 
-     {0&deg;, 60&deg;, 120&deg;, 180&deg;, 240&deg;, 300&deg;}.
-    </p>
-
     <div class="callout">
      <span class="callout-label">Why squares?</span>
      
      <p>
-      Many other functions could have piloted our turtle. A simple linear rule (turning by <em>n</em> slots at step <em>n</em>) 
+      We could use many other functions to drive our turtle's movements. A linear rule of turning by <em>n</em> slots at step <em>n</em>
       yields curves resembling the classical Euler spiral. A randomized rule produces the chaotic path of a drunkard's walk. 
       I've found the square function a good compromise which is both very simple to describe, and also able to produce beautiful
       shapes. The goal of this article is to understand why this particular rule produces these patterns.
@@ -1404,9 +1397,9 @@
     </div>
 
     <p>
-     The cumulative, absolute direction slot after step <span class="math-inline">n</span> (starting from <span class="math-inline">n=0</span>) 
-     is the sum of the sequence <span class="math-inline">0&sup2; + 1&sup2; + 2&sup2; + ... + n&sup2;</span>. 
-     This resolves cleanly to the well-known <strong>sum-of-squares formula</strong>:
+     The <em>cumulative</em> direction slot after step <span class="math-inline">n</span> (starting from <span class="math-inline">n=0</span>) 
+     is the sum of the sequence <span class="math-inline">0&sup2; + 1&sup2; + 2&sup2; + ... + n&sup2;</span> which is equal to the following cubic
+     polynomial:
     </p>
 
     <div class="math-block">
@@ -1418,7 +1411,7 @@
     </div>
 
     <p>
-     These two formulas will reappear throughout the article and help explain several of the observed symmetries.
+     We'll use these two formulas throughout the article to explain the periodicities and symmetries of the paths our turtle draws.
     </p>
    </section>
 
