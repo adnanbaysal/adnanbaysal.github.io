@@ -3,7 +3,7 @@
  <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  
+
   <title>
    Square Turns
   </title>
@@ -262,16 +262,6 @@
 
    .section + .section {
      border-top: 1px solid var(--border);
-   }
-
-   .section-number {
-     font-family: 'Courier New', monospace;
-     font-size: 11px;
-     color: var(--accent);
-     letter-spacing: 3px;
-     text-transform: uppercase;
-     margin-bottom: 12px;
-     display: block;
    }
 
    h2 {
@@ -848,9 +838,9 @@
    /* GALLERY */
    .gallery-grid {
      display: grid;
-     grid-template-columns: repeat(2, minmax(180px, 1fr));
+     grid-template-columns: repeat(3, minmax(100px, 1fr));
      gap: 12px;
-     margin: 24px 0;
+     margin: 12px 0;
    }
 
    .gallery-cell {
@@ -1102,9 +1092,9 @@
        height: min(320px, 85vw);
      }
 
-    /* Mobile: make gallery two columns and smaller canvases */
+    /* Mobile: make gallery 3 columns */
     .gallery-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
 
@@ -1444,12 +1434,12 @@
     <h2>3 &mdash; Exposition : Some Large Examples</h2>
 
     <p>
-     Before analyzing the algebra, let's look at some examples with large values of S. Keep in mind: these aren't manually created. 
-     Each image is generated directly from the turning rule described above.
+     Before analyzing the math, let's look at some examples with large values of S. Keep in mind: these aren't manually created. 
+     Each image is generated directly from the simple turning rule described above.
     </p>
 
     <p>
-     Select any thumbnail to inspect it closely in the large viewer. Different values of S produce noticeably different structures and apparent 
+     Select any S to inspect resulting path in the large viewer. Different values of S produce noticeably different structures and apparent 
      petal counts. You will notice the interesting details and fractal-like symmetries for almost any value of S. We will spend the remainder 
      of the article investigating why these shapes exist.
     </p>
@@ -1511,7 +1501,6 @@
 
    <!-- SECTION 4: CLOSING -->
    <section class="section" id="closing">
-    <span class="section-number">
     <h2>4 &mdash; Will the Path Close or Drift?</h2>
 
     <p>
@@ -2069,7 +2058,7 @@
    <!-- TODO: Consider moving this after 4-12 petal discussion -->
    <!-- SECTION 7: REFLECTION SYMMETRY -->
    <section class="section" id="reflection">
-    <h2>7 &mdash; Origin of Reflection Symmetries </h2>
+    <h2>7 &mdash; Origin of Reflection Symmetries</h2>
 
     <p>
      The previous section accounts for the top-level, rotational symmetries of our rosettes. This holds true regardless of 
