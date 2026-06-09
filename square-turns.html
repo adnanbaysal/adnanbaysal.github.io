@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>
-   Square Turns &mdash; Hidden Symmetry in a Walking Sequence
+   Square Turns
   </title>
   <style>
    :root {
@@ -1225,12 +1225,12 @@
     
     <p class="hero-sub">
      A turtle wanders an infinite plane. At every step, it turns &mdash; not by a fixed angle, but by an amount that
-     <em>grows with the square of its step number</em>. From this single, deterministic rule beautiful paths emerge that
-     combine chaos and symmetry.
+     <em>grows with the square of its step number</em>. Despite the simplicity of the rule, the resulting paths exhibit
+     both chaos and  several recurring symmetries.
     </p>
     
     <a class="hero-cta" href="#turtle">
-     Begin the Journey &darr;
+     Start reading &darr;
     </a>
    </div>
   </section>
@@ -1243,26 +1243,25 @@
     </div>
     
     <ol>
-     <li><a href="#turtle">The Walking Rule</a></li>
-     <li><a href="#square-turns">Turning by Squares</a></li>
-     <li><a href="#gallery-first">Beauty First &mdash; Large N</a></li>
-     <li><a href="#closing">When Does the Path Close?</a></li>
-     <li><a href="#algebra">The Algebra &mdash; Why GCD with 6</a></li>
-     <li><a href="#petals">Counting Petals &mdash; Divisors of 6</a></li>
-     <li><a href="#symmetry">The Hidden Symmetry</a></li>
-     <li><a href="#twelve">The Mystery of 4 and 12 Petals</a></li>
-     <li><a href="#future">Future Work</a></li>
+     <li><a href="#intro">Introduction</a></li>
+     <li><a href="#turning-rule">The Turning Rule</a></li>
+     <li><a href="#exposition">Exposition: Some Large Examples</a></li>
+     <li><a href="#closing">Will the Path Close or Drift?</a></li>
+     <li><a href="#periodicity">Periodicity of the Moves</a></li>
+     <li><a href="#petals">Number of Petals</a></li>
+     <li><a href="#reflection">Origin of Reflection Symmetries</a></li>
+     <li><a href="#doubling">Doubling of the Petal Count</a></li>
+     <li><a href="#future">Related and Future Work</a></li>
     </ol>
    </div>
 
-   <!-- SECTION 1: TURTLE -->
-   <section class="section" id="turtle">
-    <span class="section-number">01 &mdash; The Setup</span>
-    <h2>The Walking Rule</h2>
+   <!-- SECTION 1: INTRODUCTION -->
+   <section class="section" id="intro">
+    <h2>1 &mdash; Introduction</h2>
     
     <p>
      Imagine a simple creature living on a blank, infinite plane. It follows this one simple instruction:
-     <strong>step forward exactly one unit, then turn by a chosen angle.</strong> It loops this behavior until we say it to stop.
+     <strong>step forward exactly one unit, then turn by a chosen angle.</strong> It loops this behavior until we tell it to stop.
     </p>
     
     <p>
@@ -1280,7 +1279,7 @@
     </p>
 
     <p>
-     We are going to feed our turtle with a specific turning rule and watch how highly symmetric and beautiful paths emerge. 
+     We are going to feed our turtle with a specific turning rule and watch how symmetric and beautiful paths emerge. 
      We'll use a discrete set of turns by first choosing a positive integer <em>S</em>, and then dividing a full circle into 
      <strong><em>S</em> equal angular slices</strong>, each measuring 360&deg;/S. Our turtle can only face one of these 
      <em>S</em> directions. At step <span class="math-inline">n</span>, it advances its direction index by a certain amount 
@@ -1289,7 +1288,7 @@
     </p>
 
     <p>
-      Here is a small demo that you can play with to get a grisp of what will we drawing with our turtle. 
+      Here is a small demo that you can play with to get a grasp of what will we be drawing with our turtle. 
       Just select <em>S</em> to define the number of available directions. Then you can move the turtle step-by-step, in S-step blocks,
       or you can even make it walk automatically. For all S values, the same turning rule that we'll explain in the next chapter is used, 
       but graphs are completely different.
@@ -1351,8 +1350,8 @@
     <p>
      Notice that the turtle moves very systematically, and symmetric patterns are taking shape. 
      Every forward movement is exactly one unit long, but the <em>orientation</em> changes are following some 
-     underlying pattern. In later sections of this article, we'll see how chaos and symmetry merges into beautiful
-     rosette-like shapes when our method is pushed to large values of S. We'll try to answer two fundamental questions:
+     underlying pattern. In later sections of this article, we'll see that many values of S produce highly symmetric 
+     rosette-like patterns. We'll try to answer two fundamental questions:
     </p>
 
     <ol class="section-list">
@@ -1362,10 +1361,9 @@
     
    </section>
 
-   <!-- SECTION 2: SQUARE TURNS -->
-   <section class="section" id="square-turns">
-    <span class="section-number">02 &mdash; The Rule</span>
-    <h2>Turning by Squares</h2>
+   <!-- SECTION 2: THE TURNING RULE -->
+   <section class="section" id="turning-rule">
+    <h2>2 &mdash; The Turning Rule</h2>
 
     <p>
      Let's formalize the mechanism. At step number <span class="math-inline">n</span> (starting from an initial
@@ -1415,7 +1413,7 @@
       Many other functions could have piloted our turtle. A simple linear rule (turning by <em>n</em> slots at step <em>n</em>) 
       yields curves resembling the classical Euler spiral. A randomized rule produces the chaotic path of a drunkard's walk. 
       I've found the square function a good compromise which is both very simple to describe, and also able to produce beautiful
-      shapes. Understanding the reason of this fact is our main objective.
+      shapes. The goal of this article is to understand why this particular rule produces these patterns.
      </p>
     </div>
 
@@ -1434,28 +1432,23 @@
     </div>
 
     <p>
-     The interplay between this cubic formula governing the <em>cumulative</em> heading, and the quadratic formula governing the 
-     <em>per-step</em> change, is the mathematical root of the gorgeous geometric symmetries we are about to see.
+     These two formulas will reappear throughout the article and help explain several of the observed symmetries.
     </p>
    </section>
 
-   <!-- SECTION 3: BEAUTY FIRST -->
-   <section class="section" id="gallery-first">
-    <span class="section-number">03 &mdash; The Reveal</span>
-    <h2>
-     Beauty Before Proof
-    </h2>
+   <!-- SECTION 3: EXPOSITION -->
+   <section class="section" id="exposition">
+    <h2>3 &mdash; Exposition : Some Large Examples</h2>
 
     <p>
-     Before we dissect the underlying algebra, let me demonstrate what this quadratic rule generates when pushed to large values of S. 
-     Keep in mind: these aren't manually created vectors or hand-drawn art. They are the pure, emergent structures of the square-turn rule, 
-     allowed to run for up to tens of thousands of iterations.
+     Before analyzing the algebra, let's look at some examples with large values of S. Keep in mind: these aren't manually created. 
+     Each image is generated directly from the turning rule described above.
     </p>
 
     <p>
-     Select any thumbnail to inspect it closely in the large viewer. Observe the distinct rosette structures and their varying "petal" counts. 
-     You will notice the intricate details and fractal-like symmetries for any value of S. We will spend the remainder of the article investigating 
-     why these shapes exist.
+     Select any thumbnail to inspect it closely in the large viewer. Different values of S produce noticeably different structures and apparent 
+     petal counts. You will notice the interesting details and fractal-like symmetries for almost any value of S. We will spend the remainder 
+     of the article investigating why these shapes exist.
     </p>
 
     <!-- Gallery -->
@@ -1516,11 +1509,8 @@
    <!-- SECTION 4: CLOSING -->
    <section class="section" id="closing">
     <span class="section-number">
-     04 &mdash; The Mystery
-    </span>
-    <h2>
-     When Does the Path Close?
-    </h2>
+    <h2>4 &mdash; Will the Path Close or Drift?</h2>
+
     <p>
      For the vast majority of values of S, the turtle's path form a closed, circular rosette-like symmetric shape. 
      The possible number of "petals" on these rosettes is strictly confined to 1, 2, 3, 4, 6, and 12 &mdash; which 
@@ -1530,7 +1520,7 @@
     </p>
 
     <p>
-     What mathematical property of S divides the shapes that loops from the ones that drift away?
+     Which values of S produce closed paths, and which produce drifting ones?
     </p>
 
     <!-- Demo: Closer vs Drifter -->
@@ -1705,21 +1695,17 @@
     </ul>
     
     <p>
-      Experimental brute-forcing reveals this set of "special" drifting primes to be: 11, 13, 23, 37, 47, 59, 61, 71, 73&hellip;
-      This sequence is highly likely to be infinite. Cross-referencing it with the On-Line Encyclopedia of Integer Sequences 
-      (<a href="http://oeis.org" class="accent-link">OEIS</a>) yields a few promising candidate sequences. Pinning down exactly 
-      which sequence definition fully explains the underlying arithmetic remains an open question.
+      With manual experimentation I've found that some certain prime numners are associated with drifting behavior. 
+      For example, 11, 13, 23, 37, 47, 59, 61, 71, and 73 are the first few ones. I have not yet found a complete characterization 
+      of this phenomenon, so I present it here only as an empirical observation. Searching this sub-seuence this in
+      (<a href="http://oeis.org" class="accent-link">OEIS</a>) yields a few promising candidates. So that can be a good starting 
+      point for a future reasearch on this topic.
     </p>
    </section>
 
-    <!-- SECTION 5: THE ALGEBRA OF CLOSURE -->
-   <section class="section" id="algebra">
-    <span class="section-number">
-     05 &mdash; The Algebra
-    </span>
-    <h2>
-     Why GCD With 6?
-    </h2>
+    <!-- SECTION 5: THE PERIODICITY -->
+   <section class="section" id="periodicity">
+    <h2>5 &mdash; Periodicity of the Moves</h2>
 
     <p>
       Let's revisit the sum-of-squares formula: <span class="math-inline">f(n) = n(n+1)(2n+1)/6</span>. It's not hard to 
@@ -1909,14 +1895,10 @@
     </p>
 
   </section>
+
    <!-- SECTION 6: PETALS -->
    <section class="section" id="petals">
-    <span class="section-number">
-     06 &mdash; The Petal Count
-    </span>
-    <h2>
-     Counting Petals &mdash; Divisors of 6
-    </h2>
+    <h2>6 &mdash; Number of Petals</h2>
     
     <p>
       We have now established that both the closure status of the path and the number of visual petals are tied to GCD(S, 6).
@@ -2081,18 +2063,15 @@
     </p>
    </section>
    
-   <!-- SECTION 7: SYMMETRY -->
-   <section class="section" id="symmetry">
-    <span class="section-number">
-     07 &mdash; The Symmetry
-    </span>
-    <h2>
-     The Hidden Symmetry
-    </h2>
+   <!-- TODO: Consider moving this after 4-12 petal discussion -->
+   <!-- SECTION 7: REFLECTION SYMMETRY -->
+   <section class="section" id="reflection">
+    <h2>7 &mdash; Origin of Reflection Symmetries </h2>
+
     <p>
      The previous section accounts for the top-level, rotational symmetries of our rosettes. This holds true regardless of 
      the petal count, even applying to the 1-petal shapes. But zoom in on a single petal, and you'll notice it's not a random walk. 
-     The petal is highly structured and have reflection symmetry. Let's trace the algebraic roots of this bilateral symmetry.
+     The petal is highly structured and has reflection symmetry. Let's trace the algebraic roots of this bilateral symmetry.
     </p>
 
     <h3>
@@ -2182,11 +2161,11 @@
 
     <p>
      The table demonstrates that discarding the initial <span class="math-inline">0</span> makes the sequence palindromic, 
-     but leaves us with S - 1 turns. Ironically, we'll prove shortly that this leading zero is the thing that forces the drawn 
-     path to be reflectionally symmetric!
+     but leaves us with S - 1 turns. Interestingly, this leading zero is the thing that forces the path to be reflectionally 
+     symmetric, as we'll see below.
     </p>
 
-    <h3>Proof of Petal Reflection Symmetry</h3>
+    <h3>Petal Reflection Symmetry</h3>
 
     <p>
       A geometric path consisting of <em>S</em> straight segments contains exactly <em>S-1</em> internal joints (the corners 
@@ -2278,18 +2257,15 @@
     </div>
     
    </section>
+
    <!-- SECTION 8: THE 12-PETAL MYSTERY -->
-   <section class="section" id="twelve">
-    <span class="section-number">
-     08 &mdash; Going Deeper
-    </span>
-    <h2>
-     The Mystery of 12 Petals
-    </h2>
+   <section class="section" id="doubling">
+    <h2>8 &mdash; Doubling of the Petal Count</h2>
+
     <p>
      Let's look at S = 24. We know from our previous proof that each petal (a block of 24 steps) inherently possesses 
      bilateral symmetry. Yet, upon closer inspection, each major petal appears physically fractured into 
-     <strong>two smaller sub-petals</strong>, each showcasing its own internal symmetry. What causes this?
+     <strong>two smaller sub-petals</strong>, each with its own internal symmetry. What causes this?
     </p>
 
     <!-- Demo: N=24 petal anatomy -->
@@ -2397,9 +2373,9 @@
     </p>
 
     <p>
-     To put it plainly: <strong>the second half of every petal is a rotated clone of the first half</strong>. 
-     Two perfectly congruent sub-petals, each housing its own bilateral symmetry. This is why S=24 (divisible by 4) 
-     visibly fractures into 12 lobes, while S=6 (not divisible by 4) remains visually fused as 6 solid petals.
+     To put it plainly: <strong>the second half of every petal is a rotated clone of the first half</strong>. Two congruent sub-petals, 
+     each bilaterally symmetry. This is why S=24 (divisible by 4) visibly fractures into 12 lobes, while S=6 (not divisible by 4) 
+     remains visually fused as 6 solid petals.
     </p>
 
     <div class="callout green">
@@ -2422,8 +2398,8 @@
      </p>
     </div>
     <p>
-     This fully resolves the mystery of the petal counts. You would assume the counts map strictly to the divisors of 6: {1, 2, 3, 6}. 
-     However, bilateral cloning visually doubles the {2, 6} geometries into {4, 12}. The 3-petal geometries retain their count 
+     This explains the petal counts observed in the examples considered here. You would assume the counts map strictly to the divisors of 6: 
+     {1, 2, 3, 6}. However, bilateral cloning visually doubles the {2, 6} geometries into {4, 12}. The 3-petal geometries retain their count 
      (the symmetry exists, but visually presents as a single, broad leaf). Therefore, the observable set of visual petals is 
      <strong>{1, 2, 3, 4, 6, 12}</strong> &mdash; the divisors of 12.
     </p>
@@ -2440,16 +2416,11 @@
 
    <!-- SECTION 9: FUTURE WORK -->
    <section class="section" id="future">
-    <span class="section-number">
-     09 &mdash; Next Steps
-    </span>
-    <h2>
-     Related and Future Work
-    </h2>
+    <h2>9 &mdash; Related and Future Work</h2>
 
     <p>
-     Everything we have unraveled here &mdash; the closing parameters, the rigid petal counts, the profound bilateral 
-     symmetries &mdash; can actually be unified under a grander mathematical area: the theory of <strong>exponential sums</strong>.
+     The results discussed here &mdash; closure conditions, petal counts, and bilateral symmetry &mdash; can be placed within a broader 
+     mathematical framework: the theory of <strong>exponential sums</strong>.
     </p>
     
     <p>
@@ -2463,10 +2434,9 @@
     
     <p>
      Because &theta;(n) is a cubic polynomial, this is technically an <em>exponential sum with a cubic polynomial phase</em>. 
-     The academic study of these sums is vast, tracing its lineage directly back to the foundational work of Gauss and Weil. 
-     While specific families of cubic polynomials are well documented in the literature, to the best of my knowledge, 
-     there is little published analysis focusing explicitly on why the geometric graphs of these partial sums consistently manifest 
-     these specific, beautiful rosettes.
+     The academic study of these sums is vast, with roots going back to the work of Gauss and Weil. While specific families of 
+     cubic polynomials are well documented in the literature, to the best of my knowledge, there is little published analysis 
+     focusing explicitly on why the geometric graphs of these partial sums consistently manifest these specific, beautiful rosettes.
     </p>
 
     <p>
@@ -2476,9 +2446,9 @@
       >
         Exponential Sums
       </a>
-      by <a href="https://research.unsw.edu.au/people/dr-david-angell" class="accent-link">David Angell</a>. 
-      He utilizes alternate cubic polynomials to generate similarly mesmerizing visual graphs. To keep this analysis accessible, 
-      I anchored my exploration to a highly specific, simplified polynomial driven entirely by its quadratic "change per step" rule.
+      by <a href="https://research.unsw.edu.au/people/dr-david-angell" class="accent-link">David Angell</a>. He utilizes alternate 
+      cubic polynomials to generate similarly striking visual graphs. To keep this analysis accessible, I focused on a simplified polynomial 
+      defined by a quadratic change per step rule.
     </p>
 
     <div class="callout">
@@ -2522,7 +2492,7 @@
       the graph drifts to the negative direction, and for others, drifts to the positive.
      </li>
      <li>
-      Beyond rotational and reflectional symmetry, what other hidden geometric properties define these shapes?
+      Beyond rotational and reflectional symmetry, what other geometric properties define these shapes?
      </li>
       <li>
         It is entirely possible to introduce an auxiliary integer <span class="math-inline">R</span> (where 
@@ -2561,7 +2531,7 @@
      ∎
     </div>
     <p class="footer-note">
-     This article was authored for the <a href="https://some.3b1b.co/" class="accent-link">2026 - Summer of Math Exposition (SoME 5)</a>. 
+     This article was written for the <a href="https://some.3b1b.co/" class="accent-link">2026 - Summer of Math Exposition (SoME 5)</a>. 
      The underlying mathematics draws heavily on classical exponential sums and modular arithmetic theory. 
      All visual demonstrations are generated dynamically in-browser utilizing the HTML5 Canvas API.
     </p>
