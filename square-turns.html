@@ -1491,16 +1491,13 @@
     <h2>4 &mdash; Will the Path Close or Drift?</h2>
 
     <p>
-     For the vast majority of values of S, the turtle's path form a closed, circular rosette-like symmetric shape. 
-     The possible number of "petals" on these rosettes is strictly confined to 1, 2, 3, 4, 6, and 12 &mdash; which 
-     is the set of positive divisors of 12. However, for a some specific S values, the path <em>drifts</em> in positive
-     or negative X-axis direction. Use the interactive sandbox below to see the behavioral split between closing and 
-     drifting paths.
+     For most values of S, the turtle's path form a closed, circular rosette-like symmetric shape. The possible number of 
+     "petals" on these rosettes is one of 1, 2, 3, 4, 6, or 12 &mdash; which is the set of positive divisors of 12. 
+     However, for a some specific S values, the path <em>drifts</em> in positive or negative X-axis direction. 
+     You can use the interactive sandbox below to see the behavioral split between closing and drifting paths.
     </p>
 
-    <p>
-     Which values of S produce closed paths, and which produce drifting ones?
-    </p>
+    <p>Which values of S produce closed paths, and which produce drifting ones?</p>
 
     <!-- Demo: Closer vs Drifter -->
     <div class="demo-wrap">
@@ -1643,19 +1640,14 @@
      When the greatest common divisor of S and 6 is greater than 1 (meaning either 2, 3, or both divides S), 
      the path will always close into a symmetric rosette-shape and loop periodically over that same shape. 
      The total number of "visible" petals will be either exactly gcd(S, 6) or 2&times;gcd(S, 6). 
-     I'll unpack exactly why the visible petal count can appear doubled in a later section.
+     I'll explain exactly why the visible petal count can appear doubled in a later section.
     </p>
-    
-    <div class="math-block">
-     gcd(S, 6) &gt; 1  &rArr; The path closes into a rosette
-    </div>
     
     <h3>
      The Complex Case: gcd(S, 6) = 1
     </h3>
     <p>
-      This scenario is far more subtle. Through visual inspection of various values of S, I could identify three 
-      distinct behaviors:
+      This scenario is far more subtle. Through visual inspection of various values of S, I could identify three behaviors:
     </p>
       
     <ul class="section-list">
@@ -1669,13 +1661,13 @@
       </li>
       <li>
         Conversely, if S contains an even powered prime factor that falls <em>outside</em> that special set, the path 
-        surprisingly closes and loops over a 1-petal shape. Example: S = 7&times;7 = 49.
+        closes and loops over a 1-petal shape. Example: S = 7&times;7 = 49.
       </li>
     </ul>
     
     <p>
-      With manual experimentation I've found that some certain prime numners are associated with drifting behavior. 
-      For example, 11, 13, 23, 37, 47, 59, 61, 71, and 73 are the first few ones. I have not yet found a complete characterization 
+      With manual experimentation I've found that the first few members of this special set of primes are:
+      <span class="math-inline">{11, 13, 23, 37, 47, 59, 61, 71, 73, &hellip;}</span>. I have not yet found a complete characterization 
       of this phenomenon, so I present it here only as an empirical observation. Searching this sub-seuence this in
       (<a href="http://oeis.org" class="accent-link">OEIS</a>) yields a few promising candidates. So that can be a good starting 
       point for a future reasearch on this topic.
