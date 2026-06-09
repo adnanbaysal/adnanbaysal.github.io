@@ -3145,7 +3145,7 @@
     })();
 
     // =========================================================
-    // GALLERY (Section 3)
+    // EXPOSITION (Section 3)
     // =========================================================
 
     const LARGE_N_PRESETS = [
@@ -3160,9 +3160,8 @@
     ];
 
     (function initGallery() {
-        const grid = document.getElementById('gallery-grid');
         const largeCanvas = document.getElementById('large-canvas');
-        if (!grid || !largeCanvas) return;
+        if (!largeCanvas) return;
 
         // Size large canvas
         function sizeLarge() {
@@ -3187,7 +3186,6 @@
             currentN = N;
             sizeLarge();
             const info = getClosureInfo(N);
-            if (!info.closes) return;
             const steps = Math.min(info.totalSteps, 100000);
             const { pts } = generatePath(steps, N);
             drawPath(largeCanvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale: 0.5 });
@@ -3209,68 +3207,6 @@
                 drawLarge(p.N);
             };
             lgGrid.appendChild(btn);
-        });
-
-        // Build gallery thumbnails
-        const GALLERY_N = [933, 1216, 10201, 15000];
-        const _thumbnails = [];
-        function drawThumbnail(canvas, N) {
-          // ensure layout settled
-          const rect = canvas.getBoundingClientRect();
-          const cssW = Math.max(1, Math.round(rect.width || canvas.clientWidth || canvas.width || 200));
-          const info = getClosureInfo(N);
-          if (!info.closes) return;
-          const steps = Math.min(info.totalSteps, 90000);
-          // scale down line thickness on small canvases
-          const lineScale = Math.min(0.8, cssW / 220);
-          const { pts } = generatePath(steps, N);
-          drawPath(canvas, pts, steps, N, { style: 'neon', petalColors: true, totalPetals: info.petals, lineScale });
-        }
-
-        GALLERY_N.forEach(N => {
-          const cell = document.createElement('div');
-          cell.className = 'gallery-cell';
-          const c = document.createElement('canvas');
-          c.width = 200;
-          c.height = 200;
-          c.dataset.n = N;
-          const lbl = document.createElement('div');
-          lbl.className = 'gallery-label';
-          lbl.textContent = 'S = ' + N.toLocaleString();
-          cell.appendChild(c);
-          cell.appendChild(lbl);
-          grid.appendChild(cell);
-          _thumbnails.push({ canvas: c, N });
-
-          // Initial draw after layout
-          setTimeout(() => drawThumbnail(c, N), 120);
-
-          cell.onclick = () => {
-            document.querySelectorAll('#large-s-grid .s-btn').forEach(b => {
-              b.classList.toggle('selected', b.textContent.replace(/,/g, '').includes(String(N)));
-            });
-            drawLarge(N);
-            document.getElementById('large-canvas').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          };
-        });
-
-        // Redraw thumbnails on resize so small canvases get thinner lines
-        window.addEventListener('resize', () => {
-          _thumbnails.forEach(t => {
-            // small delay to allow layout to settle
-            setTimeout(() => {
-              if (!t.canvas.isConnected) return;
-              drawThumbnail(t.canvas, t.N);
-            }, 60);
-          });
-        });
-
-        // Redraw on theme change
-        window.addEventListener('themechange', () => {
-          drawLarge(currentN);
-          _thumbnails.forEach(t => {
-            if (t.canvas.isConnected) drawThumbnail(t.canvas, t.N);
-          });
         });
 
         // Initial draw
