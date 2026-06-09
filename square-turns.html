@@ -1421,13 +1421,14 @@
 
     <p>
      Before analyzing the math, let's look at some examples with large values of S. Keep in mind: these aren't manually created. 
-     Each image is generated directly from the simple turning rule described above.
+     Each image is generated directly from the simple turning rule described above. I've selected the S values that I think produces
+     beautiful paths.
     </p>
 
     <p>
-     Select any S to inspect resulting path in the large viewer. Different values of S produce noticeably different structures and apparent 
-     petal counts. You will notice the interesting details and fractal-like symmetries for almost any value of S. We will spend the remainder 
-     of the article investigating why these shapes exist.
+     Select any S to inspect resulting path in the large viewer. You'll notice that the paths have both rotational and reflectional
+     symmetries. Visually, this creates rosette-like shapes with varying number of "petals". We will spend the remainder of the 
+     article investigating how these shapes emerge from our turning rule.
     </p>
 
     <!-- Gallery -->
@@ -3137,13 +3138,11 @@
     // =========================================================
 
     const LARGE_N_PRESETS = [
-        { N: 183, label: 'S = 183', note: '3 petals' },
-        { N: 368, label: 'S = 368', note: '4 petals' },
-        { N: 722, label: 'S = 722', note: '2 petals' },
-        { N: 933, label: 'S = 933', note: '3 petals' },
-        { N: 1216, label: 'S = 1216', note: '4 petals' },
-        { N: 2526, label: 'S = 2526', note: '6 petals' },
         { N: 10201, label: 'S = 10201', note: '1 petal' },
+        { N: 11002, label: 'S = 11002', note: '2 petal' },
+        { N: 12003, label: 'S = 12003', note: '3 petals' },
+        { N: 13028, label: 'S = 13028', note: '4 petals' },
+        { N: 14010, label: 'S = 14010', note: '6 petals' },
         { N: 15000, label: 'S = 15000', note: '12 petals' },
     ];
 
