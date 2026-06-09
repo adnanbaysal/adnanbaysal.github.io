@@ -1221,9 +1221,7 @@
      This simple rule leads to paths that merge chaos and symmetry.
     </p>
     
-    <a class="hero-cta" href="#turtle">
-     Start reading &darr;
-    </a>
+    <a class="hero-cta" href="#turtle">Start reading &darr;</a>
    </div>
   </section>
   
@@ -1257,7 +1255,7 @@
     </p>
     
     <p>
-     The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn always by 90&deg;, 
+     The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn by constant 90&deg;, 
      and it walks in a square. Tell it to always turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by a 
      constant irrational angle, and the path will wander chaotically over a circular orbit forever, never fully repeating a step.
     </p>
@@ -1271,19 +1269,16 @@
     </p>
 
     <p>
-     We are going to feed our turtle with a specific turning rule and watch how symmetric and beautiful paths emerge. 
-     We'll use a discrete set of turns by first choosing a positive integer <em>S</em>, and then dividing a full circle into 
-     <strong><em>S</em> equal angular slices</strong>, each measuring 360&deg;/S. Our turtle can only face one of these 
-     <em>S</em> directions. At step <span class="math-inline">n</span>, it advances its direction index by a certain amount 
-     (measured in these 360&deg;/S slices) before stepping forward. We'll try different values of <em>S</em> to see what kind
-     of paths we can draw with this simple algorithm.
+     We are going to give our turtle a specific turning rule and draw the paths it traces.  We'll use a discrete set of turns by 
+     choosing a positive integer <em>S</em>, and dividing a full circle into <strong><em>S</em> equal angular slices</strong>, 
+     each measuring 360&deg;/S. Our turtle can only face one of these <em>S</em> directions. At step <span class="math-inline">n</span>, 
+     it advances its direction index by a certain amount (measured in these 360&deg;/S slices) before stepping forward. We'll try different 
+     values of <em>S</em> to see what kind of paths we can draw.
     </p>
 
     <p>
-      Here is a small demo that you can play with to get a grasp of what will we be drawing with our turtle. 
-      Just select <em>S</em> to define the number of available directions. Then you can move the turtle step-by-step, in S-step blocks,
-      or you can even make it walk automatically. For all S values, the same turning rule that we'll explain in the next chapter is used, 
-      but graphs are completely different.
+      Here is a small demo that uses the same rule we'll analyze in this article, for some small values of S. You can move the turtle step-by-step, 
+      in S-step blocks, or make it walk automatically.
     </p>
     
     <!-- DEMO 1: Step by step walker -->
@@ -1341,14 +1336,13 @@
 
     <p>
      Notice that the turtle moves very systematically, and symmetric patterns are taking shape. 
-     Every forward movement is exactly one unit long, but the <em>orientation</em> changes are following some 
-     underlying pattern. In later sections of this article, we'll see that many values of S produce highly symmetric 
-     rosette-like patterns. We'll try to answer two fundamental questions:
+     The <em>orientation</em> changes at each step are following some underlying pattern. In later sections of this article, 
+     we'll see that many values of S produce highly symmetric rosette-like patterns. We'll try to answer two fundamental questions:
     </p>
 
     <ol class="section-list">
       <li>Will the turtle draw a closed loop-like shape, or will it wander on the plane indefinitely?</li>
-      <li>What are the mathematical reasons behind beautiful symmetries we'll about to see?</li>
+      <li>What are the mathematical reasons behind the symmetries we'll about to see?</li>
     </ol>
     
    </section>
@@ -3054,6 +3048,7 @@
         setTimeout(resize, 50);
 
         let N = 3;
+        let maxN = 9;
         let stepN = 0;
         let phaseNum = 0;
         let pts = new Float64Array(2001 * 2);
@@ -3107,6 +3102,7 @@
             document.querySelectorAll('#step-s-grid .s-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             N = parseInt(btn.dataset.n);
+            maxN = N * gcd(N, 6);
             reset();
         });
 
@@ -3129,7 +3125,7 @@
             } else {
                 this.textContent = '⏸ Pause';
                 autoInterval = setInterval(() => {
-                    if (stepN >= 200) {
+                    if (stepN >= maxN) {
                         clearInterval(autoInterval);
                         autoInterval = null;
                         document.getElementById('step-auto-btn').textContent = '▶ Auto Play';
