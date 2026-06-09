@@ -88,7 +88,7 @@
     {
         "id": "square-turns",
         "title": "Square Turns",
-        "description": "A turtle wanders an infinite plane. At every step, it turns - not by a fixed angle, but by an amount that grows with the square of its step number. From this single, deterministic rule beautiful paths emerge that combine chaos and symmetry.",
+        "description": "A turtle wanders an infinite plane. At every step, it turns by an amount that grows with the square of its step number. This simple rule leads to paths that merge chaos and symmetry",
         "url": "./square-turns.html",
         "image": "media/square-turns.png",
         "tags": [
