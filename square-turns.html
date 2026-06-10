@@ -2108,14 +2108,14 @@
     
    </section>
 
-   <!-- SECTION 8: THE 12-PETAL MYSTERY -->
+   <!-- SECTION 8: PETAL DOUBLING -->
    <section class="section" id="doubling">
     <h2>8 &mdash; Doubling of the Petal Count</h2>
 
     <p>
-     Let's look at S = 24. We know from our previous proof that each petal (a block of 24 steps) inherently possesses 
-     bilateral symmetry. Yet, upon closer inspection, each major petal appears physically fractured into 
-     <strong>two smaller sub-petals</strong>, each with its own internal symmetry. What causes this?
+     Let's look at S = 24. We know from our previous "proof" that each petal (a block of 24 steps) inherently possesses 
+     reflectional symmetry. Yet, upon closer inspection, each petal has <strong>two smaller sub-petals</strong> for this specific S, 
+     each with its own internal reflection symmetries. In this section we'll analyze what causes this.
     </p>
 
     <!-- Demo: N=24 petal anatomy -->
@@ -2198,66 +2198,50 @@
      </div>
     </div>
     
-    <h3>
-     The Second Shift Identity
-    </h3>
+    <h3>The Second Shift Identity</h3>
+    
     <p>
-     The palindrome property (<span class="math-inline">x&sup2; &equiv; (S&minus;x)&sup2;</span>) is responsible for the petal's 
-     outer mirror symmetry. But, for some S there is a <em>second</em> modular identity in the arithmetic, responsible for the sub-petal cloning:
+     The palindrome property (<span class="math-inline">n&sup2; &equiv; (S&minus;n)&sup2;</span>) is responsible for the petal's 
+     outer mirror symmetry. But, for some S there is a <em>second</em> modular identity in the arithmetic, responsible for the case
+     that petal consist of two reflectionally symmetric sub-petals:
     </p>
     
-    <div class="math-block">
-     (x + S/2)&sup2; &equiv; x&sup2; (mod S) if and only if 4 divides S
-    </div>
+    <div class="math-block">(n + S/2)&sup2; &equiv; n&sup2; (mod S) if and only if 4 divides S</div>
     
     <p>
-     The proof is a simple modular algebra: <span class="math-inline">(x + S/2)&sup2; = x&sup2; + Sx + S&sup2;/4</span>. 
-     The middle term, <span class="math-inline">Sx</span>, is a clean multiple of S, so it vanishes mod S. The final term,
-     <span class="math-inline">S&sup2;/4</span>, vanishes mod S if and only if 4 is a perfect divisor of S. ∎
+     The proof is a simple modular algebra: <span class="math-inline">(n + S/2)&sup2; = n&sup2; + Sn + S&sup2;/4</span>. 
+     The middle term, <span class="math-inline">Sn</span>, is a clean multiple of S, so it vanishes mod S. The final term,
+     <span class="math-inline">S&sup2;/4</span>, vanishes mod S if and only if 4 is a divisor of S. ∎
     </p>
 
     <p>
      Translated to geometry: whenever S is divisible by 4, the squared angular shift applied at step <span class="math-inline">n</span> 
      is mathematically identical to the shift applied at step <span class="math-inline">n + S/2</span>. The second half of the petal 
      has the exact same set of relative turns as the first half, just executed from a new origin point and rotation.
-    </p>
-
-    <p>
-     To put it plainly: <strong>the second half of every petal is a rotated clone of the first half</strong>. Two congruent sub-petals, 
-     each bilaterally symmetry. This is why S=24 (divisible by 4) visibly fractures into 12 lobes, while S=6 (not divisible by 4) 
-     remains visually fused as 6 solid petals.
+     Therefore, <strong>the second half of every petal is a rotated clone of the first half</strong>. This is why the path for S=24 
+     (divisible by 4) visibly consist of 12 petals, while S=6 (not divisible by 4) remains with 6 petals.
     </p>
 
     <div class="callout green">
-     <span class="callout-label">
-      Summary: The Architecture of a Petal
-     </span>
+     <span class="callout-label">Summary: The Symmetry of a Petal</span>
+     
      <p>
-      <strong>Outer symmetry</strong> (The primary mirror line): Universally true. Derived from the palindrome identity
-      <span class="math-inline">x&sup2; &equiv; (S&minus;x)&sup2;</span>.
+      <strong>Outer symmetry</strong>: True for all S. Derived from the palindrome identity
+      <span class="math-inline">n&sup2; &equiv; (S&minus;n)&sup2;</span>.
      </p>
      
      <p class="mt-8">
-      <strong>Sub-petal splitting</strong> (The congruent cellular division): Exclusively requires 4 | S. 
-      Derived from the shift identity <span class="math-inline">(x+S/2)&sup2; &equiv; x&sup2;</span>.
-     </p>
-     
-     <p class="mt-8">
-      <strong>Visual count &asymp; 2 &times; rotational count</strong> This visual doubling occurs whenever profound 
-      bilateral symmetry effectively splits the appearance of {2, 6} petals into {4, 12} lobes.
+      <strong>Sub-petal splitting</strong>: Requires 4 | S. Derived from the shift identity <span class="math-inline">(n+S/2)&sup2; &equiv; n&sup2;</span>.
      </p>
     </div>
+
     <p>
-     This explains the petal counts observed in the examples considered here. You would assume the counts map strictly to the divisors of 6: 
-     {1, 2, 3, 6}. However, bilateral cloning visually doubles the {2, 6} geometries into {4, 12}. The 3-petal geometries retain their count 
-     (the symmetry exists, but visually presents as a single, broad leaf). Therefore, the observable set of visual petals is 
-     <strong>{1, 2, 3, 4, 6, 12}</strong> &mdash; the divisors of 12.
+     This explains the petal counts observed in the examples considered here. Normally, we would have 1, 2, 3, or 6 petals. 
+     However, the shift identity doubles some 2 and 6 petals into 4 and 12. The 3-petal paths retain their count. 
+     Therefore, the observable set of visual petals is <strong>{1, 2, 3, 4, 6, 12}</strong> &mdash; the divisors of 12.
     </p>
     
-    <!-- Side by side: N=6 vs N=12 vs N=24 -->
-    <h3>
-     Seeing It Side-by-Side
-    </h3>
+    <h3>Seeing It Side-by-Side</h3>
 
     <div class="gallery-grid" id="anat-compare-grid">
      <!-- Populated by JS -->
@@ -3353,19 +3337,19 @@
             if (mode === 'full') {
                 drawPath(canvas, pts, info.totalSteps, N, { style: 'rainbow', petalColors: true, totalPetals: info.petals });
                 labelEl.textContent = 'Full rosette (144 steps)';
-                explainEl.textContent = 'The complete shape: 6 petals of 24 steps each. Each color is one petal (one block of N steps). Notice that every petal has the same shape — they\'re all the same curve, just rotated by 60°.';
+                explainEl.textContent = 'The complete shape: 6 petals of 24 steps each. Each color is one petal (one block of 24 steps).';
             } else if (mode === 'one') {
                 // Draw one petal (first 24 steps) against dim background
                 const { pts: pts2 } = generatePath(info.totalSteps, N);
                 drawPath(canvas, pts2, info.totalSteps, N, { style: 'rainbow', petalColors: true, totalPetals: info.petals, highlightPetal: 0 });
-                labelEl.textContent = 'First petal (steps 1–24)';
-                explainEl.textContent = 'Isolating one petal of 24 steps (highlighted). This single petal has bilateral symmetry — it\'s mirror-symmetric around a central axis. This comes from x² ≡ (N−x)² mod N.';
+                labelEl.textContent = 'First petal (steps 0–23)';
+                explainEl.textContent = 'Isolating one petal of 24 steps (highlighted). This single petal has reflection symmetry.';
             } else if (mode === 'half') {
                 // Draw first half of first petal (steps 1-12)
                 const { pts: pts3 } = generatePath(12, N);
                 drawPath(canvas, pts3, 12, N, { style: 'neon', petalColors: false, totalPetals: 1 });
                 labelEl.textContent = 'First sub-petal (steps 1–12)';
-                explainEl.textContent = 'The first half of the first petal (12 steps). This sub-petal is ALSO bilaterally symmetric. Because 4 divides N=24, (x+12)² ≡ x² mod 24, making the second 12 steps a rotation copy of the first.';
+                explainEl.textContent = 'The first half of the first petal (12 steps). This sub-petal ALSO has reflection symmetry.';
             }
         }
 
