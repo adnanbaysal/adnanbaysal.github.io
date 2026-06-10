@@ -1798,36 +1798,32 @@
     <h2>6 &mdash; Number of Petals</h2>
     
     <p>
-      We have now established that both the closure status of the path and the number of visual petals are tied to GCD(S, 6).
-      Let's break down how these two properties manifest physically.
+      We have now showed that both the closure status of the path and the number of visual petals are related to GCD(S, 6).
+      Let's analyze how these two properties affect the graphs.
     </p>
 
-    <h3>
-      Closure when GCD(S, 6) = 1
-    </h3>
+    <h3>Closure when GCD(S, 6) = 1</h3>
+    
     <p>
-      As previewed in the section <a href="#closing" class="accent-link">When Does the Path Close?</a>, 
-      this scenario is a mathematical edge case. For certain values of S, the path drifts along the positive or negative x-axis. 
-      For others, it forms a closed orbit, and the turtle retraces the exact same path forever.
+      As previewed in the section <a href="#closing" class="accent-link">When Does the Path Close?</a>, this scenario is more complicated. 
+      For certain values of S, the path drifts along the positive or negative x-axis. For others, it forms a closed path, and the turtle 
+      retraces it forever.
     </p>
 
     <p>
-      In this state, we know <span class="math-inline">&theta;(S) = 0</span>. This guarantees that the heading after S steps is 
+      In this case, we know that <span class="math-inline">&theta;(S) = 0</span>. This guarantees that the heading after S steps is 
       identical to the starting heading. If the spatial <em>coordiantes</em> of the turtle after S steps also happens to match 
       the origin, we achieve a closed, <strong>1-petal</strong> shape. If the position is offset, the graph drifts. 
       For the sake of taxonomy, I will classify both behaviors under the "1-petal" name, aligning the petal count directly with the GCD. 
-      As stated before, exploring the arithmetic reasons why some 1-petal paths drift while others close is outside the scope of this 
-      particular exploration, but it remains an area for future research.
+      As stated before, exploring the arithmetic reasons why some 1-petal paths drift &mdash; and specifically only in x-axis &mdash; 
+      while others close is outside the scope of this particular article, but it remains an area for future research.
     </p>
 
-    <h3>
-      Closure when GCD(S, 6) > 1
-    </h3>
+    <h3>Closure when GCD(S, 6) > 1</h3>
 
     <p>
-     This scenario is far more intuitive. Let's trace the logic without relying on heavy algebra. Imagine the turtle completes one full 
-     block of <strong>S steps</strong>, halting at some arbitrary coordinate. Assuming it hasn't landed back on the origin, 
-     it is now displaced. 
+     This case is easier to analyze. Imagine the turtle completes one full block of <strong>S steps</strong>. It is now displaced
+     by the sum of the vectors until this point, and is also facing to the slot that is the cumulative sum of orientation changes. 
     </p>
 
     <p>
@@ -1835,15 +1831,15 @@
      to the first &mdash; except it will be 
      <strong>rotated by the constant offset angle <span class="math-inline">&theta;(S)</span></strong>. Now, picture a straight 
      line drawn from the origin to the turtle's current displaced position. If we let the turtle run for another block of S steps, 
-     it will land at a new coordinate. 
+     it will land at a new coordinate and faces to the slot <span class="math-inline">2&times;&theta;(S)</span>. 
     </p>
 
     <p>
      Because the second S-step path is an identical (but rotated) clone of the first block, the imaginary line 
      connecting the ending points of the first and the second S-step blocks will have the exact same length as the 
      first imaginary line. Furthermore, since the turtle's starting heading was rotated by <span class="math-inline">&theta;(S)</span>, 
-     this new connecting line will be rotated by that exact same angle when compared to the previous imaginary line. Ultimately, 
-     each S-step block pushes the turtle along the invisible vertices of a regular polygon. Depending on 
+     this new connecting line will be rotated by that exact same angle when compared to the first imaginary line. If we continue this way, 
+     each S-step block pushes the turtle along the vertices of an imaginary regular polygon. Depending on 
      <span class="math-inline">GCD(S, 6)</span>, this rotational angle will be exactly 1/2, 2/3, or 1/6 of a full turn. 
     </p>
 
@@ -1930,7 +1926,7 @@
          </div>
          <div class="info-row">
           <span class="info-key">
-           Rotation petals
+           Visible petals
           </span>
           <span class="info-val green" id="pt-petals">
            &mdash;
@@ -1945,18 +1941,14 @@
           </span>
          </div>
         </div>
-        <div id="pt-explain" class="panel-note">
-         Each vibrant color in the drawing represents one self-contained "block" of S steps. The blocks act like the rigid blades of a 
-         fan &mdash; mathematically identical shapes, rotated by equal amounts.
-        </div>
        </div>
       </div>
      </div>
     </div>
     
     <p>
-      You might be wondering: if the math dictates only 1, 2, 3, or 6 rotational petals, why did earlier images feature <em>12</em> 
-      or even <em>4</em> petal-like structures? To answer that, we have to look closer at the internal architecture of the petals themselves.
+      There is something interesting in the graphs we see above. There are 1, 2, 3, and 6 petals shapes as expected by the analysis above, 
+      but we also see <em>4</em> and <em>12</em> petal shapes. We'll explain the reason of this in the next two sections.
     </p>
    </section>
    
@@ -3301,11 +3293,11 @@
 
             const dT = info.delta;
             const explain = {
-                60: `Δθ = 60° → 6 rotation petals (360°/60° = 6). Each block rotates 60° from the previous.`,
-                120: `Δθ = 120° → 3 rotation petals (360°/120° = 3). Each block rotates 120°.`,
-                180: `Δθ = 180° → 2 rotation petals (360°/180° = 2). The second block is flipped 180° from the first.`,
-                240: `Δθ = 240° → 3 rotation petals (rotates 240° = −120° each time).`,
-                300: `Δθ = 300° → 6 rotation petals (rotates 300° = −60° each time).`,
+                60: `Δθ = 60° → 6 petals (360°/60° = 6). Each block rotates 60° from the previous.`,
+                120: `Δθ = 120° → 3 petals (360°/120° = 3). Each block rotates 120°.`,
+                180: `Δθ = 180° → 2 petals (360°/180° = 2). The second block is flipped 180° from the first.`,
+                240: `Δθ = 240° → 3 petals (rotates 240° = −120° each time).`,
+                300: `Δθ = 300° → 6 petals (rotates 300° = −60° each time).`,
             };
             document.getElementById('pt-explain').textContent = explain[dT] || `Δθ = ${dT}°`;
         }
