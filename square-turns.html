@@ -1632,7 +1632,7 @@
     </ul>
 
     <p>
-      As established, every slot step corresponds to a <span class="math-inline">1/S</span> fraction of a full 360-degree turn. 
+      As mentioned before, every slot corresponds to a <span class="math-inline">1/S</span> fraction of a full 360-degree turn. 
       Therefore, the <span class="math-inline">mod S</span> operation in the definitions of both 
       <span class="math-inline">&Delta;&theta;(n)</span> and <span class="math-inline">&theta;(n)</span> makes sense, 
       since any integer multiple of S is identical to making no turn at all.
@@ -1642,7 +1642,7 @@
      &Delta;&theta;(n) is periodic
     </h3>
     <p>
-      Our foundational observation is that the sequence of <em>relative</em> orientation shifts is periodic, cycling  every 
+      Our first observation is that the sequence of <em>relative</em> orientation shifts is periodic, cycling  every 
       <span class="math-inline">S</span> steps. The arithmetic proof for this is very simple:
     </p>
 
@@ -1652,15 +1652,15 @@
 
     <p>
       This means that after <span class="math-inline">S</span> steps, the turtle arrives at a new coordinate position and heading, 
-      but its "instruction manual" resets. From that new location, the turtle will execute <em>the exact same sequence of relative turns</em>, 
-      tracing an identical shape during the next <span class="math-inline">S</span> steps, simply translated and rotated in space.
+      but it will receive the same sequence of instructions from that point on in the next S steps. Hence, the turtle will trace 
+      an identical shape during the next <span class="math-inline">S</span> steps, simply translated and rotated in space.
     </p> 
 
     <p>
       This <span class="math-inline">S</span>-periodicity alone explains why we see repeating patterns in the visualizations. 
       However, this doesn't explain why the path closes and loops over the same shape for most values of <span class="math-inline">S</span>, 
-      and why every <span class="math-inline">S</span>-step block seems to have internal reflectional symmetry. Neither of those traits is 
-      guaranteed by periodicity. We have to dig deeper.
+      and why every <span class="math-inline">S</span>-step block seems to have internal reflectional symmetry. There are other algebraic
+      properties that cause these two behavior. The first property is related to the observation below:
     </p>
     
     <h3>
@@ -1668,9 +1668,9 @@
     </h3>
 
     <p>
-      Let's apply the same logic to the cumulative heading, checking <span class="math-inline">&theta;(n + S)</span>
-      mod <span class="math-inline">S</span>. To do this, we expand the sum-of-squares formula: 
-      <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. Here is a little bit algebra:
+      Let's check what can we say about <span class="math-inline">&theta;(n + S) mod S</span> for all <span class="math-inline">n</span>. 
+      We'll expand the sum-of-squares formula to make the analysis easier: <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. 
+      Here is a little bit algebra:
     </p>
 
     <div class="math-block">
@@ -1728,7 +1728,7 @@
           <span class="fraction-num">S(S+1)(2S+1)</span>
           <span class="fraction-den">6</span>
       </span> mod S</span>, we can guarantee that the orientation will eventually repeat the same sequence of cumulative turns in 
-      no more than <span class="math-inline">6S</span> steps. In reality, we can calculate the precise minimum cycle required.
+      no more than <span class="math-inline">6S</span> steps. We can do better, and calculate the precise minimum cycle required.
     </p>
 
     <p>
@@ -1742,9 +1742,9 @@
         </span> mod S
       </span>. Let's designate the numerator of the fractional part as <span class="math-inline">k<sub>S</sub> = (S+1)(2S+1)</span>. 
       It becomes clear that we only need to evaluate the remainder of <span class="math-inline">k<sub>S</sub> mod 6</span>. 
-      Any whole integer multiples of S essentially evaporate in modulo <span class="math-inline">S</span> arithmetic. 
+      Any whole integer multiples of S will disappear in the modulo <span class="math-inline">S</span> arithmetic. 
       Whatever fraction remains dictates the exact minimum period (counted in <span class="math-inline">S</span>-step blocks). 
-      By checking all possible values of <span class="math-inline">S mod 6</span>, the following pattern emerges:
+      By checking all possible values of <span class="math-inline">S mod 6</span>, we construct the following table:
     </p>
 
     <div id="smod6-table-wrap">
@@ -1772,6 +1772,7 @@
        </tr>
       </thead>
       <tbody>
+        <!-- Populated by JS -->
       </tbody>
      </table>
     </div>
@@ -1782,9 +1783,8 @@
     </p>
 
     <p>
-      What does this period mean for the geometry of the graphs our turtle draw? It ensures that the turtle will 
-      resume its exact initial heading after precisely <span class="math-inline">k&times;S</span> steps (where <em>k</em> 
-      is 1, 2, 3, or 6). After that point, it will periodically repeat the same sequence of <span class="math-inline">k&times;S</span> 
+      This periodic behavior mean that the turtle will return to its exact initial heading after <span class="math-inline">k&times;S</span> steps 
+      (where <em>k</em> is 1, 2, 3, or 6). After that point, it will periodically repeat the same sequence of <span class="math-inline">k&times;S</span> 
       steps. So the turtle will draw the exact same shape, aligned without rotation, over and over. However, the previous caveat  
       still exist: orientation match does not guarantee a return to the <em>starting spatial coordinates</em>. The turtle might be 
       drawing the same shape, but displaced away from the origin by the accumulated vector of its steps. That displacement is what 
