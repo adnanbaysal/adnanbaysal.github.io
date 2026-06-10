@@ -2253,7 +2253,7 @@
     <h2>9 &mdash; Related and Future Work</h2>
 
     <p>
-     The results discussed here &mdash; closure conditions, petal counts, and bilateral symmetry &mdash; can be placed within a broader 
+     The results discussed here &mdash; closure conditions, petal counts, and reflection symmetries &mdash; can be analyzed within a broader 
      mathematical framework: the theory of <strong>exponential sums</strong>.
     </p>
     
@@ -2267,10 +2267,10 @@
     </div>
     
     <p>
-     Because &theta;(n) is a cubic polynomial, this is technically an <em>exponential sum with a cubic polynomial phase</em>. 
-     The academic study of these sums is vast, with roots going back to the work of Gauss and Weil. While specific families of 
-     cubic polynomials are well documented in the literature, to the best of my knowledge, there is little published analysis 
-     focusing explicitly on why the geometric graphs of these partial sums consistently manifest these specific, beautiful rosettes.
+     Because &theta;(n) is a cubic polynomial, this is technically an <em>exponential sum with a cubic polynomial</em>. 
+     The academic study of these sums is vast, with roots going back to the works of Gauss and Weil. While specific families of 
+     cubic polynomials are analyzed in the literature, to the best of my knowledge, there is little published analysis 
+     focusing explicitly on why the geometric graphs of these partial sums consistently creates these symmetric rosette-like shapes.
     </p>
 
     <p>
@@ -2303,32 +2303,26 @@
     </h3>
 
     <p>
-     This geometric playground is ripe with open questions:
+     There are lots of open questions related to what we studied here. The following are the most obvious ones that came to my mind:
     </p>
+
     <ul class="section-list text-dim">
      <li>
-      Can formal exponential sum theory be deployed to analytically lock down the <em>closure properties</em>, <em>symmetries</em>, 
-      and <em>petal generation</em> with absolute certainty?
+      Can the theoretical results in the exponential sums literature be used prove the geometric properties we discovered here?
      </li>
+
      <li>
-      Do all cubic polynomials intrinsically generate equivalent symmetries, or is this rule special? 
-      How does the number of petals depend on the coefficients of these polynomial used?
+      What geometric properties we would have if used a random cubic rational polynomial? What about higher degree rational polynomials?
      </li>
-     <li>
-      What happens when we escalate the math? Can similar geometric guarantees be proven for polynomials of higher degrees?
-     </li>
+
      <li>
       What is the precise arithmetic mechanism that forces certain 1-petal configurations to close while condemning others to endless drift?
      </li>
+
      <li>
-      Why drifting graphs only drift on the X-axis? That means, when the oriantation resets after 1 block, the turtle returns 
-      to a spatial location with <span class="math-inline">x=0</span>. What determines the drifting direction? For some S, 
-      the graph drifts to the negative direction, and for others, drifts to the positive.
-     </li>
+      Why drifting graphs only drift on the X-axis? What determines the drifting direction to be positive or negative?
+
      <li>
-      Beyond rotational and reflectional symmetry, what other geometric properties define these shapes?
-     </li>
-      <li>
         It is entirely possible to introduce an auxiliary integer <span class="math-inline">R</span> (where 
         <span class="math-inline">GCD(R,S) = 1</span>) and process 
         <span class="math-inline">
@@ -2347,17 +2341,6 @@
         turns as base slots. The set of all possible turns will be the same, but the visuals generated will be 
         significantly different. In fact, the interactive sandbox linked above natively supports both R and S inputs. 
         Analyzing the structural impact of R remains another frontier for future research.
-      </li>
-      <li>
-        What would a random walk with algebraic properties similar to the squared turn rule would look like? 
-        For example, we can create a random S-step palindromic sequence of various multiples of 1/S full turns.
-        Besides, we can make their sum mod S to be a divisor of S, so that we can chose the petal count.
-        This analysis would help identify what other graphical properties squared turn rule has, when compared to 
-        similar random walks.
-      </li>
-      <li>
-        Can we link the theory of <a href="https://en.wikipedia.org/wiki/Dihedral_group" class="accent-link">Dihedral groups</a>
-        to our algorithm to understand the shapes we see here better?
       </li>
     </ul>
 
