@@ -1952,23 +1952,19 @@
     </p>
    </section>
    
-   <!-- TODO: Consider moving this after 4-12 petal discussion -->
    <!-- SECTION 7: REFLECTION SYMMETRY -->
    <section class="section" id="reflection">
     <h2>7 &mdash; Origin of Reflection Symmetries</h2>
 
     <p>
-     The previous section accounts for the top-level, rotational symmetries of our rosettes. This holds true regardless of 
-     the petal count, even applying to the 1-petal shapes. But zoom in on a single petal, and you'll notice it's not a random walk. 
-     The petal is highly structured and has reflection symmetry. Let's trace the algebraic roots of this bilateral symmetry.
+     The previous section accounts for the top-level, rotational symmetries of the paths our turtle draws. But when we look at a single petal, 
+     we can easily see that it has reflection symmetry too. This section will investigate the reasons of this common property.
     </p>
 
-    <h3>
-      &Delta;&theta;(n) is palindromic
-    </h3>
+    <h3>&Delta;&theta;(n) is palindromic</h3>
 
     <p>
-      The orientation shift function, <span class="math-inline">&Delta;&theta;(n)</span>, holds an interesting property: 
+      The orientation change function, <span class="math-inline">&Delta;&theta;(n)</span>, holds an interesting property: 
       it is palindromic inside every S-step block. Reading the sequence of turns forward yields the exact same list as 
       reading it backward. The proof requires only a single line of algebra:
     </p>
@@ -1979,15 +1975,15 @@
     
     <p>
      This means the turn executed at step <span class="math-inline">n</span> is the same as the the turn executed at step 
-     <span class="math-inline">S &minus; n</span>. In a S-step block, the first turn matches the last, the second matches 
-     the penultimate, and so forth.
+     <span class="math-inline">S &minus; n</span> for <span class="math-inline">0 &le; n &le; S</span>. In a S-step block, 
+     the first turn matches the last, the second matches the penultimate, and so on so forth.
     </p>
 
     <p>
       To be precise, there is a slight caveat to the block's palindromic nature. When analyzing a complete S-step block, 
       it only forms a palindrome if we omit the very first rotation step, where the turtle turns by 0&sup2; = 0 slots. 
-      To maintain the symmetry of this sequence of numbers, we must either drop this initial zero, or append an extra zero-slot 
-      turn to the tail of the sequence. Observe the symmetry in the table below for S = 6:
+      To maintain the palindromy of the sequence, we must either drop this initial zero, or append an extra zero-slot 
+      turn to the tail of the sequence. The following table illustrates this for S = 6:
     </p>
 
     <div id="n2mod6-table-wrap">
@@ -2006,44 +2002,7 @@
        </tr>
       </thead>
       <tbody>
-       <tr>
-        <td class="highlight">0</td>
-        <td>0</td>
-        <td class="highlight">0</td>
-       </tr>
-       <tr>
-        <td class="highlight">1</td>
-        <td>1</td>
-        <td class="highlight">1</td>
-       </tr>
-       <tr>
-        <td class="highlight">2</td>
-        <td>4</td>
-        <td class="highlight">4</td>
-       </tr>
-       <tr>
-        <td class="highlight">3</td>
-        <td>9</td>
-        <td class="highlight">3</td>
-       </tr>
-       <tr>
-        <td class="highlight">4</td>
-        <td>16</td>
-        <td class="highlight">4</td>
-       </tr>
-       <tr>
-        <td class="highlight">5</td>
-        <td>25</td>
-        <td class="highlight">1</td>
-       </tr>
-       <tr>
-        <td class="highlight">6</td>
-        <td>36</td>
-        <td class="highlight">0</td>
-       </tr>
-       <tr>
-        <td colspan="5" class="text-center-muted">…</td>
-       </tr>
+       <!-- Populated by JS -->
       </tbody>
      </table>
     </div>
@@ -2058,22 +2017,22 @@
 
     <p>
       A geometric path consisting of <em>S</em> straight segments contains exactly <em>S-1</em> internal joints (the corners 
-      between the lines). If the sequence of angles dictating these <em>S-1</em> joints forms a palindrome, the resulting 
-      path will be reflection symmetric. The initial zero turn merely dictates the entry rotation of the entire shape.
+      between the lines). I'll show &mdash;in a rather informal way &mdash; that if the sequence of angles dictating these <em>S-1</em> 
+      internal joints forms a palindrome, the resulting path will be reflection symmetric. The initial zero turn merely dictates the 
+      entry rotation of the entire shape.
     </p>
 
     <p>
-      Imagine our turtle resting at a coordinate after a sequence of steps, aligned to some cumulative heading.
-      It begins a new S-step sequence with a zero. It steps forward, effectively changing nothing about its heading. 
-      Then, it hits the core palindromic sequence of S - 1 turns, rotating and stepping forward for each, until the sequence completes.
+      Let's think about the initial S-step block, since each consecutive blocks will be identical but rotated and translated in space.
+      It begins with zero orientation change and steps forward. Then, it follows S-1 step walk with palindromic sequence of turns.
     </p>
 
     <p>
-      Now, freeze the turtle at its final position and force it to retrace its steps backward. To do this, the turtle must first flip 
-      its heading 180 degrees, then step forward. At the first joint it encounters on the journey back, it must execute the  <em>inverse</em> 
+      Now, stop the turtle at its final position and force it to retrace its steps backward. To do this, the turtle must first flip 
+      its heading 180&deg;, then step forward. At the first joint it encounters on the walk back, it must execute the <em>inverse</em> 
       of the turn it made on the way forward. If <span class="math-inline">&Delta;&theta;<sub>n</sub></span> represents the n-th internal turn, 
-      the palindromic nature guarantees that <span class="math-inline">&Delta;&theta;<sub>n</sub> = &Delta;&theta;<sub>S - n</sub></span>. 
-      Comparing the forward and backward instruction sets looks like this:
+      the palindromic property guarantees that <span class="math-inline">&Delta;&theta;<sub>n</sub> = &Delta;&theta;<sub>S - n</sub></span>. 
+      Comparing the forward and backward instruction sequences looks like this:
     </p>
 
     <div class="math-block">
@@ -2092,14 +2051,16 @@
     <p>
      Therefore, the turtle retracing its steps mathematically executes the <em>exact same</em> sequence of turn magnitudes, 
      in the exact same order, just with negative signs. If the forward-moving turtle turns k slots clockwise at a joint, 
-     the backward-moving turtle turns k slots counter-clockwise at that corresponding joint. This is the definition of a mirror image. 
-     Since the path is inherently identical to its own mirror image, the shape itself must possess bilateral symmetry.
+     the backward-moving turtle turns k slots counter-clockwise at that corresponding joint. If you think about it, 
+     this is what we would see if we were to place a mirror passing through the middle point of the S-step path (which 
+     should have the correct angle, of course). Since the path is inherently identical to its own mirror image, the shape 
+     itself must possess reflectional symmetry.
     </p>
 
     <p>
-      If the above theoretical explanations feel too abstract, the interactive sandbox below provides immediate, visual proof. 
-      It demonstrates how "AnglePath" algorithms require a single anchor value prepended to a palindromic sequence to make 
-      reflectionally symmetric paths.
+      If the skectchy proof above seems off, try the following interactive demo to have a better idea on this property. 
+      It demonstrates how our "turn then step forward" algorithm require a single anchor value prepended to a palindromic 
+      sequence to make reflectionally symmetric paths.
     </p>
 
      <!-- Demo: Palindrome Explorer -->
@@ -2115,7 +2076,7 @@
      <div class="demo-body">
       <div class="mb-12">
        <div class="flex-row-gap-12 mb-12">
-      <input id="pal-input" placeholder="e.g. 0, 1.047, -1.047" class="input-wide">
+      <input id="pal-input" placeholder="e.g. 0, 1, 4, 3, 4, 2" class="input-wide">
       <div class="s-grid">
        <button class="s-btn" id="pal-draw-btn">Draw</button>
        <button class="s-btn" id="pal-pal-btn">Draw Palindrome</button>
@@ -3320,6 +3281,31 @@
     })();
 
     // =========================================================
+    // PALINDROMY TABLE (S=6)
+    // =========================================================
+
+    (function buildPalindromyTable() {
+        const N = 6;
+        const tbody = document.querySelector('#n2mod6-table tbody');
+        if (!tbody) return;
+        for (let n = 0; n < N + 1; n++) {
+            const turn = n * n;
+            const turnMod = turn % N;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="highlight">${n}</td>
+                <td>${turn}</td>
+                <td class="highlight">${turnMod}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+        // Add ellipsis
+        const ellipsis = document.createElement('tr');
+        ellipsis.innerHTML = '<td colspan="5" class="text-center-muted">…</td>';
+        tbody.appendChild(ellipsis);
+    })();
+
+    // =========================================================
     // DEMO 4: PETAL ANATOMY (N=24)
     // =========================================================
 
@@ -3565,7 +3551,7 @@
 
       // initial sample - delay to ensure theme is applied
       setTimeout(() => {
-        input.value = '0, 1.047, 0.5236';
+        input.value = '0, 1, 4, 3, 4, 1';
         drawBtn.click();
       }, 50);
     })();
