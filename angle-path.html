@@ -956,10 +956,12 @@
                     <p>
                         This generator draws a sequence of lines based on a simple mathematical rule. 
                         In the initial step, a unit length line is drawn starting from the origin, in the positive X-axis direction.
-                        At each step <code>n &in; {1, ..., N}</code>, previous heading direction is rotated by <code>c &times; f(n)</code> degrees.
+                        At each step <code>n &in; {1, ..., N}</code>, if the angle mode is "relative", previous heading direction is 
+                        rotated by <code>c &times; f(n)</code> degrees. On the other hand, if the angle mode is "cumulative", the orientation
+                        is directly set to the value <code>c &times; f(n)</code> degrees.
                         By this simple rule, interesting patterns appear for different choice of <code>c</code> and <code>f(n)</code>.
-                        Most interesting results are attined when <code>f(n) = n²</code>. 
-                        So most of the UI and descriptions in this helper are valid for this specific funtion.
+                        Interesting results are attained when <code>f(n) = n²</code> and the mode is relative. 
+                        Most of the UI and descriptions in this helper are valid for this specific function.
                     </p>
                     
                     <h3>Constant representation</h3>
@@ -1172,13 +1174,13 @@
 
         const builtinConfigs = {
             "Default Neon": { 
-                mode: "rational", n: 90000, r: 1, s: 15000, c: 0.024, speed: 5, style: "neon", nAnim: false, code: "return n * n;" 
+                mode: "rational", n: 90000, r: 1, s: 15000, c: 0.024, speed: 5, style: "neon", nAnim: false, code: "return n * n;", angleMode: "relative" 
             },
             "Light Glow Core": { 
-                mode: "rational", n: 250000, r: 1, s: 1200, speed: 6, style: "light-glow", nAnim: false, code: "return n * Math.log(n);" 
+                mode: "rational", n: 250000, r: 1, s: 1200, speed: 6, style: "light-glow", nAnim: false, code: "return n * Math.log(n);", angleMode: "relative" 
             },
             "Sine Petals (Light)": { 
-                mode: "rational", n: 50000, r: 1, s: 180, speed: 5, style: "light", nAnim: false, code: "return n * Math.sin(n);" 
+                mode: "rational", n: 50000, r: 1, s: 180, speed: 5, style: "light", nAnim: false, code: "return n * Math.sin(n);", angleMode: "relative" 
             }
         };
         
@@ -1219,6 +1221,7 @@
                 r: userBase.r,
                 s: userBase.s,
                 c: userBase.c,
+                angleMode: userBase.angleMode,
                 nAnim: ui.nAnim.checked,
                 nAnimMin: parseInt(ui.nAnimMin.value),
                 nAnimMax: parseInt(ui.nAnimMax.value),
@@ -1241,6 +1244,14 @@
             if (config.code) {
                 ui.editor.value = config.code;
             }
+
+            if (config.angleMode) {
+                userBase.angleMode = config.angleMode;
+            } else {
+                userBase.angleMode = 'relative';
+            }
+            const angleModeRadio = document.querySelector(`input[name="angle-mode"][value="${userBase.angleMode}"]`);
+            if (angleModeRadio) angleModeRadio.checked = true;
 
             if (config.mode) {
                 userBase.mode = config.mode;
@@ -1558,7 +1569,7 @@
             const isLightTheme = style === 'light' || style === 'light-glow' || style === 'iter-wheel-light' || style === 'distance-light' || style === 'distance-inferno-light';
             
             const total = (offset || 0) + N; // compute final absolute n value
-            const geoBounds = calculatePath(total, mode, r, s, c_val);
+            const geoBounds = calculatePath(total, mode, r, s, c_val, userBase.angleMode);
 
             let renderBounds;
             if (isZoomed) {
@@ -1575,7 +1586,7 @@
                 renderBounds = geoBounds;
             }
             
-            currentRenderState = { N, offset: offset || 0, mode, r, s, c: c_val, time, bounds: renderBounds };
+            currentRenderState = { N, offset: offset || 0, mode, r, s, c: c_val, time, bounds: renderBounds, angleMode: userBase.angleMode };
             
             let bgFill = '#050505';
             if (isLightTheme) bgFill = '#ffffff';
@@ -1830,7 +1841,7 @@
             if (!isPanning && Math.hypot(dx, dy) > 10) {
                 isPanning = true;
                 if (!isZoomed) {
-                    zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c);
+                    zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c, userBase.angleMode);
                     isZoomed = true;
                     ui.resetZoomBtn.disabled = false;
                 }
@@ -1864,7 +1875,7 @@
         canvasContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
             if (!isZoomed) {
-                zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c);
+                zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c, userBase.angleMode);
                 isZoomed = true;
                 ui.resetZoomBtn.disabled = false;
             }
@@ -1889,7 +1900,7 @@
                 const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 if (lastPinchDist) {
                     if (!isZoomed) {
-                        zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c);
+                        zoomBounds = calculatePath(userBase.n, userBase.mode, userBase.r, userBase.s, userBase.c, userBase.angleMode);
                         isZoomed = true;
                         ui.resetZoomBtn.disabled = false;
                     }
@@ -2074,6 +2085,14 @@
                     if (ui.nAutoValue.checked) updateC(userBase.c); // Re-trigger snapping logic for C
                 }
                 if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+            });
+        });
+
+        ui.angleModeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                userBase.angleMode = e.target.value;
+                if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
+                resetZoom();
             });
         });
 
@@ -2335,6 +2354,10 @@
             userBase.mode = Math.random() > 0.5 ? 'rational' : 'decimal';
             document.querySelector(`input[name="multiplier-mode"][value="${userBase.mode}"]`).checked = true;
 
+            userBase.angleMode = Math.random() < 0.4 ? 'absolute' : 'relative';
+            const angleModeRadio = document.querySelector(`input[name="angle-mode"][value="${userBase.angleMode}"]`);
+            if (angleModeRadio) angleModeRadio.checked = true;
+
             if (userBase.mode === 'rational') {
                 ui.rationalControls.style.display = 'block';
                 ui.decimalControls.style.display = 'none';
@@ -2441,7 +2464,7 @@
                     const viewHeight = (bounds.maxY - bounds.minY) + pad * 2;
 
                     // Geo bounds logic repeated for SVG export
-                    const rawGeoBounds = calculatePath(N, currentRenderState.mode, currentRenderState.r, currentRenderState.s, currentRenderState.c);
+                    const rawGeoBounds = calculatePath(N, currentRenderState.mode, currentRenderState.r, currentRenderState.s, currentRenderState.c, currentRenderState.angleMode);
                     const geoWidth = rawGeoBounds.maxX - rawGeoBounds.minX;
                     const geoHeight = rawGeoBounds.maxY - rawGeoBounds.minY;
                     const geoCenterX = (rawGeoBounds.maxX + rawGeoBounds.minX) / 2;
