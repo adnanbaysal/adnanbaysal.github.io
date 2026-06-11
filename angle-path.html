@@ -932,6 +932,11 @@
                     </select>
                 </div>
 
+                <div class="toggles-row" style="margin-bottom: 8px; gap: 16px; justify-content: flex-start;">
+                    <label><input type="radio" name="angle-mode" value="relative" checked> Relative (Δ angle)</label>
+                    <label><input type="radio" name="angle-mode" value="absolute"> Absolute (direct angle)</label>
+                </div>
+
                 <textarea id="code-area" spellcheck="false">return n * n;</textarea>
 
                 <div class="editor-actions">
@@ -1066,7 +1071,8 @@
             exportConfigBtn: document.getElementById('export-config-btn'),
             importConfigBtn: document.getElementById('import-config-btn'),
             importFile: document.getElementById('import-file'),
-            saveSvgBtn: document.getElementById('save-svg-btn')
+            saveSvgBtn: document.getElementById('save-svg-btn'),
+            angleModeRadios: document.getElementsByName('angle-mode')
         };
 
         ui.resetZoomBtn.disabled = true;
@@ -1182,7 +1188,8 @@
             mode: 'rational',
             r: 1, 
             s: 15000, 
-            c: 0.024, 
+            c: 0.024,
+            angleMode: 'relative',
             time: 0,
             bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 } 
         };
@@ -1360,7 +1367,7 @@
 
         let isPaused = false;
         let animationFrameId;
-        let userBase = { mode: 'rational', n: 90000, r: 1, s: 15000, c: 0.024, offset: 0 };
+        let userBase = { mode: 'rational', n: 90000, r: 1, s: 15000, c: 0.024, offset: 0, angleMode: 'relative' };
 
         let glowStartN = 0, glowEndN = 0, glowIntensity = 0;
         let eraseStartN = 0, eraseEndN = 0, eraseIntensity = 0;
@@ -1465,7 +1472,8 @@
             }
         }
 
-        function calculatePath(N, mode, r, s, c_val) {
+        function calculatePath(N, mode, r, s, c_val, angleMode) {
+            const isAbsolute = angleMode === 'absolute';
             let x = 0, y = 0, minX = 0, maxX = 0, minY = 0, maxY = 0;
             points[0] = 0; points[1] = 0;
 
@@ -1477,8 +1485,12 @@
                     for (let n = 1; n <= N; n++) {
                         let stepAngleMultiplier = activeFunc(n - 1);
                         if (!isFinite(stepAngleMultiplier)) stepAngleMultiplier = 0; // Handle -Infinity, NaN
-                        phaseNum = (phaseNum + (stepAngleMultiplier * r) % s) % s;
-                        if (phaseNum < 0) phaseNum += s;
+                        if (isAbsolute) {
+                            phaseNum = ((stepAngleMultiplier * r) % s + s) % s;
+                        } else {
+                            phaseNum = (phaseNum + (stepAngleMultiplier * r) % s) % s;
+                            if (phaseNum < 0) phaseNum += s;
+                        }
                         
                         let angle = phaseNum * twoPi_div_s;
                         x += Math.cos(angle);
@@ -1498,9 +1510,13 @@
                     for (let n = 1; n <= N; n++) {
                         let stepAngle = activeFunc(n - 1);
                         if (!isFinite(stepAngle)) stepAngle = 0; // Handle -Infinity, NaN
-                        stepAngle = stepAngle % s;
-                        angle = (angle + stepAngle * C_rad) % twoPi;
-                        if (angle < 0) angle += twoPi;
+                        if (isAbsolute) {
+                            angle = ((stepAngle * C_rad) % twoPi + twoPi) % twoPi;
+                        } else {
+                            stepAngle = stepAngle % s;
+                            angle = (angle + stepAngle * C_rad) % twoPi;
+                            if (angle < 0) angle += twoPi;
+                        }
                         
                         x += Math.cos(angle);
                         y += Math.sin(angle);
@@ -1518,7 +1534,11 @@
                 for (let n = 1; n <= N; n++) {
                     let stepAngle = activeFunc(n - 1);
                     if (!isFinite(stepAngle)) stepAngle = 0; // Handle -Infinity, NaN
-                    angle += stepAngle * c;
+                    if (isAbsolute) {
+                        angle = stepAngle * c;
+                    } else {
+                        angle += stepAngle * c;
+                    }
                     x += Math.cos(angle);
                     y += Math.sin(angle);
 
