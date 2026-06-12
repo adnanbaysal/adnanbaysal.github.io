@@ -957,11 +957,11 @@
                         This generator draws a sequence of lines based on a simple mathematical rule. 
                         In the initial step, a unit length line is drawn starting from the origin, in the positive X-axis direction.
                         At each step <code>n &in; {1, ..., N}</code>, if the angle mode is "relative", previous heading direction is 
-                        rotated by <code>c &times; f(n)</code> degrees. On the other hand, if the angle mode is "cumulative", the orientation
+                        rotated by <code>c &times; f(n)</code> degrees. On the other hand, if the angle mode is "absolute", the orientation
                         is directly set to the value <code>c &times; f(n)</code> degrees.
                         By this simple rule, interesting patterns appear for different choice of <code>c</code> and <code>f(n)</code>.
-                        Interesting results are attained when <code>f(n) = n²</code> and the mode is relative. 
-                        Most of the UI and descriptions in this helper are valid for this specific function.
+                        Most of the UI elements &mdash; such as line width, number of steps and coloring of blocks of steps &mdash;
+                        are computed dynamically and their value are optimized for the function <code>f(n) = n²</code> in relative angle mode.
                     </p>
                     
                     <h3>Constant representation</h3>
