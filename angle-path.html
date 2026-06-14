@@ -285,10 +285,9 @@
         .sub-block { background: #0d0d0d; border: 1px solid #222; border-radius: 8px; padding: 8px; margin-top: 6px; }
 
         #rational-controls, #decimal-controls {
-            height: 124px; /* force same exact height to avoid small visual differences */
+            height: 144px; /* force same exact height to avoid small visual differences */
             box-sizing: border-box;
             display: block;
-            overflow: hidden;
         }
 
         /* Make numeric inputs inside control blocks uniform */
@@ -2034,7 +2033,7 @@
                         if (deltaTheta === 360) deltaTheta = 0;
                         const perfectN = p * (360 / gcd(360, deltaTheta));
                         const petalLength = p; // use p (petal iter length) for decimal mode
-                        return { perfectN, p, petalLength };
+                        return { perfectN, petalLength, petalLength };
                     } else {
                         const r = userBase.r, s = userBase.s;
                         if (r <= 0 || s <= 0) return null;
@@ -2057,13 +2056,14 @@
                 const clampedN = Math.min(info.perfectN, MAX_N);
                 updateN(clampedN, false);
 
-                // Update color-length to half the petal length (in iterations)
+                // Update color-length to half the petal length (in iterations) when 4 | S, and full otherwise
                 try {
                     updateColorLenLimits();
                     if (info.petalLength && ui.colorLenNumber && ui.colorLenSlider) {
                         const half = Math.max(1, Math.round(info.petalLength / 2));
                         const maxAllowed = parseInt(ui.colorLenNumber.max) || Math.max(1, userBase.n);
-                        const newVal = Math.min(maxAllowed, half);
+                        const val = info.p % 4 == 0 ? half : half * 2;
+                        const newVal = Math.min(maxAllowed, val);
                         ui.colorLenNumber.value = newVal;
                         ui.colorLenSlider.value = sliderPosFromColorBlock(newVal);
                     }
