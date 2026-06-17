@@ -742,6 +742,7 @@
             </div>
 
             <div class="header-block" style="display:flex; gap:8px; align-items:center;">
+                <button id="share-btn" class="btn-util btn-header" title="Share Link">🔗</button>
                 <button id="random-btn" class="btn-rand btn-header" title="Random">🎲</button>
                 <button id="save-btn" class="btn-util btn-header" title="Save PNG">📸</button>
                 <button id="save-svg-btn" class="btn-util btn-header" title="Save SVG">📄</button>
@@ -1073,10 +1074,74 @@
             importConfigBtn: document.getElementById('import-config-btn'),
             importFile: document.getElementById('import-file'),
             saveSvgBtn: document.getElementById('save-svg-btn'),
-            angleModeRadios: document.getElementsByName('angle-mode')
+            angleModeRadios: document.getElementsByName('angle-mode'),
+            shareBtn: document.getElementById('share-btn')
         };
 
         ui.resetZoomBtn.disabled = true;
+
+        const ConfigManager = {
+            keys: ['mode', 'n', 'r', 's', 'c', 'angleMode', 'nAnim', 'nAnimMin', 'nAnimMax', 'cAnim', 'cAnimMin', 'cAnimMax', 'speed', 'lineWidth', 'style', 'code', 'offset', 'isZoomed', 'zx1', 'zx2', 'zy1', 'zy2'],
+            
+            pack: function(cfg) {
+                let arr = this.keys.map(k => {
+                    if (k === 'zx1') return cfg.zoomBounds ? cfg.zoomBounds.minX : null;
+                    if (k === 'zx2') return cfg.zoomBounds ? cfg.zoomBounds.maxX : null;
+                    if (k === 'zy1') return cfg.zoomBounds ? cfg.zoomBounds.minY : null;
+                    if (k === 'zy2') return cfg.zoomBounds ? cfg.zoomBounds.maxY : null;
+                    return cfg[k];
+                });
+                while(arr.length > 0 && (arr[arr.length - 1] === null || arr[arr.length - 1] === undefined)) {
+                    arr.pop();
+                }
+                return arr;
+            },
+            
+            unpack: function(arr) {
+                if (!Array.isArray(arr)) return arr; 
+                let cfg = {};
+                this.keys.forEach((k, i) => {
+                    if (i < arr.length && arr[i] !== null && arr[i] !== undefined) {
+                        if (['zx1','zx2','zy1','zy2'].includes(k)) {
+                            if (!cfg.zoomBounds) cfg.zoomBounds = {};
+                            if (k === 'zx1') cfg.zoomBounds.minX = arr[i];
+                            if (k === 'zx2') cfg.zoomBounds.maxX = arr[i];
+                            if (k === 'zy1') cfg.zoomBounds.minY = arr[i];
+                            if (k === 'zy2') cfg.zoomBounds.maxY = arr[i];
+                        } else {
+                            cfg[k] = arr[i];
+                        }
+                    }
+                });
+                return cfg;
+            },
+            
+            compress: async function(data) {
+                const jsonStr = JSON.stringify(data);
+                const stream = new Blob([jsonStr]).stream();
+                const compressedStream = stream.pipeThrough(new CompressionStream('deflate-raw'));
+                const buffer = await new Response(compressedStream).arrayBuffer();
+                return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+                    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            },
+
+            decompress: async function(base64) {
+                try {
+                    let standardBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+                    while (standardBase64.length % 4) standardBase64 += '=';
+                    const binaryStr = atob(standardBase64);
+                    const bytes = new Uint8Array(binaryStr.length);
+                    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+                    const stream = new Blob([bytes]).stream();
+                    const decompressedStream = stream.pipeThrough(new DecompressionStream('deflate-raw'));
+                    const text = await new Response(decompressedStream).text();
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error("Decompression failed", e);
+                    return null;
+                }
+            }
+        };
 
         if (ui.fixAxes) {
             ui.fixAxes.addEventListener('change', () => {
@@ -1213,6 +1278,10 @@
             });
         }
 
+        let isZoomed = false;
+        let zoomBounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+        let activeTransform = { scale: 1, cx: 0, cy: 0 }; 
+
         function getCurrentConfig() {
             return {
                 mode: userBase.mode,
@@ -1230,11 +1299,15 @@
                 speed: parseInt(ui.speed.value),
                 lineWidth: parseFloat(ui.lwSlider.value),
                 style: ui.style.value,
-                code: ui.editor.value
+                code: ui.editor.value,
+                offset: userBase.offset,
+                isZoomed: isZoomed,
+                zoomBounds: isZoomed ? { ...zoomBounds } : null
             };
         }
 
         function loadConfig(config) {
+            config = ConfigManager.unpack(config);
             if (!config) return;
             
             ui.nAnim.checked = false;
@@ -1296,6 +1369,8 @@
             ui.speed.value = config.speed || 5;
             ui.spdLabel.textContent = ui.speed.value;
 
+            if (config.offset !== undefined) updateOffset(config.offset, false);
+
             if (config.lineWidth !== undefined) {
                 updateLineWidth(config.lineWidth);
             } else {
@@ -1304,7 +1379,13 @@
 
             ui.style.value = config.style || 'neon';
 
-            resetZoom(); 
+            if (config.isZoomed && config.zoomBounds) {
+                isZoomed = true;
+                zoomBounds = { ...config.zoomBounds };
+                ui.resetZoomBtn.disabled = false;
+            } else {
+                resetZoom(); 
+            }
         }
 
         ui.configSelect.addEventListener('change', (e) => {
@@ -1355,10 +1436,6 @@
             reader.readAsText(file);
             ui.importFile.value = ''; 
         });
-
-        let isZoomed = false;
-        let zoomBounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-        let activeTransform = { scale: 1, cx: 0, cy: 0 }; 
 
         const presets = {
             'n2': 'return n * n;',
@@ -2639,6 +2716,28 @@
         document.getElementById('random-btn').addEventListener('click', () => generateRandom());
         ui.speed.addEventListener('input', () => ui.spdLabel.textContent = ui.speed.value);
 
+        if (ui.shareBtn) {
+            ui.shareBtn.addEventListener('click', async () => {
+                const rawCfg = getCurrentConfig();
+                const packed = ConfigManager.pack(rawCfg);
+                const encoded = await ConfigManager.compress(packed);
+                
+                const url = new URL(window.location.href);
+                url.searchParams.set('config', encoded);
+                const shareUrl = url.toString();
+                
+                if (shareUrl.length > 2000) {
+                    alert("Config link is too long. Downloading file instead.");
+                    ui.exportConfigBtn.click();
+                } else {
+                    await navigator.clipboard.writeText(shareUrl);
+                    const orig = ui.shareBtn.textContent;
+                    ui.shareBtn.textContent = "✅";
+                    setTimeout(() => ui.shareBtn.textContent = orig, 2000);
+                }
+            });
+        }
+
         updateConfigDropdown(); 
         updatePresetDropdown();
         compileFunction();
@@ -2650,6 +2749,16 @@
         if (ui.nAutoValue.checked) {
             applySymmetryLock();
         }
+
+        (async function initFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('config')) {
+                const configData = await ConfigManager.decompress(params.get('config'));
+                if (configData) {
+                    loadConfig(configData);
+                }
+            }
+        })();
 
         liveLoop();
 
