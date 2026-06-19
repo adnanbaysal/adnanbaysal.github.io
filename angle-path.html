@@ -926,6 +926,7 @@
                         <option value="nsin">n * sin(n)</option>
                         <option value="sinn2">sin(n²)</option>
                         <option value="logn2">log(n²)</option>
+                        <option value="random_sym">Random Symmetric Petals</option>
                     </optgroup>
                     <optgroup label="User Saved" id="user-presets-group">
                     </optgroup>
@@ -999,6 +1000,65 @@
     </main>
 
     <script>
+        let symPathCache = { S: null, p: null, seed: null, arr: null };
+
+        // Generates a palindromic angle sequence yielding exactly 'p' petals
+        window.getSymmetricRandomTurn = function(n, S, p, seed) {
+            S = Math.max(1, Math.floor(S));
+            
+            // Only rebuild the sequence if parameters change
+            if (symPathCache.S !== S || symPathCache.p !== p || symPathCache.seed !== seed) {
+                const arr = new Int32Array(S);
+                arr[0] = 0;
+                
+                // Fast deterministic LCG for seeding
+                let lcg = seed || 12345;
+                const nextRandom = (max) => {
+                    lcg = (lcg * 1664525 + 1013904223) >>> 0;
+                    return lcg % max;
+                };
+
+                const targetSum = Math.round(S / p);
+                
+                if (S % 2 === 0) {
+                    const m = S / 2;
+                    let pairedSum = 0;
+                    // Randomize the first half, mirror it
+                    for (let i = 1; i < m; i++) {
+                        const val = nextRandom(S);
+                        arr[i] = val;
+                        arr[S - i] = val;
+                        pairedSum += 2 * val;
+                    }
+                    // Force the exact middle element to satisfy the sum constraint
+                    let mid = (targetSum - pairedSum) % S;
+                    if (mid < 0) mid += S;
+                    arr[m] = mid;
+                } else {
+                    const m = Math.floor(S / 2);
+                    let halfSum = 0;
+                    // Randomize the first half, mirror it
+                    for (let i = 1; i < m; i++) {
+                        const val = nextRandom(S);
+                        arr[i] = val;
+                        arr[S - i] = val;
+                        halfSum += val;
+                    }
+                    // For odd S, the center is a paired tuple. 
+                    // We use the modular inverse of 2 mod S, which is (S + 1) / 2
+                    const inv2 = (S + 1) / 2;
+                    let am = ((targetSum * inv2) - halfSum) % S;
+                    if (am < 0) am += S;
+                    arr[m] = am;
+                    arr[S - m] = am;
+                }
+                symPathCache = { S, p, seed, arr };
+            }
+            
+            // Return the pre-calculated slot shift for step n
+            return symPathCache.arr[n % S];
+        };
+
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         const canvasContainer = document.getElementById('canvas-container');
@@ -1478,7 +1538,8 @@
             'nlog': 'return n * Math.log(n);',
             'nsin': 'return n * Math.sin(n);',
             'sinn2': 'return Math.sin(n * n);',
-            'logn2': 'return Math.log(n * n);'
+            'logn2': 'return Math.log(n * n);',
+            'random_sym': 'const p = 6; // target petals\nconst seed = 12345; // to randomize shape\nreturn getSymmetricRandomTurn(n, userBase.s, p, seed);'
         };
 
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
@@ -2124,6 +2185,23 @@
             // Compute rosette details (perfect N and petal length) and apply
             const info = (function() {
                 try {
+                    // ---Intercept custom random_sym function ---
+                    const code = ui.editor.value || '';
+                    if (code.includes('getSymmetricRandomTurn')) {
+                        // Extract 'p' from the user's code via Regex
+                        const pMatch = code.match(/const\s+p\s*=\s*(\d+)/);
+                        const pVal = pMatch ? parseInt(pMatch[1]) : 1;
+                        const sVal = userBase.s;
+                        const mulitplier = sVal / (gcd(sVal, Math.round(sVal / pVal)));
+                        
+                        return { 
+                            perfectN: userBase.s * mulitplier, 
+                            p: mulitplier, 
+                            petalLength: userBase.s 
+                        };
+                    }
+                    // -------------------------------------------------------
+
                     if (userBase.mode === 'decimal') {
                         const C = userBase.c;
                         if (C <= 0) return null;
