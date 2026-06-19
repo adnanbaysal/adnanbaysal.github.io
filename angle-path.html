@@ -1081,7 +1081,10 @@
         ui.resetZoomBtn.disabled = true;
 
         const ConfigManager = {
-            keys: ['mode', 'n', 'r', 's', 'c', 'angleMode', 'nAnim', 'nAnimMin', 'nAnimMax', 'cAnim', 'cAnimMin', 'cAnimMax', 'speed', 'lineWidth', 'style', 'code', 'offset', 'isZoomed', 'zx1', 'zx2', 'zy1', 'zy2'],
+            keys: [
+                'mode', 'n', 'r', 's', 'c', 'angleMode', 'nAnim', 'nAnimMin', 'nAnimMax', 'cAnim', 'cAnimMin', 'cAnimMax', 
+                'speed', 'lineWidth', 'style', 'code', 'offset', 'isZoomed', 'zx1', 'zx2', 'zy1', 'zy2', 'autoN', 'fixAxes'
+            ],
             
             pack: function(cfg) {
                 let arr = this.keys.map(k => {
@@ -1302,7 +1305,9 @@
                 code: ui.editor.value,
                 offset: userBase.offset,
                 isZoomed: isZoomed,
-                zoomBounds: isZoomed ? { ...zoomBounds } : null
+                zoomBounds: isZoomed ? { ...zoomBounds } : null,
+                autoN: ui.nAutoValue.checked === false ? false : null,
+                fixAxes: ui.fixAxes.checked ? true : null
             };
         }
 
@@ -1315,6 +1320,22 @@
 
             if (config.code) {
                 ui.editor.value = config.code;
+                
+                let match = "";
+                for (const key in presets) {
+                    if (presets[key] === config.code) { match = key; break; }
+                }
+                if (!match) {
+                    for (const key in userPresets) {
+                        if (userPresets[key] === config.code) { match = `user:${key}`; break; }
+                    }
+                }
+                
+                if (match) {
+                    ui.presetSelect.value = match;
+                } else {
+                    ui.presetSelect.selectedIndex = -1; // Unselect if it's custom code
+                }
             }
 
             if (config.angleMode) {
@@ -1350,6 +1371,8 @@
 
             ui.nAnim.checked = !!config.nAnim;
 
+            ui.nAutoValue.checked = config.autoN !== false;
+
             if (ui.nAnim.checked) {
                 ui.nAutoValue.checked = false;
                 ui.nSlider.disabled = false;
@@ -1378,6 +1401,8 @@
             }
 
             ui.style.value = config.style || 'neon';
+
+            ui.fixAxes.checked = config.fixAxes === true;
 
             if (config.isZoomed && config.zoomBounds) {
                 isZoomed = true;
