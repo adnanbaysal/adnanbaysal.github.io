@@ -1082,8 +1082,10 @@
 
         const ConfigManager = {
             keys: [
-                'mode', 'n', 'r', 's', 'c', 'angleMode', 'nAnim', 'nAnimMin', 'nAnimMax', 'cAnim', 'cAnimMin', 'cAnimMax', 
-                'speed', 'lineWidth', 'style', 'code', 'offset', 'isZoomed', 'zx1', 'zx2', 'zy1', 'zy2', 'autoN', 'fixAxes'
+                'mode', 'n', 'r', 's', 'c', 'angleMode', 'nAnim', 'nAnimMin', 
+                'nAnimMax', 'cAnim', 'cAnimMin', 'cAnimMax', 'speed', 'lineWidth', 
+                'style', 'code', 'offset', 'isZoomed', 'zx1', 'zx2', 'zy1', 'zy2', 
+                'autoN', 'fixAxes', 'colorLen'
             ],
             
             pack: function(cfg) {
@@ -1307,7 +1309,8 @@
                 isZoomed: isZoomed,
                 zoomBounds: isZoomed ? { ...zoomBounds } : null,
                 autoN: ui.nAutoValue.checked === false ? false : null,
-                fixAxes: ui.fixAxes.checked ? true : null
+                fixAxes: ui.fixAxes.checked ? true : null,
+                colorLen: parseInt(ui.colorLenNumber.value) || 100
             };
         }
 
@@ -1402,6 +1405,12 @@
 
             ui.style.value = config.style || 'neon';
 
+            updateColorLenAvailability(); // Ensure availability matches the loaded style
+            if (config.colorLen !== undefined) {
+                ui.colorLenNumber.value = config.colorLen;
+                ui.colorLenSlider.value = sliderPosFromColorBlock(config.colorLen);
+            }
+            
             ui.fixAxes.checked = config.fixAxes === true;
 
             if (config.isZoomed && config.zoomBounds) {
