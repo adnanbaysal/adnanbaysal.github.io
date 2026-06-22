@@ -1000,14 +1000,14 @@
     </main>
 
     <script>
-        let symPathCache = { S: null, p: null, seed: null, arr: null };
+        let symPathCache = { S: null, tS: null, seed: null, arr: null };
 
-        // Generates a palindromic angle sequence yielding exactly 'p' petals
-        window.getSymmetricRandomTurn = function(n, S, p, seed) {
-            S = Math.max(1, Math.floor(S));
+        // Generates a palindromic angle sequence yielding the sum 'tS' for each block of s-steps
+        window.getSymmetricRandomTurn = function(n, tS, seed) {
+            let S = Math.max(1, Math.floor(userBase.s));
             
             // Only rebuild the sequence if parameters change
-            if (symPathCache.S !== S || symPathCache.p !== p || symPathCache.seed !== seed) {
+            if (symPathCache.S !== S || symPathCache.tS !== tS || symPathCache.seed !== seed) {
                 const arr = new Int32Array(S);
                 arr[0] = 0;
                 
@@ -1018,7 +1018,7 @@
                     return lcg % max;
                 };
 
-                const targetSum = Math.round(S / p);
+                const targetSum = Math.round(tS) % S;
                 
                 if (S % 2 === 0) {
                     const m = S / 2;
@@ -1052,7 +1052,7 @@
                     arr[m] = am;
                     arr[S - m] = am;
                 }
-                symPathCache = { S, p, seed, arr };
+                symPathCache = { S, tS, seed, arr };
             }
             
             // Return the pre-calculated slot shift for step n
@@ -1539,7 +1539,7 @@
             'nsin': 'return n * Math.sin(n);',
             'sinn2': 'return Math.sin(n * n);',
             'logn2': 'return Math.log(n * n);',
-            'random_sym': 'const p = 6; // target petals\nconst seed = 12345; // to randomize shape\nreturn getSymmetricRandomTurn(n, userBase.s, p, seed);'
+            'random_sym': 'const tS = 1000; // target sum: better divide S\nconst seed = 12345; // to randomize shape\nreturn getSymmetricRandomTurn(n, tS, seed);'
         };
 
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
@@ -1575,6 +1575,13 @@
             b = Math.abs(b);
             while (b) { let t = b; b = a % b; a = t; }
             return a;
+        }
+
+        function lcm(a, b) {
+            if (a === 0 || b === 0) {
+                return 0;
+            }
+            return Math.abs(a * b) / gcd(a, b);
         }
 
         function getIdealLineWidth(n) {
@@ -2189,15 +2196,15 @@
                     const code = ui.editor.value || '';
                     if (code.includes('getSymmetricRandomTurn')) {
                         // Extract 'p' from the user's code via Regex
-                        const pMatch = code.match(/const\s+p\s*=\s*(\d+)/);
-                        const pVal = pMatch ? parseInt(pMatch[1]) : 1;
+                        const tSMatch = code.match(/const\s+tS\s*=\s*(\d+)/);
+                        const tSVal = tSMatch ? parseInt(tSMatch[1]) : 1;
                         const sVal = userBase.s;
-                        const mulitplier = sVal / (gcd(sVal, Math.round(sVal / pVal)));
+                        const multiplier = sVal % tSVal == 0 ? Math.round(sVal / tSVal) : Math.round(sVal / gcd(sVal, tSVal))
                         
                         return { 
-                            perfectN: userBase.s * mulitplier, 
-                            p: mulitplier, 
-                            petalLength: userBase.s 
+                            perfectN: Math.min(sVal * multiplier, MAX_DRAW_N), 
+                            p: multiplier, 
+                            petalLength: sVal 
                         };
                     }
                     // -------------------------------------------------------
