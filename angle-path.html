@@ -2194,7 +2194,7 @@
                     // ---Intercept custom random_sym function ---
                     const code = ui.editor.value || '';
                     if (code.includes('getSymmetricRandomTurn')) {
-                        // Extract 'p' from the user's code via Regex
+                        // Extract 'tS' from the user's code via Regex
                         const tSMatch = code.match(/const\s+tS\s*=\s*(\d+)/);
                         const tSVal = tSMatch ? parseInt(tSMatch[1]) : 1;
                         const sVal = userBase.s;
