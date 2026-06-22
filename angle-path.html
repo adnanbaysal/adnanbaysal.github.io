@@ -926,6 +926,7 @@
                         <option value="nsin">n * sin(n)</option>
                         <option value="sinn2">sin(n²)</option>
                         <option value="logn2">log(n²)</option>
+                        <option value="random_sym">Random Symmetric Petals</option>
                     </optgroup>
                     <optgroup label="User Saved" id="user-presets-group">
                     </optgroup>
@@ -999,6 +1000,65 @@
     </main>
 
     <script>
+        let symPathCache = { S: null, tS: null, seed: null, arr: null };
+
+        // Generates a palindromic angle sequence yielding the sum 'tS' for each block of s-steps
+        window.getSymmetricRandomTurn = function(n, tS, seed) {
+            let S = Math.max(1, Math.floor(userBase.s));
+            
+            // Only rebuild the sequence if parameters change
+            if (symPathCache.S !== S || symPathCache.tS !== tS || symPathCache.seed !== seed) {
+                const arr = new Int32Array(S);
+                arr[0] = 0;
+                
+                // Fast deterministic LCG for seeding
+                let lcg = seed || 12345;
+                const nextRandom = (max) => {
+                    lcg = (lcg * 1664525 + 1013904223) >>> 0;
+                    return lcg % max;
+                };
+
+                const targetSum = Math.round(tS) % S;
+                
+                if (S % 2 === 0) {
+                    const m = S / 2;
+                    let pairedSum = 0;
+                    // Randomize the first half, mirror it
+                    for (let i = 1; i < m; i++) {
+                        const val = nextRandom(S);
+                        arr[i] = val;
+                        arr[S - i] = val;
+                        pairedSum += 2 * val;
+                    }
+                    // Force the exact middle element to satisfy the sum constraint
+                    let mid = (targetSum - pairedSum) % S;
+                    if (mid < 0) mid += S;
+                    arr[m] = mid;
+                } else {
+                    const m = Math.floor(S / 2);
+                    let halfSum = 0;
+                    // Randomize the first half, mirror it
+                    for (let i = 1; i < m; i++) {
+                        const val = nextRandom(S);
+                        arr[i] = val;
+                        arr[S - i] = val;
+                        halfSum += val;
+                    }
+                    // For odd S, the center is a paired tuple. 
+                    // We use the modular inverse of 2 mod S, which is (S + 1) / 2
+                    const inv2 = (S + 1) / 2;
+                    let am = ((targetSum * inv2) - halfSum) % S;
+                    if (am < 0) am += S;
+                    arr[m] = am;
+                    arr[S - m] = am;
+                }
+                symPathCache = { S, tS, seed, arr };
+            }
+            
+            // Return the pre-calculated slot shift for step n
+            return symPathCache.arr[n % S];
+        };
+
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         const canvasContainer = document.getElementById('canvas-container');
@@ -1478,7 +1538,8 @@
             'nlog': 'return n * Math.log(n);',
             'nsin': 'return n * Math.sin(n);',
             'sinn2': 'return Math.sin(n * n);',
-            'logn2': 'return Math.log(n * n);'
+            'logn2': 'return Math.log(n * n);',
+            'random_sym': 'const tS = 1000; // target sum: better divide S\nconst seed = 12345; // to randomize shape\nreturn getSymmetricRandomTurn(n, tS, seed);'
         };
 
         let userPresets = JSON.parse(localStorage.getItem('angle_path_presets') || '{}');
@@ -1586,6 +1647,12 @@
                 
                 updateCPrecision();
 
+                // Re-evaluate Auto N logic if the checkbox is active
+                if (ui.nAutoValue.checked) {
+                    if (userBase.mode === 'rational') applySymmetryLock();
+                    else updateC(userBase.c);
+                }
+                
                 if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
             } catch (err) {
                 ui.errorMsg.textContent = "Error: " + err.message;
@@ -2124,6 +2191,23 @@
             // Compute rosette details (perfect N and petal length) and apply
             const info = (function() {
                 try {
+                    // ---Intercept custom random_sym function ---
+                    const code = ui.editor.value || '';
+                    if (code.includes('getSymmetricRandomTurn')) {
+                        // Extract 'tS' from the user's code via Regex
+                        const tSMatch = code.match(/const\s+tS\s*=\s*(\d+)/);
+                        const tSVal = tSMatch ? parseInt(tSMatch[1]) : 1;
+                        const sVal = userBase.s;
+                        const multiplier = sVal % tSVal == 0 ? Math.round(sVal / tSVal) : Math.round(sVal / gcd(sVal, tSVal))
+                        
+                        return { 
+                            perfectN: Math.min(sVal * multiplier, MAX_DRAW_N), 
+                            p: multiplier, 
+                            petalLength: sVal 
+                        };
+                    }
+                    // -------------------------------------------------------
+
                     if (userBase.mode === 'decimal') {
                         const C = userBase.c;
                         if (C <= 0) return null;
