@@ -1577,13 +1577,6 @@
             return a;
         }
 
-        function lcm(a, b) {
-            if (a === 0 || b === 0) {
-                return 0;
-            }
-            return Math.abs(a * b) / gcd(a, b);
-        }
-
         function getIdealLineWidth(n) {
             if (ui.editor.value.trim() !== presets['n2']) return parseFloat(ui.lwSlider.value);
             const table = [
