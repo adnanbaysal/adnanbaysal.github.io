@@ -1654,6 +1654,12 @@
                 
                 updateCPrecision();
 
+                // Re-evaluate Auto N logic if the checkbox is active
+                if (ui.nAutoValue.checked) {
+                    if (userBase.mode === 'rational') applySymmetryLock();
+                    else updateC(userBase.c);
+                }
+                
                 if (isPaused) { isPaused = false; ui.pauseOverlay.style.display = 'none'; }
             } catch (err) {
                 ui.errorMsg.textContent = "Error: " + err.message;
