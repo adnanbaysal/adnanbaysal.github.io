@@ -1494,7 +1494,7 @@
      For most values of S, the turtle's path forms a closed, circular rosette-like symmetric shape. The possible number of 
      "petals" on these rosettes is one of 1, 2, 3, 4, 6, or 12 &mdash; which is the set of positive divisors of 12. 
      However, for some specific values of S, the path <em>drifts</em> along the positive or negative x-axis. 
-     You can use the interactive sandbox below to see the behavioral split between closing and drifting paths.
+     You can use the interactive sandbox below to see this behavioral difference.
     </p>
 
     <p>Which values of S produce closed paths, and which produce drifting ones?</p>
@@ -1542,7 +1542,7 @@
           <span class="info-val" id="cl-closes">YES &checkmark;</span>
          </div>
          <div class="info-row">
-          <span class="info-key">Total steps</span>
+          <span class="info-key">Steps to close</span>
           <span class="info-val gold" id="cl-steps">9</span>
          </div>
          <div class="info-row">
@@ -1582,7 +1582,7 @@
         Examples: S = 13, S = 35 (5&times;7), S = 77 (7&times;11).
       </li>
       <li>
-        If all the <em>positive even powered</em> prime factors of S happen to belong to a specific, "special" set of primes, 
+        If all the <em>positive even powered</em> prime factors of S happen to belong to a "special" set of primes, 
         the path also drifts. Example: S = 11&times;11 = 121 (where 11 is one of those special primes).
       </li>
       <li>
@@ -1783,8 +1783,8 @@
     </p>
 
     <p>
-      This periodic behavior mean that the turtle will return to its exact initial heading after <span class="math-inline">k&times;S</span> steps 
-      (where <em>k</em> is 1, 2, 3, or 6). After that point, it will periodically repeat the same sequence of <span class="math-inline">k&times;S</span> 
+      This periodic behavior mean that the turtle will return to its exact initial heading after <span class="math-inline">k&times;S</span> steps,
+      where <em>k</em> is 1, 2, 3, or 6. After that point, it will periodically repeat the same sequence of <span class="math-inline">k&times;S</span> 
       steps. So the turtle will draw the exact same shape, aligned without rotation, over and over. However, the previous caveat  
       still exist: orientation match does not guarantee a return to the <em>starting spatial coordinates</em>. The turtle might be 
       drawing the same shape, but displaced away from the origin by the accumulated vector of its steps. That displacement is what 
@@ -1947,7 +1947,7 @@
     </div>
     
     <p>
-      There is something interesting in the graphs we see above. There are shapes with 1, 2, 3, and 6 petals sas expected by the analysis above, 
+      There is something interesting in the graphs we see above. There are shapes with 1, 2, 3, and 6 petals as expected by the analysis above, 
       but we also see <em>4</em> and <em>12</em> petal shapes. We'll explain the underlying reason in the next two sections.
     </p>
    </section>
@@ -2347,8 +2347,7 @@
      ∎
     </div>
     <p class="footer-note">
-     This article was written for the <a href="https://some.3b1b.co/" class="accent-link">2026 - Summer of Math Exposition (SoME 5)</a>. 
-     The underlying mathematics draws heavily on classical exponential sums and modular arithmetic theory. 
+     This article was written for the <a href="https://some.3b1b.co/" class="accent-link">2026 - Summer of Math Exposition (SoME 5)</a>. ß
      All visual demonstrations are generated dynamically in-browser utilizing the HTML5 Canvas API.
     </p>
    </section>
@@ -2360,9 +2359,6 @@
      Adnan Baysal
     </a>
     &middot; 2026 &middot; Built with Vanilla JS &amp; Canvas
-   </p>
-   <p class="footer-small mt-8">
-    All visualizations generated in-browser.
    </p>
   </footer>
 
@@ -3125,7 +3121,7 @@
                 note.innerHTML = `<span class="text-green">Closes at step ${info.totalSteps}.</span> Each color is one block of ${N} steps. After ${info.blocks} block${info.petals === 1 ? '' : 's'}, the walker returns to the origin.`;
             } else {
                 note.style.borderColor = 'var(--accent2)';
-                note.innerHTML = `<span class="text-accent2">Never closes at a multiple of S.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
+                note.innerHTML = `<span class="text-accent2">Does not close.</span> gcd(${N}, 6) = 1. Each block of ${N} steps adds the same drift vector — the path spirals away forever. (Showing 4 blocks)`;
             }
         }
 
