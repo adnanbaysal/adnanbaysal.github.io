@@ -1218,7 +1218,7 @@
     
     <p class="hero-sub">
      A turtle wanders an infinite plane. At every step, it turns by an amount that <em>grows with the square of its step number</em>. 
-     This simple rule leads to paths that merge chaos and symmetry.
+     This simple rule leads to paths that merge chaos with symmetry.
     </p>
     
     <a class="hero-cta" href="#turtle">Start reading &darr;</a>
@@ -1255,14 +1255,14 @@
     </p>
     
     <p>
-     The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn by constant 90&deg;, 
-     and it walks in a square. Tell it to always turn by 60&deg;, and it outlines a hexagon. Instruct it to turn by a 
+     The trajectory it traces depends entirely on <em>how much it turns</em> at each step. Tell it to turn 90° every time, 
+     and it walks in a square. Tell it to turn 60° every time, and it traces a hexagon. Instruct it to turn by a 
      constant irrational angle, and the path will wander chaotically over a circular orbit forever, never fully repeating a step.
     </p>
     
     <p>
      In computer science, this kind of agent is known as a <strong>turtle</strong>, which is studied under the
-     <a href="https://en.wikipedia.org/wiki/Turtle_graphics" class="accent-link">turtle graphics</a> umbrella. It's origin dates back to the 1960s. 
+     <a href="https://en.wikipedia.org/wiki/Turtle_graphics" class="accent-link">turtle graphics</a> umbrella. Its origin dates back to the 1960s. 
      Depending on the variant, more commands may be available. For this article, we'll stick to the very restricted command set described here.
      Note that Mathematica's built-in <a href="https://reference.wolfram.com/language/ref/AnglePath.html" class="accent-link">AnglePath</a> 
      function is similar to our restricted algorithm. 
@@ -1335,14 +1335,14 @@
     </div>
 
     <p>
-     Notice that the turtle moves very systematically, and symmetric patterns are taking shape. 
+     Notice that the turtle moves very systematically, and symmetrical patterns begin to emerge.
      The <em>orientation</em> changes at each step are following some underlying pattern. In later sections of this article, 
      we'll see that many values of S produce highly symmetric rosette-like patterns. We'll try to answer two fundamental questions:
     </p>
 
     <ol class="section-list">
-      <li>Will the turtle draw a closed loop-like shape, or will it wander on the plane indefinitely?</li>
-      <li>What are the mathematical reasons behind the symmetries we'll about to see?</li>
+      <li>Will the turtle draw a closed loop-like shape or wander on the plane indefinitely?</li>
+      <li>What are the mathematical reasons behind the symmetries that emerges?</li>
     </ol>
     
    </section>
@@ -1364,7 +1364,7 @@
     <p>
      Tracking slots instead of degrees keeps our formulas cleaner. Let's trace a small sequence where <strong>S = 6</strong>
      (providing six equally spaced headings, each 60&deg; apart). At step 0, the turn is 0&sup2; = 0. At step 1, it's 1&sup2; = 1 slot. 
-     At step 2, it leaps to 2&sup2; = 4 slots. And so on.
+     At step 2, it leaps to 2&sup2; = 4 slots, and so on.
     </p>
 
     <!-- Direction table for N=6 -->
@@ -1391,8 +1391,8 @@
      <p>
       We could use many other functions to drive our turtle's movements. A linear rule of turning by <em>n</em> slots at step <em>n</em>
       yields curves resembling the classical Euler spiral. A randomized rule produces the chaotic path of a drunkard's walk. 
-      I've found the square function a good compromise which is both very simple to describe, and also able to produce beautiful
-      shapes. The goal of this article is to understand why this particular rule produces these patterns.
+      I've found the square function to be a good compromise: it's both very simple to describe and capable of producing beautiful shapes. 
+      The goal of this article is to understand why this particular rule produces these patterns.
      </p>
     </div>
 
@@ -1421,7 +1421,7 @@
 
     <p>
      Before analyzing the math, let's look at some examples with large values of S. Keep in mind: these aren't manually created. 
-     Each image is generated directly from the simple turning rule described above. I've selected the S values that I think produces
+     Each image is generated directly from the simple turning rule described above. I've selected the S values that I think produce
      beautiful paths.
     </p>
 
@@ -1491,9 +1491,9 @@
     <h2>4 &mdash; Will the Path Close or Drift?</h2>
 
     <p>
-     For most values of S, the turtle's path form a closed, circular rosette-like symmetric shape. The possible number of 
+     For most values of S, the turtle's path forms a closed, circular rosette-like symmetric shape. The possible number of 
      "petals" on these rosettes is one of 1, 2, 3, 4, 6, or 12 &mdash; which is the set of positive divisors of 12. 
-     However, for a some specific S values, the path <em>drifts</em> in positive or negative X-axis direction. 
+     However, for some specific values of S, the path <em>drifts</em> along the positive or negative x-axis. 
      You can use the interactive sandbox below to see the behavioral split between closing and drifting paths.
     </p>
 
@@ -1563,10 +1563,10 @@
      The Simple Case: gcd(S, 6) > 1
     </h3>
     <p>
-     When the greatest common divisor of S and 6 is greater than 1 (meaning either 2, 3, or both divides S), 
+     When the greatest common divisor of S and 6 is greater than 1 (meaning 2, 3, or both divide S), 
      the path will always close into a symmetric rosette-shape and loop periodically over that same shape. 
-     The total number of "visible" petals will be either exactly gcd(S, 6) or 2&times;gcd(S, 6). 
-     I'll explain exactly why the visible petal count can appear doubled in a later section.
+     The total number of "visible" petals will be either gcd(S, 6) or 2&times;gcd(S, 6). 
+     I'll explain why the visible petal count can appear doubled in a later section.
     </p>
     
     <h3>
@@ -1592,7 +1592,7 @@
     </ul>
     
     <p>
-      With manual experimentation I've found that the first few members of this special set of primes are:
+      Through manual experimentation I've found that the first few members of this special set of primes are:
       <span class="math-inline">{11, 13, 23, 37, 47, 59, 61, 71, 73, &hellip;}</span>. I have not yet found a complete characterization 
       of this phenomenon, so I present it here only as an empirical observation. Searching this sub-seuence this in
       (<a href="http://oeis.org" class="accent-link">OEIS</a>) yields a few promising candidates. So that can be a good starting 
@@ -1660,7 +1660,7 @@
       This <span class="math-inline">S</span>-periodicity alone explains why we see repeating patterns in the visualizations. 
       However, this doesn't explain why the path closes and loops over the same shape for most values of <span class="math-inline">S</span>, 
       and why every <span class="math-inline">S</span>-step block seems to have internal reflectional symmetry. There are other algebraic
-      properties that cause these two behavior. The first property is related to the observation below:
+      properties that cause these two behaviors. The first property is related to the observation below:
     </p>
     
     <h3>
@@ -1670,7 +1670,7 @@
     <p>
       Let's check what can we say about <span class="math-inline">&theta;(n + S) mod S</span> for all <span class="math-inline">n</span>. 
       We'll expand the sum-of-squares formula to make the analysis easier: <span class="math-inline">n(n + 1)(2n + 1) / 6 = (2n&sup3; + 3n&sup2; + n) / 6</span>. 
-      Here is a little bit algebra:
+      Here is a little bit of algebra:
     </p>
 
     <div class="math-block">
@@ -1798,7 +1798,7 @@
     <h2>6 &mdash; Number of Petals</h2>
     
     <p>
-      We have now showed that both the closure status of the path and the number of visual petals are related to GCD(S, 6).
+      We have now shown that both the closure status of the path and the number of visual petals are determined by GCD(S, 6).
       Let's analyze how these two properties affect the graphs.
     </p>
 
@@ -1831,7 +1831,7 @@
      to the first &mdash; except it will be 
      <strong>rotated by the constant offset angle <span class="math-inline">&theta;(S)</span></strong>. Now, picture a straight 
      line drawn from the origin to the turtle's current displaced position. If we let the turtle run for another block of S steps, 
-     it will land at a new coordinate and faces to the slot <span class="math-inline">2&times;&theta;(S)</span>. 
+     it will land at a new coordinate and face to the slot <span class="math-inline">2&times;&theta;(S)</span>. 
     </p>
 
     <p>
@@ -1948,7 +1948,7 @@
     
     <p>
       There is something interesting in the graphs we see above. There are shapes with 1, 2, 3, and 6 petals sas expected by the analysis above, 
-      but we also see <em>4</em> and <em>12</em> petal shapes. We'll explain the reason of this in the next two sections.
+      but we also see <em>4</em> and <em>12</em> petal shapes. We'll explain the underlying reason in the next two sections.
     </p>
    </section>
    
