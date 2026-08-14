@@ -226,28 +226,6 @@
      line-height: 1.6;
    }
 
-   .hero-cta {
-     display: inline-flex;
-     align-items: center;
-     gap: 8px;
-     background: transparent;
-     border: 1px solid var(--accent);
-     color: var(--accent);
-     padding: 10px 24px;
-     border-radius: 4px;
-     font-family: 'Courier New', monospace;
-     font-size: 12px;
-     letter-spacing: 1px;
-     text-decoration: none;
-     cursor: pointer;
-     transition: background .2s, color .2s;
-   }
-
-   .hero-cta:hover {
-     background: var(--accent);
-     color: var(--text);
-   }
-
    /* ARTICLE LAYOUT */
    article {
      max-width: 720px;
@@ -1220,8 +1198,6 @@
      A turtle wanders an infinite plane. At every step, it turns by an amount that <em>grows with the square of its step number</em>. 
      This simple rule leads to paths that merge chaos with symmetry.
     </p>
-    
-    <a class="hero-cta" href="#turtle">Start reading &darr;</a>
    </div>
   </section>
   
@@ -1277,7 +1253,7 @@
     </p>
 
     <p>
-      Here is a small demo that uses the same rule we'll analyze in this article, for some small values of S. You can move the turtle step-by-step, 
+      Here is a demo that uses the same rule we'll analyze in this article, for some small values of S. You can move the turtle step-by-step, 
       in S-step blocks, or make it walk automatically.
     </p>
     
@@ -2215,7 +2191,7 @@
 
     <p>
      Translated to geometry: whenever S is divisible by 4, the squared angular shift applied at step <span class="math-inline">n</span> 
-     is mathematically identical to the shift applied at step <span class="math-inline">n + S/2</span>. The second half of the petal 
+     is identical to the shift applied at step <span class="math-inline">n + S/2</span>. The second half of the petal 
      has the exact same set of relative turns as the first half, just executed from a new origin point and rotation.
      Therefore, <strong>the second half of every petal is a rotated clone of the first half</strong>. This is why the path for S=24 
      (divisible by 4) visibly consist of 12 petals, while S=6 (not divisible by 4) remains with 6 petals.
